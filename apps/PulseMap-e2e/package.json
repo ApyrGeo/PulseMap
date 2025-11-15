@@ -1,0 +1,10 @@
+{
+  "name": "@pulse-map/PulseMap-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@pulse-map/PulseMap"
+    ]
+  }
+}
