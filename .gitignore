@@ -119,6 +119,9 @@ yarn-error.log
 #VS
 .vs/
 
+# Environment files
+.env
+
 # Build outputs
 bin/
 obj/

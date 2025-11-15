@@ -1,22 +1,89 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using PulseMap.Context;
+using PulseMap.Domain;
+using PulseMap.Domain.DTOs;
+using PulseMap.Interfaces;
+using PulseMap.Middlewares;
+using PulseMap.Repository;
+using PulseMap.Service;
+using PulseMap.Service.Validators;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var AppAllowSpecificOrigins = "_appAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AppAllowSpecificOrigins, policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyOrigin();
+    });
+});
+
+//database
+builder.Services.AddDbContext<PulseMapContext>((sp, options) =>
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        );
+});
+
+//automapper
+builder.Services.AddAutoMapper(cfg => {
+    cfg.CreateMap<Location, LocationResponseDTO>();
+    cfg.CreateMap<LocationPostDTO, Location>().ReverseMap();
+    cfg.CreateMap<User, UserResponseDTO>();
+    cfg.CreateMap<UserPostDTO, User>().ReverseMap();
+    cfg.CreateMap<User, SimplifiedUserResponseDTO>();
+});
+
+//logging
+builder.Logging.ClearProviders();
+builder.Logging.AddLog4Net("log4net.config");
+
+//validators
+builder.Services.AddScoped<PulseMap.Interfaces.IValidatorFactory, ValidatorFactory>();
+builder.Services.AddValidatorsFromAssemblyContaining<LocationPostDTOValidator>();
+
+//repositories
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+//helpers
+//builder.Services.Configure<PasswordHasherOptions>(
+//    options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3
+//    );
+//builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
+
+//services
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors(AppAllowSpecificOrigins);
 
 app.Run();
