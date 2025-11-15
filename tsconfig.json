@@ -8,6 +8,18 @@
     },
     {
       "path": "./apps/PulseMap"
+    },
+    {
+      "path": "./frontend-web-e2e"
+    },
+    {
+      "path": "./frontend-web"
+    },
+    {
+      "path": "./frontend-mobile"
+    },
+    {
+      "path": "./shared"
     }
   ]
 }
