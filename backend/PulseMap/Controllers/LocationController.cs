@@ -8,10 +8,9 @@ namespace PulseMap.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class LocationController(ILocationService locationService, IMapper mapper) : ControllerBase
+public class LocationController(ILocationService locationService) : ControllerBase
 {
     private readonly ILocationService _locationService = locationService;
-    private readonly IMapper _mapper = mapper;
 
     [HttpGet("{id}")]
     [ProducesResponseType(200)]

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PulseMap.Domain;
+using PulseMap.Domain.Enums;
 
 namespace PulseMap.Context.Configurations;
 
@@ -22,5 +23,12 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.HasOne(l => l.Creator)
             .WithMany(c => c.PlacedLocations)
             .HasForeignKey(l => l.CreatorId);
+
+        builder.Property(l => l.Category)
+            .HasDefaultValue(Category.NotSet)
+            .IsRequired()
+            .HasConversion(
+                v => v.ToString(),
+                v => (Category)Enum.Parse(typeof(Category), v));
     }
 }

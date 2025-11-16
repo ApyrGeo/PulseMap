@@ -1,3 +1,5 @@
+using PulseMap.Domain.Enums;
+
 namespace PulseMap.Domain;
 
 public class Location
@@ -10,4 +12,7 @@ public class Location
 
     public required int? CreatorId { get; set; } = null;
     public User? Creator { get; set; } = null;
+
+    public required Category Category { get; set; } = Category.NotSet;
+    public List<Message>? Comments { get; set; } = [];
 }

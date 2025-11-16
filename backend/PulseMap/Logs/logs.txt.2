@@ -1,0 +1,1038 @@
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 18 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 9 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 18 PulseMap.Service.LocationService - Getting all locations
+INFO 9 PulseMap.Service.LocationService - Getting all locations
+ERROR 7 Microsoft.EntityFrameworkCore.Database.Command - Failed executing DbCommand (40ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+ERROR 18 Microsoft.EntityFrameworkCore.Database.Command - Failed executing DbCommand (40ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+ERROR 7 Microsoft.EntityFrameworkCore.Query - An exception occurred while iterating over the results of a query for context type 'PulseMap.Context.PulseMapContext'.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+ERROR 18 Microsoft.EntityFrameworkCore.Query - An exception occurred while iterating over the results of a query for context type 'PulseMap.Context.PulseMapContext'.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+ERROR 18 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at PulseMap.Repository.LocationRepository.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Repository\LocationRepository.cs:line 23
+   at PulseMap.Service.LocationService.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 49
+   at PulseMap.Controllers.LocationController.GetAllLocations() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 29
+   at lambda_method10(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+ERROR 7 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at PulseMap.Repository.LocationRepository.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Repository\LocationRepository.cs:line 23
+   at PulseMap.Service.LocationService.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 49
+   at PulseMap.Controllers.LocationController.GetAllLocations() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 29
+   at lambda_method9(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+INFO 18 PulseMap.Service.LocationService - Getting all locations
+INFO 17 PulseMap.Service.LocationService - Getting all locations
+ERROR 13 Microsoft.EntityFrameworkCore.Database.Command - Failed executing DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+ERROR 7 Microsoft.EntityFrameworkCore.Database.Command - Failed executing DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+ERROR 13 Microsoft.EntityFrameworkCore.Query - An exception occurred while iterating over the results of a query for context type 'PulseMap.Context.PulseMapContext'.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+ERROR 7 Microsoft.EntityFrameworkCore.Query - An exception occurred while iterating over the results of a query for context type 'PulseMap.Context.PulseMapContext'.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+ERROR 13 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at PulseMap.Repository.LocationRepository.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Repository\LocationRepository.cs:line 23
+   at PulseMap.Service.LocationService.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 49
+   at PulseMap.Controllers.LocationController.GetAllLocations() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 29
+   at lambda_method9(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+ERROR 7 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+Npgsql.PostgresException (0x80004005): 42703: column l.Category does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at PulseMap.Repository.LocationRepository.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Repository\LocationRepository.cs:line 23
+   at PulseMap.Service.LocationService.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 49
+   at PulseMap.Controllers.LocationController.GetAllLocations() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 29
+   at lambda_method9(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column l.Category does not exist
+    Position: 16
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Applying migration '20251116131905_AddedMessages'.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+ALTER TABLE "Locations" ADD "Category" text NOT NULL DEFAULT '';
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE "Messages" (
+    "Id" integer GENERATED BY DEFAULT AS IDENTITY,
+    "Content" character varying(1000) NOT NULL,
+    "SenderId" integer NOT NULL,
+    "SentAt" timestamp with time zone NOT NULL,
+    "LocationId" integer NOT NULL,
+    "MessageType" character varying(8) NOT NULL,
+    "ParentMessageId" integer,
+    CONSTRAINT "PK_Messages" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_Messages_Locations_LocationId" FOREIGN KEY ("LocationId") REFERENCES "Locations" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Messages_Messages_ParentMessageId" FOREIGN KEY ("ParentMessageId") REFERENCES "Messages" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Messages_Users_SenderId" FOREIGN KEY ("SenderId") REFERENCES "Users" ("Id") ON DELETE RESTRICT
+);
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_LocationId" ON "Messages" ("LocationId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_ParentMessageId" ON "Messages" ("ParentMessageId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_SenderId" ON "Messages" ("SenderId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251116131905_AddedMessages', '9.0.11');
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 13 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 13 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 13 PulseMap.Service.LocationService - Getting all locations
+INFO 13 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+ERROR 13 Microsoft.EntityFrameworkCore.Query - An exception occurred while iterating over the results of a query for context type 'PulseMap.Context.PulseMapContext'.
+System.ArgumentException: Must specify valid information for parsing in the string. (Parameter 'value')
+   at System.Enum.ThrowInvalidEmptyParseArgument()
+   at System.Enum.TryParseByValueOrName[TUnderlying,TStorage](RuntimeType enumType, ReadOnlySpan`1 value, Boolean ignoreCase, Boolean throwOnFailure, TUnderlying& result)
+   at System.Enum.TryParse(Type enumType, ReadOnlySpan`1 value, Boolean ignoreCase, Boolean throwOnFailure, Object& result)
+   at lambda_method48(Closure, String)
+   at lambda_method36(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+System.ArgumentException: Must specify valid information for parsing in the string. (Parameter 'value')
+   at System.Enum.ThrowInvalidEmptyParseArgument()
+   at System.Enum.TryParseByValueOrName[TUnderlying,TStorage](RuntimeType enumType, ReadOnlySpan`1 value, Boolean ignoreCase, Boolean throwOnFailure, TUnderlying& result)
+   at System.Enum.TryParse(Type enumType, ReadOnlySpan`1 value, Boolean ignoreCase, Boolean throwOnFailure, Object& result)
+   at lambda_method48(Closure, String)
+   at lambda_method36(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ERROR 13 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+System.ArgumentException: Must specify valid information for parsing in the string. (Parameter 'value')
+   at System.Enum.ThrowInvalidEmptyParseArgument()
+   at System.Enum.TryParseByValueOrName[TUnderlying,TStorage](RuntimeType enumType, ReadOnlySpan`1 value, Boolean ignoreCase, Boolean throwOnFailure, TUnderlying& result)
+   at System.Enum.TryParse(Type enumType, ReadOnlySpan`1 value, Boolean ignoreCase, Boolean throwOnFailure, Object& result)
+   at lambda_method48(Closure, String)
+   at lambda_method36(Closure, QueryContext, DbDataReader, ResultContext, SingleQueryResultCoordinator)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at PulseMap.Repository.LocationRepository.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Repository\LocationRepository.cs:line 23
+   at PulseMap.Service.LocationService.GetAllLocationsAsync() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 49
+   at PulseMap.Controllers.LocationController.GetAllLocations() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 28
+   at lambda_method6(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Reverting migration '20251116131905_AddedMessages'.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DROP TABLE "Messages";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+ALTER TABLE "Locations" DROP COLUMN "Category";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DELETE FROM "__EFMigrationsHistory"
+WHERE "MigrationId" = '20251116131905_AddedMessages';
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - No migrations were applied. The database is already up to date.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Applying migration '20251116132333_AddedMessage'.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+ALTER TABLE "Locations" ADD "Category" text NOT NULL DEFAULT 'NotSet';
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE "Messages" (
+    "Id" integer GENERATED BY DEFAULT AS IDENTITY,
+    "Content" character varying(1000) NOT NULL,
+    "SenderId" integer NOT NULL,
+    "SentAt" timestamp with time zone NOT NULL,
+    "LocationId" integer NOT NULL,
+    "MessageType" character varying(8) NOT NULL,
+    "ParentMessageId" integer,
+    CONSTRAINT "PK_Messages" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_Messages_Locations_LocationId" FOREIGN KEY ("LocationId") REFERENCES "Locations" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Messages_Messages_ParentMessageId" FOREIGN KEY ("ParentMessageId") REFERENCES "Messages" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Messages_Users_SenderId" FOREIGN KEY ("SenderId") REFERENCES "Users" ("Id") ON DELETE RESTRICT
+);
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_LocationId" ON "Messages" ("LocationId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_ParentMessageId" ON "Messages" ("ParentMessageId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_SenderId" ON "Messages" ("SenderId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251116132333_AddedMessage', '9.0.11');
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 13 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 18 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 18 PulseMap.Service.LocationService - Getting all locations
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (11ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 16 PulseMap.Service.UserService - Getting user by id: 1
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (15ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+INFO 17 PulseMap.Service.MessageService - Validating message
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+INFO 13 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 13 PulseMap.Service.MessageService - Mapping and creating message
+ERROR 13 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+System.InvalidOperationException: No route matches the supplied values.
+   at Microsoft.AspNetCore.Mvc.CreatedAtActionResult.OnFormatting(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, Object value)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsync(ActionContext context, ObjectResult result)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeNextResultFilterAsync[TFilter,TFilterAsync]()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+INFO 17 PulseMap.Service.MessageService - Validating message
+INFO 16 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 11 PulseMap.Service.MessageService - Mapping and creating message
+ERROR 11 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+System.InvalidOperationException: No route matches the supplied values.
+   at Microsoft.AspNetCore.Mvc.CreatedAtActionResult.OnFormatting(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, Object value)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsync(ActionContext context, ObjectResult result)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeNextResultFilterAsync[TFilter,TFilterAsync]()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 18 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 18 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 18 PulseMap.Service.MessageService - Validating message
+INFO 19 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (25ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (4ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 18 PulseMap.Service.MessageService - Mapping and creating message
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 10 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 16 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 16 PulseMap.Service.MessageService - Validating message
+INFO 16 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (25ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (4ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 18 PulseMap.Service.MessageService - Mapping and creating message
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (8ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = Int32), @p4='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+INSERT INTO "Messages" ("Content", "LocationId", "MessageType", "SenderId", "SentAt")
+VALUES (@p0, @p1, @p2, @p3, @p4)
+RETURNING "Id";
+INFO 16 PulseMap.Service.MessageService - Validating message
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+INFO 10 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__messageId_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId"
+FROM "Messages" AS m
+WHERE m."Id" = @__messageId_0
+LIMIT 2
+INFO 10 PulseMap.Service.MessageService - Mapping and creating message
+INFO 12 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+INSERT INTO "Messages" ("Content", "LocationId", "MessageType", "ParentMessageId", "SenderId", "SentAt")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5)
+RETURNING "Id";
+INFO 18 PulseMap.Service.MessageService - Retrieving message with ID: 1
+INFO 13 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__messageId_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId"
+FROM "Messages" AS m
+WHERE m."Id" = @__messageId_0
+LIMIT 2
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 15 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 13 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 13 PulseMap.Service.MessageService - Retrieving message with ID: 1
+INFO 15 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (26ms) [Parameters=[@__messageId_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m1."Id", m1."Content", m1."LocationId", m1."MessageType", m1."SenderId", m1."SentAt", m1."ParentMessageId", m2."Id", m2."Content", m2."LocationId", m2."MessageType", m2."SenderId", m2."SentAt", m2."ParentMessageId"
+FROM (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId"
+    FROM "Messages" AS m
+    WHERE m."Id" = @__messageId_0
+    LIMIT 2
+) AS m1
+LEFT JOIN (
+    SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId"
+    FROM "Messages" AS m0
+    WHERE m0."MessageType" = 'Response'
+) AS m2 ON m1."Id" = m2."ParentMessageId"
+ORDER BY m1."Id"
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 15 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 18 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 18 PulseMap.Service.MessageService - Retrieving message with ID: 1
+INFO 18 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (28ms) [Parameters=[@__messageId_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT s."Id", s."Content", s."LocationId", s."MessageType", s."SenderId", s."SentAt", s."ParentMessageId", s."Id0", s."Email", s."FirstName", s."LastName", s."Password", s."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName"
+FROM (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u."Id" AS "Id0", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u ON m."SenderId" = u."Id"
+    WHERE m."Id" = @__messageId_0
+    LIMIT 2
+) AS s
+LEFT JOIN (
+    SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName"
+    FROM "Messages" AS m0
+    INNER JOIN "Users" AS u0 ON m0."SenderId" = u0."Id"
+    WHERE m0."MessageType" = 'Response'
+) AS s0 ON s."Id" = s0."ParentMessageId"
+ORDER BY s."Id", s."Id0", s0."Id"
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 13 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 14 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 14 PulseMap.Service.LocationService - Getting all locations
+INFO 9 PulseMap.Service.LocationService - Getting all locations
+INFO 19 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 17 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 16 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 9 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 17 PulseMap.Service.LocationService - Getting all locations
+INFO 9 PulseMap.Service.LocationService - Getting all locations
+INFO 20 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 9 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 17 PulseMap.Service.LocationService - Getting all locations
+INFO 24 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 24 PulseMap.Service.LocationService - Getting all locations
+INFO 17 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 20 PulseMap.Service.LocationService - Getting all locations
+INFO 16 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 24 PulseMap.Service.LocationService - Getting all locations
+INFO 25 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 25 PulseMap.Service.LocationService - Getting all locations
+INFO 16 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 25 PulseMap.Service.LocationService - Getting all locations
+INFO 24 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+INFO 26 PulseMap.Service.LocationService - Getting location by ID: 42
+INFO 27 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 3 PulseMap.Service.LocationService - Getting all locations
+INFO 26 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 18 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Reverting migration '20251116132333_AddedMessage'.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DROP TABLE "Messages";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+ALTER TABLE "Locations" DROP COLUMN "Category";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DELETE FROM "__EFMigrationsHistory"
+WHERE "MigrationId" = '20251116132333_AddedMessage';
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+INFO 1 Microsoft.EntityFrameworkCore.Migrations - Applying migration '20251116144920_AddedMessage'.
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+ALTER TABLE "Locations" ADD "Category" text NOT NULL DEFAULT 'NotSet';
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE TABLE "Messages" (
+    "Id" integer GENERATED BY DEFAULT AS IDENTITY,
+    "Content" character varying(1000) NOT NULL,
+    "SenderId" integer NOT NULL,
+    "SentAt" timestamp with time zone NOT NULL,
+    "LocationId" integer NOT NULL,
+    "MessageType" character varying(8) NOT NULL,
+    "ParentMessageId" integer,
+    CONSTRAINT "PK_Messages" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_Messages_Locations_LocationId" FOREIGN KEY ("LocationId") REFERENCES "Locations" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_Messages_Messages_ParentMessageId" FOREIGN KEY ("ParentMessageId") REFERENCES "Messages" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Messages_Users_SenderId" FOREIGN KEY ("SenderId") REFERENCES "Users" ("Id") ON DELETE RESTRICT
+);
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_LocationId" ON "Messages" ("LocationId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_ParentMessageId" ON "Messages" ("ParentMessageId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+CREATE INDEX "IX_Messages_SenderId" ON "Messages" ("SenderId");
+INFO 1 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251116144920_AddedMessage', '9.0.11');
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 10 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 13 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 13 PulseMap.Service.LocationService - Getting all locations
+WARN 13 Microsoft.EntityFrameworkCore.Query - Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+INFO 13 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+DEBUG 17 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 15 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 15 PulseMap.Service.MessageService - Validating message
+INFO 19 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (24ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+WARN 19 Microsoft.EntityFrameworkCore.Query - Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+INFO 17 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT s."Id", s."Category", s."CreatorId", s."Description", s."Latitude", s."Longitude", s."Name", s."Id0", s."Email", s."FirstName", s."LastName", s."Password", s."UserName", s1."Id", s1."Content", s1."LocationId", s1."MessageType", s1."SenderId", s1."SentAt", s1."ParentMessageId", s1."Id0", s1."Email", s1."FirstName", s1."LastName", s1."Password", s1."UserName", s1."Id1", s1."Content0", s1."LocationId0", s1."MessageType0", s1."SenderId0", s1."SentAt0", s1."ParentMessageId0", s1."Id00", s1."Email0", s1."FirstName0", s1."LastName0", s1."Password0", s1."UserName0"
+FROM (
+    SELECT l."Id", l."Category", l."CreatorId", l."Description", l."Latitude", l."Longitude", l."Name", u."Id" AS "Id0", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+    FROM "Locations" AS l
+    LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+    WHERE l."Id" = @__id_0
+    LIMIT 1
+) AS s
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s0."Id" AS "Id1", s0."Content" AS "Content0", s0."LocationId" AS "LocationId0", s0."MessageType" AS "MessageType0", s0."SenderId" AS "SenderId0", s0."SentAt" AS "SentAt0", s0."ParentMessageId" AS "ParentMessageId0", s0."Id0" AS "Id00", s0."Email" AS "Email0", s0."FirstName" AS "FirstName0", s0."LastName" AS "LastName0", s0."Password" AS "Password0", s0."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s0 ON m."Id" = s0."ParentMessageId"
+) AS s1 ON s."Id" = s1."LocationId"
+ORDER BY s."Id", s."Id0", s1."Id", s1."Id0", s1."Id1"
+INFO 17 PulseMap.Service.MessageService - Mapping and creating message
+INFO 19 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = Int32), @p4='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+INSERT INTO "Messages" ("Content", "LocationId", "MessageType", "SenderId", "SentAt")
+VALUES (@p0, @p1, @p2, @p3, @p4)
+RETURNING "Id";
+INFO 19 PulseMap.Service.MessageService - Validating message
+INFO 10 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+ERROR 10 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+Backend.Exceptions.Custom.EntityValidationException: Invalid message data.
+   at PulseMap.Service.MessageService.CreateResponseMessageAsync(Int32 messageId, ResponseMessagePostDTO responseMessagePostDTO) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\MessageService.cs:line 43
+   at PulseMap.Controllers.MessageController.CreateResponseMessage(Int32 messageId, ResponseMessagePostDTO responseMessagePostDTO) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\MessageController.cs:line 35
+   at lambda_method402(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22

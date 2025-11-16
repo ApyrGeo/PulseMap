@@ -38,11 +38,30 @@ builder.Services.AddDbContext<PulseMapContext>((sp, options) =>
 
 //automapper
 builder.Services.AddAutoMapper(cfg => {
-    cfg.CreateMap<Location, LocationResponseDTO>();
-    cfg.CreateMap<LocationPostDTO, Location>().ReverseMap();
+    // User
     cfg.CreateMap<User, UserResponseDTO>();
     cfg.CreateMap<UserPostDTO, User>().ReverseMap();
     cfg.CreateMap<User, SimplifiedUserResponseDTO>();
+
+    // Message 
+    cfg.CreateMap<Message, ResponseMessageResponseDTO>()
+        .IncludeMembers(src => src);
+
+    cfg.CreateMap<ResponseMessage, ResponseMessageResponseDTO>()
+        .IncludeBase<Message, ResponseMessageResponseDTO>();
+
+    cfg.CreateMap<Message, MessageResponseDTO>()
+        .ForMember(dest => dest.Responses, opt => opt.MapFrom(src => src.Responses));
+
+    cfg.CreateMap<MessagePostDTO, Message>().ReverseMap();
+    cfg.CreateMap<ResponseMessagePostDTO, ResponseMessage>().ReverseMap();
+
+    // Location 
+    cfg.CreateMap<Location, LocationResponseDTO>()
+        .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.Comments))
+        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()));
+
+    cfg.CreateMap<LocationPostDTO, Location>().ReverseMap();
 });
 
 //logging
@@ -56,6 +75,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<LocationPostDTOValidator>()
 //repositories
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 //helpers
 //builder.Services.Configure<PasswordHasherOptions>(
@@ -66,6 +86,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 //services
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 var app = builder.Build();
 

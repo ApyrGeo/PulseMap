@@ -1,16 +1,14 @@
 import { useState } from 'react';
+import { LocationCategory, LocationPostDTO } from '../Interfaces';
+import { useAuth } from '../../auth/AuthProvider';
 
 interface AddLocationModalProps {
   isOpen: boolean;
   latitude: number;
   longitude: number;
+  category: LocationCategory;
   onClose: () => void;
-  onSubmit: (data: {
-    latitude: number;
-    longitude: number;
-    name: string;
-    description?: string;
-  }) => void;
+  onSubmit: (data: LocationPostDTO) => void;
 }
 
 const AddLocationModal = ({
@@ -20,21 +18,37 @@ const AddLocationModal = ({
   onClose,
   onSubmit,
 }: AddLocationModalProps) => {
+  const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<LocationCategory>(
+    LocationCategory.NotSet
+  );
+
+  const categories = Object.keys(LocationCategory).map((key) => ({
+    value: LocationCategory[key as keyof typeof LocationCategory],
+    label: key,
+  }));
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ latitude, longitude, name, description });
+    onSubmit({
+      latitude,
+      longitude,
+      name,
+      description,
+      category,
+      creatorId: user.id,
+    });
     setName('');
     setDescription('');
   };
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-1000"
       onClick={onClose}
     >
       <div
@@ -88,6 +102,26 @@ const AddLocationModal = ({
               required
               placeholder="Enter location name"
             />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category *
+            </label>
+            <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              value={category}
+              onChange={(e) =>
+                setCategory(String(e.target.value) as LocationCategory)
+              }
+              required
+            >
+              {categories.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-4">

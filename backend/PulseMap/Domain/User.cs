@@ -10,4 +10,5 @@ public class User
     public required string Password { get; set; }
 
     public List<Location>? PlacedLocations { get; set; } = [];
+    public List<Message>? SentMessages { get; set; } = [];
 }

@@ -5,18 +5,20 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import { fetchLocations, createLocation } from './LocationsApiService';
-import { Location } from './Interfaces';
+import { fetchLocations, createLocation } from './services/LocationsApiService';
+import {
+  Location,
+  LocationPostDTO,
+  MessagePostDTO,
+  ResponseMessagePostDTO,
+} from './Interfaces';
+import { addComment, addResponse } from './services/MessagesApiService';
 
 interface LocationsContextType {
   locations: Location[];
-  addLocation: (
-    latitude: number,
-    longitude: number,
-    name: string,
-    creatorId: number,
-    description?: string
-  ) => Promise<void>;
+  addLocation: (location: LocationPostDTO) => Promise<void>;
+  addCommentToLocation: (message: MessagePostDTO) => Promise<void>;
+  addResponseToMessage: (message: ResponseMessagePostDTO) => Promise<void>;
 }
 
 const LocationsContext = createContext<LocationsContextType | undefined>(
@@ -40,22 +42,10 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  async function addLocation(
-    latitude: number,
-    longitude: number,
-    name: string,
-    creatorId: number,
-    description?: string
-  ) {
+  async function addLocation(location: LocationPostDTO) {
     setIsLoading(true);
     try {
-      const newLocation = await createLocation({
-        latitude,
-        longitude,
-        name,
-        description,
-        creatorId,
-      });
+      const newLocation = await createLocation(location);
       setLocations((prev) => [...prev, newLocation]);
     } catch (error) {
       console.error('Failed to create location:', error);
@@ -64,8 +54,57 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  async function addCommentToLocation(message: MessagePostDTO) {
+    try {
+      const newComment = await addComment(message);
+
+      setLocations((prev) =>
+        prev.map((loc) =>
+          loc.id === message.locationId
+            ? { ...loc, messages: [...loc.messages, newComment] }
+            : loc
+        )
+      );
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+    }
+  }
+
+  async function addResponseToMessage(message: ResponseMessagePostDTO) {
+    try {
+      const newResponse = await addResponse(message);
+
+      setLocations((prev) =>
+        prev.map((loc) =>
+          loc.id === newResponse.locationId
+            ? {
+                ...loc,
+                messages: loc.messages.map((comment) =>
+                  comment.id === message.messageId
+                    ? {
+                        ...comment,
+                        responses: [...(comment.responses || []), newResponse],
+                      }
+                    : comment
+                ),
+              }
+            : loc
+        )
+      );
+    } catch (error) {
+      console.error('Failed to add response:', error);
+    }
+  }
+
   return (
-    <LocationsContext.Provider value={{ locations, addLocation }}>
+    <LocationsContext.Provider
+      value={{
+        locations,
+        addLocation,
+        addCommentToLocation,
+        addResponseToMessage,
+      }}
+    >
       {children}
     </LocationsContext.Provider>
   );

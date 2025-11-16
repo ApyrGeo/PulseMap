@@ -1,6 +1,6 @@
-import { BASE_API_URL } from '../core';
-import { LocationPostDto } from './Interfaces';
-import { Location } from './Interfaces';
+import { BASE_API_URL } from '../../core';
+import { LocationPostDTO } from '../Interfaces';
+import { Location } from '../Interfaces';
 
 const LOCATIONS_URL = BASE_API_URL + '/Location';
 
@@ -12,19 +12,13 @@ export async function fetchLocations(): Promise<Location[]> {
   return response.json();
 }
 
-export async function createLocation(dto: LocationPostDto): Promise<Location> {
+export async function createLocation(dto: LocationPostDTO): Promise<Location> {
   const response = await fetch(`${LOCATIONS_URL}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      latitude: dto.latitude,
-      longitude: dto.longitude,
-      name: dto.name,
-      description: dto.description,
-      creatorId: dto.creatorId,
-    }),
+    body: JSON.stringify(dto),
   });
 
   if (!response.ok) {

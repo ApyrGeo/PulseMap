@@ -1,29 +1,31 @@
 import LeafletMap from './LeafletMap';
 import { useLocations } from '../LocationsProvider';
-
-const USER_ID = 1; // Placeholder for the current user's ID
+import { LocationCategory } from '../Interfaces';
+import { useAuth } from '../../auth/AuthProvider';
 
 const MapComponent = () => {
-  const { locations, addLocation } = useLocations();
+  const { user } = useAuth();
+  const { locations, addLocation, addCommentToLocation, addResponseToMessage } =
+    useLocations();
 
   const handleMapClick = async (data: {
     latitude: number;
     longitude: number;
     name: string;
+    category: LocationCategory;
     description?: string;
   }) => {
-    await addLocation(
-      data.latitude,
-      data.longitude,
-      data.name,
-      USER_ID,
-      data.description
-    );
+    await addLocation({ ...data, creatorId: user.id });
   };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4">
-      <LeafletMap locations={locations} onMapClick={handleMapClick} />
+      <LeafletMap
+        locations={locations}
+        onMapClick={handleMapClick}
+        onAddComment={addCommentToLocation}
+        onAddResponse={addResponseToMessage}
+      />
     </div>
   );
 };

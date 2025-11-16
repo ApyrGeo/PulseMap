@@ -1,5 +1,6 @@
 using FluentValidation;
 using PulseMap.Domain.DTOs;
+using PulseMap.Domain.Enums;
 using PulseMap.Interfaces;
 
 namespace PulseMap.Service.Validators;
@@ -38,5 +39,11 @@ public class LocationPostDTOValidator : AbstractValidator<LocationPostDTO>
                 return user != null;
             })
             .WithMessage("CreatorId must correspond to an existing user.");
+
+        RuleFor(location => location.Category)
+            .NotEmpty()
+            .WithMessage("Category is required.")
+            .Must(category => Enum.TryParse<Category>(category, true, out _))
+            .WithMessage($"Category must be one of: {string.Join(", ", Enum.GetNames<Category>())}");
     }
 }

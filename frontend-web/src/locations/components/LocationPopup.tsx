@@ -1,12 +1,25 @@
 import { Popup } from 'react-leaflet';
-import { Location } from '../Interfaces';
+import {
+  Location,
+  MessagePostDTO,
+  ResponseMessagePostDTO,
+} from '../Interfaces';
 import { useState } from 'react';
+import LocationComments from './LocationComments';
+import { useAuth } from '../../auth/AuthProvider';
 
 interface LocationPopupProps {
   location: Location;
+  onAddComment: (message: MessagePostDTO) => void;
+  onAddResponse: (message: ResponseMessagePostDTO) => void;
 }
 
-const LocationPopup = ({ location }: LocationPopupProps) => {
+const LocationPopup = ({
+  location,
+  onAddComment,
+  onAddResponse,
+}: LocationPopupProps) => {
+  const { user } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const placeholderImages = ['📍 Image 1', '🗺️ Image 2', '📷 Image 3'];
@@ -27,7 +40,7 @@ const LocationPopup = ({ location }: LocationPopupProps) => {
         <div className="text-center space-y-3 mb-4">
           <h3 className="text-xl font-bold text-gray-800">{location.name}</h3>
 
-          <div className="relative w-full h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-gray-600 text-sm font-medium shadow-inner overflow-hidden">
+          <div className="relative w-full h-32 bg-linear-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-gray-600 text-sm font-medium shadow-inner overflow-hidden">
             <div className="text-2xl">
               {placeholderImages[currentImageIndex]}
             </div>
@@ -71,15 +84,6 @@ const LocationPopup = ({ location }: LocationPopupProps) => {
           )}
         </div>
 
-        <div className="mb-3 pb-3 border-b border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
-            Coordinates
-          </h4>
-          <p className="text-sm text-gray-800 bg-gray-50 px-2 py-1 rounded font-mono">
-            {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-          </p>
-        </div>
-
         {location.creator && (
           <div className="pt-3 border-t border-gray-200">
             <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
@@ -87,7 +91,7 @@ const LocationPopup = ({ location }: LocationPopupProps) => {
             </h4>
 
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
                 {location.creator.username.charAt(0).toUpperCase()}
               </div>
 
@@ -99,6 +103,25 @@ const LocationPopup = ({ location }: LocationPopupProps) => {
             </div>
           </div>
         )}
+
+        <LocationComments
+          comments={location.messages}
+          currentUser={location.creator}
+          onAddComment={(content) =>
+            onAddComment({
+              locationId: location.id,
+              content,
+              senderId: user.id,
+            })
+          }
+          onAddResponse={(messageId, content) =>
+            onAddResponse({
+              messageId,
+              content,
+              senderId: user.id,
+            })
+          }
+        />
       </div>
     </Popup>
   );

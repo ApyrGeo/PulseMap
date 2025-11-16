@@ -8,6 +8,7 @@ public class PulseMapContext(DbContextOptions<PulseMapContext> options) : DbCont
 {
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
