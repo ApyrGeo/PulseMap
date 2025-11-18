@@ -104,6 +104,21 @@ const LocationPopup = ({
           </div>
         )}
 
+        <div className="mb-3 pb-3 border-b border-gray-200">
+          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+            Expires At
+          </h4>
+          <p className="text-sm text-gray-800 bg-red-50 px-2 py-1 rounded">
+            {new Date(location.expiresAt).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+        </div>
+
         <LocationComments
           comments={location.messages}
           currentUser={location.creator}

@@ -6,7 +6,6 @@ interface AddLocationModalProps {
   isOpen: boolean;
   latitude: number;
   longitude: number;
-  category: LocationCategory;
   onClose: () => void;
   onSubmit: (data: LocationPostDTO) => void;
 }
@@ -24,16 +23,29 @@ const AddLocationModal = ({
   const [category, setCategory] = useState<LocationCategory>(
     LocationCategory.NotSet
   );
+  const [hours, setHours] = useState<number>(0);
+  const [days, setDays] = useState<number>(0);
 
   const categories = Object.keys(LocationCategory).map((key) => ({
     value: LocationCategory[key as keyof typeof LocationCategory],
     label: key,
   }));
 
+  const hourOptions = Array.from({ length: 24 }, (_, i) => i);
+  const dayOptions = Array.from({ length: 30 }, (_, i) => i);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const totalHours = days * 24 + hours;
+
+    if (totalHours === 0) {
+      alert('Please specify at least some duration (hours or days)');
+      return;
+    }
+
     onSubmit({
       latitude,
       longitude,
@@ -41,6 +53,7 @@ const AddLocationModal = ({
       description,
       category,
       creatorId: user.id,
+      duration: `${days}.${hours}:00:00`,
     });
     setName('');
     setDescription('');
@@ -122,6 +135,50 @@ const AddLocationModal = ({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Duration *
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Days</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  value={days}
+                  onChange={(e) => setDays(Number(e.target.value))}
+                >
+                  {dayOptions.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">
+                  Hours
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  value={hours}
+                  onChange={(e) => setHours(Number(e.target.value))}
+                >
+                  {hourOptions.map((hour) => (
+                    <option key={hour} value={hour}>
+                      {hour}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Total: {days > 0 && `${days} day${days !== 1 ? 's' : ''}`}
+              {days > 0 && hours > 0 && ' and '}
+              {hours > 0 && `${hours} hour${hours !== 1 ? 's' : ''}`}
+              {days === 0 && hours === 0 && 'No duration set'}
+            </p>
           </div>
 
           <div className="mb-4">

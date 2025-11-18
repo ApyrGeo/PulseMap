@@ -30,5 +30,12 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasConversion(
                 v => v.ToString(),
                 v => (Category)Enum.Parse(typeof(Category), v));
+
+        builder.Property(l => l.ExpiresAt)
+            .IsRequired();
+
+        builder.Property(l => l.IsExpired)
+            .HasDefaultValue(false)
+            .IsRequired();
     }
 }

@@ -1,14 +1,14 @@
-import MapComponent from './components/MapComponent';
+import UserMapComponent from './UserMapComponent';
 
-const LocationsPage = () => {
+const UserLocationsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">PulseMap Locations</h1>
       </header>
-      <MapComponent />
+      <UserMapComponent />
     </div>
   );
 };
 
-export default LocationsPage;
+export default UserLocationsPage;

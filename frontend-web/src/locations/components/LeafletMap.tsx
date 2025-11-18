@@ -63,9 +63,10 @@ const getMarkerIcon = (category: LocationCategory) => {
 
 interface LeafletMapProps {
   locations: Location[];
-  onMapClick: (location: LocationPostDTO) => void;
-  onAddComment: (message: MessagePostDTO) => Promise<void>;
-  onAddResponse: (message: ResponseMessagePostDTO) => Promise<void>;
+  onMapClick?: (lat: number, lng: number) => void;
+  onAddComment?: (message: MessagePostDTO) => Promise<void>;
+  onAddResponse?: (message: ResponseMessagePostDTO) => Promise<void>;
+  onContextMenu?: (e: React.MouseEvent, location: Location) => void;
 }
 
 const MapClickHandler = ({
@@ -86,72 +87,56 @@ const LeafletMap = ({
   onMapClick,
   onAddComment,
   onAddResponse,
+  onContextMenu,
 }: LeafletMapProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [clickedCoords, setClickedCoords] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-
   const center: [number, number] =
     locations.length > 0
       ? [locations[0].latitude, locations[0].longitude]
       : [46.76073058700941, 23.571628332138065]; // Default center
 
-  const handleMapClick = (lat: number, lng: number) => {
-    setClickedCoords({ lat, lng });
-    setIsModalOpen(true);
-  };
-
-  const handleModalSubmit = (data: LocationPostDTO) => {
-    onMapClick(data);
-    setIsModalOpen(false);
-    setClickedCoords(null);
-  };
-
   return (
-    <>
-      <MapContainer
-        center={center}
-        zoom={15}
-        style={{ height: '90vh', width: '100%' }}
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap, &copy; CARTO"
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-          maxZoom={22}
-          maxNativeZoom={19}
-          subdomains={['a', 'b', 'c', 'd']}
-        />
+    <MapContainer
+      center={center}
+      zoom={15}
+      style={{ height: '90vh', width: '100%' }}
+    >
+      <TileLayer
+        attribution="&copy; OpenStreetMap, &copy; CARTO"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+        maxZoom={22}
+        maxNativeZoom={19}
+        subdomains={['a', 'b', 'c', 'd']}
+      />
 
-        {locations.map((loc) => (
-          <Marker
-            key={loc.id}
-            position={[loc.latitude, loc.longitude]}
-            icon={getMarkerIcon(loc.category)}
-          >
+      {locations.map((loc) => (
+        <Marker
+          key={loc.id}
+          position={[loc.latitude, loc.longitude]}
+          icon={getMarkerIcon(loc.category)}
+          eventHandlers={
+            onContextMenu
+              ? {
+                  contextmenu: (e) => {
+                    const mouseEvent =
+                      e.originalEvent as unknown as React.MouseEvent;
+                    onContextMenu(mouseEvent, loc);
+                  },
+                }
+              : undefined
+          }
+        >
+          {onAddComment && onAddResponse && (
             <LocationPopup
               location={loc}
               onAddComment={onAddComment}
               onAddResponse={onAddResponse}
             />
-          </Marker>
-        ))}
+          )}
+        </Marker>
+      ))}
 
-        <MapClickHandler onMapClick={handleMapClick} />
-      </MapContainer>
-
-      {clickedCoords && (
-        <AddLocationModal
-          isOpen={isModalOpen}
-          latitude={clickedCoords.lat}
-          longitude={clickedCoords.lng}
-          category={LocationCategory.NotSet}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleModalSubmit}
-        />
-      )}
-    </>
+      {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
+    </MapContainer>
   );
 };
 

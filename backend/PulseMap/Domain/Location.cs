@@ -15,4 +15,7 @@ public class Location
 
     public required Category Category { get; set; } = Category.NotSet;
     public List<Message>? Comments { get; set; } = [];
+
+    public required DateTime ExpiresAt { get; set; }
+    public required bool IsExpired { get; set; } = false;
 }

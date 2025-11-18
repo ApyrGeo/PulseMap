@@ -45,5 +45,11 @@ public class LocationPostDTOValidator : AbstractValidator<LocationPostDTO>
             .WithMessage("Category is required.")
             .Must(category => Enum.TryParse<Category>(category, true, out _))
             .WithMessage($"Category must be one of: {string.Join(", ", Enum.GetNames<Category>())}");
+
+        RuleFor(location => location.Duration)
+            .NotEmpty()
+            .WithMessage("Duration is required.")
+            .Must(duration => duration > TimeSpan.Zero)
+            .WithMessage("Duration must be a positive time span.");
     }
 }

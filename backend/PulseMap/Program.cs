@@ -1,6 +1,9 @@
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using PulseMap.BackgroundServices;
 using PulseMap.Context;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
@@ -24,7 +27,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: AppAllowSpecificOrigins, policy =>
     {
-        policy.AllowAnyHeader().AllowAnyOrigin();
+        policy.AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin();
     });
 });
 
@@ -88,6 +93,15 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 
+// Hangfire
+builder.Services.AddHangfire(config =>
+    config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<LocationExpirationService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -106,5 +120,25 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseCors(AppAllowSpecificOrigins);
+
+// Hangfire Dashboard
+app.MapHangfireDashboard();
+
+// Jobs
+using (var scope = app.Services.CreateScope())
+{
+    var backgroundJobClient = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+
+    // Run when app starts
+    backgroundJobClient.Enqueue<LocationExpirationService>(x => x.CheckExpiredLocations());
+
+    // Run every minute
+    recurringJobManager.AddOrUpdate<LocationExpirationService>(
+        "check-expired-locations",
+        x => x.CheckExpiredLocations(),
+        Cron.Minutely
+    );
+}
 
 app.Run();

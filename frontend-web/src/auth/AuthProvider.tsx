@@ -8,7 +8,7 @@ interface AuthContextType {
 }
 
 const defaultUser: User = {
-  id: '1',
+  id: 1,
   firstName: 'FNAME',
   lastName: 'LNAME',
   username: 'UNAME',

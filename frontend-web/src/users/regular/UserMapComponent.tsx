@@ -1,20 +1,14 @@
-import LeafletMap from './LeafletMap';
-import { useLocations } from '../LocationsProvider';
-import { LocationCategory } from '../Interfaces';
+import LeafletMap from '../../locations/components/LeafletMap';
+import { useLocations } from '../../locations/LocationsProvider';
+import { LocationPostDTO } from '../../locations/Interfaces';
 import { useAuth } from '../../auth/AuthProvider';
 
-const MapComponent = () => {
+const UserMapComponent = () => {
   const { user } = useAuth();
   const { locations, addLocation, addCommentToLocation, addResponseToMessage } =
     useLocations();
 
-  const handleMapClick = async (data: {
-    latitude: number;
-    longitude: number;
-    name: string;
-    category: LocationCategory;
-    description?: string;
-  }) => {
+  const handleMapClick = async (data: LocationPostDTO) => {
     await addLocation({ ...data, creatorId: user.id });
   };
 
@@ -30,4 +24,4 @@ const MapComponent = () => {
   );
 };
 
-export default MapComponent;
+export default UserMapComponent;

@@ -10,4 +10,5 @@ public class LocationResponseDTO
     public SimplifiedUserResponseDTO? Creator { get; set; }
     public required string? Category { get; set; }
     public List<MessageResponseDTO>? Messages { get; set; } = [];
+    public required DateTime ExpiresAt { get; set; }
 }

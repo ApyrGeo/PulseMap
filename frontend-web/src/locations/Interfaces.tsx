@@ -1,5 +1,5 @@
 export interface Location {
-  id: string;
+  id: number;
   latitude: number;
   longitude: number;
   name: string;
@@ -7,6 +7,7 @@ export interface Location {
   category: LocationCategory;
   description?: string;
   messages: Message[];
+  expiresAt: Date;
 }
 
 export enum LocationCategory {
@@ -25,31 +26,31 @@ export enum LocationCategory {
 
 export interface MessagePostDTO {
   content: string;
-  senderId: string;
-  locationId: string;
+  senderId: number;
+  locationId: number;
 }
 
 export interface ResponseMessagePostDTO {
   content: string;
-  senderId: string;
-  messageId: string;
+  senderId: number;
+  messageId: number;
 }
 
 export interface Message {
-  id: string;
+  id: number;
   content: string;
   sentAt: Date;
   sender: SimplifiedUser;
-  locationId: string;
+  locationId: number;
   responses?: ResponseMessage[];
 }
 
 export interface ResponseMessage {
-  id: string;
+  id: number;
   sender: SimplifiedUser;
   content: string;
   sentAt: Date;
-  locationId: string;
+  locationId: number;
 }
 
 export interface LocationPostDTO {
@@ -57,11 +58,19 @@ export interface LocationPostDTO {
   longitude: number;
   name: string;
   description?: string;
-  creatorId: string;
+  creatorId: number;
+  category: LocationCategory;
+  duration: string;
+}
+
+export interface LocationPutDTO {
+  name: string;
+  description?: string;
   category: LocationCategory;
 }
 
 export interface SimplifiedUser {
+  id: number;
   firstName: string;
   lastName: string;
   username: string;

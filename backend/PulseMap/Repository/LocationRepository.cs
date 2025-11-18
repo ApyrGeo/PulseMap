@@ -16,16 +16,14 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
 
         if (location == null) return null;
 
-        // Load ALL messages (base + responses) manually
         var allMessages = await _context.Messages
             .Where(m => m.LocationId == id)
             .Include(m => m.Sender)
-            .OfType<Message>() // This might be the issue - try without it
+            .OfType<Message>() 
             .ToListAsync();
 
         location.Comments = allMessages;
 
-        // Load responses for each message
         foreach (var message in allMessages)
         {
             await _context.Entry(message)
@@ -46,16 +44,22 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
     public async Task<List<Location>> GetAllLocationsAsync()
     {
         return await _context.Locations
-        .Include(l => l.Creator)
-        .Include(l => l.Comments)
-            .ThenInclude(c => c.Sender)
-        .Include(l => l.Comments)
-            .ThenInclude(c => c.Responses)
-                .ThenInclude(r => r.Sender)
-        .ToListAsync();
+            .Where(l => !l.IsExpired)
+            .Include(l => l.Creator)
+            .Include(l => l.Comments)
+                .ThenInclude(c => c.Sender)
+            .Include(l => l.Comments)
+                .ThenInclude(c => c.Responses)
+                    .ThenInclude(r => r.Sender)
+            .ToListAsync();
     }
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteLocationAsync(Location location)
+    {
+        _context.Locations.Remove(location);
     }
 }

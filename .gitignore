@@ -139,3 +139,5 @@ appsettings.Development.json
 *.tmp
 *.cache
 *.nupkg
+
+backend/PulseMap/Logs/*

@@ -37,4 +37,21 @@ public class LocationController(ILocationService locationService) : ControllerBa
         var addedLocation = await _locationService.AddLocationAsync(locationPostDTO);
         return CreatedAtAction(nameof(GetLocationById), new { id = addedLocation.Id }, addedLocation);
     }
+
+    [HttpPut("{id}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(422)]
+    public async Task<ActionResult<LocationResponseDTO>> UpdateLocation([FromRoute] int id, [FromBody] LocationPutDTO locationResponseDTO)
+    {
+        var updatedLocation = await _locationService.UpdateLocationAsync(locationResponseDTO, id);
+        return Ok(updatedLocation);
+    }
+
+    [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    public async Task<ActionResult> DeleteLocation(int id)
+    {
+        await _locationService.DeleteLocationAsync(id);
+        return NoContent();
+    }
 }
