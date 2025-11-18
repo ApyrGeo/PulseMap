@@ -1,0 +1,927 @@
+INFO 48 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (0ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 45 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 49 PulseMap.Service.LocationService - Getting all locations
+INFO 49 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 50 PulseMap.Service.LocationService - Getting all locations
+INFO 50 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Start installing Hangfire SQL objects...
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Hangfire SQL objects installed.
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Hangfire.BackgroundJobServer - Starting Hangfire Server using job storage: 'PostgreSQL Server: Host: localhost, DB: PulseMap, Schema: hangfire'
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for SQL Server job storage:
+INFO 1 Hangfire.BackgroundJobServer -     Queue poll interval: 00:00:15.
+INFO 1 Hangfire.BackgroundJobServer -     Invisibility timeout: 00:30:00.
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:8000:cb5e13cb successfully announced in 5,8877 ms
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:8000:cb5e13cb is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+INFO ServerWatchdog #1 Hangfire.Server.ServerWatchdog - 3 servers were removed due to timeout
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:8000:cb5e13cb all the dispatchers started
+INFO ExpirationManager #1 Hangfire.PostgreSql.ExpirationManager - Removed 1 outdated record(s) from 'aggregatedcounter' table.
+INFO 44 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 9 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (12ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO ExpirationManager #1 Hangfire.PostgreSql.ExpirationManager - Removed 12 outdated record(s) from 'job' table.
+DEBUG 11 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 10 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 10 PulseMap.Service.LocationService - Getting all locations
+INFO 44 PulseMap.Service.LocationService - Getting all locations
+WARN 44 Microsoft.EntityFrameworkCore.Query - Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+INFO 14 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 9 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 44 PulseMap.Service.LocationService - Getting all locations
+INFO 10 PulseMap.Service.LocationService - Getting all locations
+INFO 9 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 44 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 44 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 44 PulseMap.Service.LocationService - Getting all locations
+INFO 44 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 11 PulseMap.Service.LocationService - Getting all locations
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 14 PulseMap.Service.LocationService - Getting all locations
+INFO 47 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 14 PulseMap.Service.LocationService - Getting all locations
+INFO 14 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 44 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Start installing Hangfire SQL objects...
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Hangfire SQL objects installed.
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Hangfire.BackgroundJobServer - Starting Hangfire Server using job storage: 'PostgreSQL Server: Host: localhost, DB: PulseMap, Schema: hangfire'
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for SQL Server job storage:
+INFO 1 Hangfire.BackgroundJobServer -     Queue poll interval: 00:00:15.
+INFO 1 Hangfire.BackgroundJobServer -     Invisibility timeout: 00:30:00.
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:39000:0bb6bb5a successfully announced in 6,5873 ms
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:39000:0bb6bb5a is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:39000:0bb6bb5a all the dispatchers started
+INFO ExpirationManager #1 Hangfire.PostgreSql.ExpirationManager - Removed 3 outdated record(s) from 'job' table.
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (8ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+DEBUG 11 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 48 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 48 PulseMap.Service.LocationService - Updating location with ID: 52
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (3ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (3ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Messages" AS m
+INNER JOIN "Users" AS u ON m."SenderId" = u."Id"
+WHERE m."LocationId" = @__id_0
+ERROR 11 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+System.InvalidOperationException: No service for type 'FluentValidation.IValidator`1[PulseMap.Domain.DTOs.LocationPutDTO]' has been registered.
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at PulseMap.Service.Validators.ValidatorFactory.Get[T]() in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\Validators\ValidatorFactory.cs:line 15
+   at PulseMap.Service.LocationService.UpdateLocationAsync(LocationPutDTO locationPutDto, Int32 id) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 62
+   at PulseMap.Controllers.LocationController.UpdateLocation(Int32 id, LocationPutDTO locationResponseDTO) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 46
+   at lambda_method32(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Start installing Hangfire SQL objects...
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Hangfire SQL objects installed.
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Hangfire.BackgroundJobServer - Starting Hangfire Server using job storage: 'PostgreSQL Server: Host: localhost, DB: PulseMap, Schema: hangfire'
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for SQL Server job storage:
+INFO 1 Hangfire.BackgroundJobServer -     Queue poll interval: 00:00:15.
+INFO 1 Hangfire.BackgroundJobServer -     Invisibility timeout: 00:30:00.
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:16600:dd46c9bf successfully announced in 6,3049 ms
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:16600:dd46c9bf is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:16600:dd46c9bf all the dispatchers started
+INFO ExpirationManager #1 Hangfire.PostgreSql.ExpirationManager - Removed 4 outdated record(s) from 'job' table.
+INFO 11 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 14 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (9ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+DEBUG 45 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+WARN 44 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 44 PulseMap.Service.LocationService - Getting all locations
+INFO 48 PulseMap.Service.LocationService - Getting all locations
+WARN 48 Microsoft.EntityFrameworkCore.Query - Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+INFO 14 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 45 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 44 PulseMap.Service.LocationService - Getting all locations
+INFO 48 PulseMap.Service.LocationService - Getting all locations
+INFO 48 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 7 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName", s0."Id", s0."Content", s0."LocationId", s0."MessageType", s0."SenderId", s0."SentAt", s0."ParentMessageId", s0."Id0", s0."Email", s0."FirstName", s0."LastName", s0."Password", s0."UserName", s0."Id1", s0."Content0", s0."LocationId0", s0."MessageType0", s0."SenderId0", s0."SentAt0", s0."ParentMessageId0", s0."Id00", s0."Email0", s0."FirstName0", s0."LastName0", s0."Password0", s0."UserName0"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+LEFT JOIN (
+    SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u0."Id" AS "Id0", u0."Email", u0."FirstName", u0."LastName", u0."Password", u0."UserName", s."Id" AS "Id1", s."Content" AS "Content0", s."LocationId" AS "LocationId0", s."MessageType" AS "MessageType0", s."SenderId" AS "SenderId0", s."SentAt" AS "SentAt0", s."ParentMessageId" AS "ParentMessageId0", s."Id0" AS "Id00", s."Email" AS "Email0", s."FirstName" AS "FirstName0", s."LastName" AS "LastName0", s."Password" AS "Password0", s."UserName" AS "UserName0"
+    FROM "Messages" AS m
+    INNER JOIN "Users" AS u0 ON m."SenderId" = u0."Id"
+    LEFT JOIN (
+        SELECT m0."Id", m0."Content", m0."LocationId", m0."MessageType", m0."SenderId", m0."SentAt", m0."ParentMessageId", u1."Id" AS "Id0", u1."Email", u1."FirstName", u1."LastName", u1."Password", u1."UserName"
+        FROM "Messages" AS m0
+        INNER JOIN "Users" AS u1 ON m0."SenderId" = u1."Id"
+        WHERE m0."MessageType" = 'Response'
+    ) AS s ON m."Id" = s."ParentMessageId"
+) AS s0 ON l."Id" = s0."LocationId"
+WHERE NOT (l."IsExpired")
+ORDER BY l."Id", u."Id", s0."Id", s0."Id0", s0."Id1"
+INFO 44 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 45 PulseMap.Service.LocationService - Updating location with ID: 52
+INFO 48 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 48 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (2ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Messages" AS m
+INNER JOIN "Users" AS u ON m."SenderId" = u."Id"
+WHERE m."LocationId" = @__id_0
+ERROR 48 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+Backend.Exceptions.Custom.EntityValidationException: Invalid data for updating the location
+   at PulseMap.Service.LocationService.UpdateLocationAsync(LocationPutDTO locationPutDto, Int32 id) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 67
+   at PulseMap.Controllers.LocationController.UpdateLocation(Int32 id, LocationPutDTO locationResponseDTO) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 46
+   at lambda_method387(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+INFO 44 PulseMap.Service.LocationService - Updating location with ID: 52
+INFO 7 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (3ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 48 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Messages" AS m
+INNER JOIN "Users" AS u ON m."SenderId" = u."Id"
+WHERE m."LocationId" = @__id_0
+INFO 48 PulseMap.Service.LocationService - Updating data for location with ID: 52
+ERROR 48 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+System.Text.Json.JsonException: A possible object cycle was detected. This can either be due to a cycle or if the object depth is larger than the maximum allowed depth of 64. Consider using ReferenceHandler.Preserve on JsonSerializerOptions to support cycles. Path: $.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Id.
+   at System.Text.Json.ThrowHelper.ThrowJsonException_SerializerCycleDetected(Int32 maxDepth)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.WriteCore(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Serialize(Utf8JsonWriter writer, T& rootValue, Object rootValueBoxed)
+   at System.Text.Json.JsonSerializer.WriteString[TValue](TValue& value, JsonTypeInfo`1 jsonTypeInfo)
+   at System.Text.Json.JsonSerializer.Serialize[TValue](TValue value, JsonSerializerOptions options)
+   at PulseMap.Service.LocationService.UpdateLocationAsync(LocationPutDTO locationPutDto, Int32 id) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 79
+   at PulseMap.Controllers.LocationController.UpdateLocation(Int32 id, LocationPutDTO locationResponseDTO) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 46
+   at lambda_method387(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Start installing Hangfire SQL objects...
+INFO 1 Hangfire.PostgreSql.PostgreSqlStorage - Hangfire SQL objects installed.
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware - Middleware loaded
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js (16501 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Middleware loaded. Script /_framework/blazor-hotreload.js (799 B).
+DEBUG 1 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware - Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7215
+INFO 1 Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5112
+INFO 1 Hangfire.BackgroundJobServer - Starting Hangfire Server using job storage: 'PostgreSQL Server: Host: localhost, DB: PulseMap, Schema: hangfire'
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for SQL Server job storage:
+INFO 1 Hangfire.BackgroundJobServer -     Queue poll interval: 00:00:15.
+INFO 1 Hangfire.BackgroundJobServer -     Invisibility timeout: 00:30:00.
+INFO 1 Hangfire.BackgroundJobServer - Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+INFO 1 Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+INFO 1 Microsoft.Hosting.Lifetime - Hosting environment: Development
+INFO 1 Microsoft.Hosting.Lifetime - Content root path: D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:30448:fc7aff8f successfully announced in 5,4559 ms
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:30448:fc7aff8f is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+INFO ServerWatchdog #1 Hangfire.Server.ServerWatchdog - 3 servers were removed due to timeout
+INFO BackgroundServerProcess #1 Hangfire.Server.BackgroundServerProcess - Server desktop-gnemu3g:30448:fc7aff8f all the dispatchers started
+INFO ExpirationManager #1 Hangfire.PostgreSql.ExpirationManager - Removed 1 outdated record(s) from 'aggregatedcounter' table.
+DEBUG 9 Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware - Script injected: /_framework/aspnetcore-browser-refresh.js
+INFO 46 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (7ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO 48 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (7ms) [Parameters=[@__now_0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name"
+FROM "Locations" AS l
+WHERE NOT (l."IsExpired") AND l."ExpiresAt" <= @__now_0
+INFO ExpirationManager #1 Hangfire.PostgreSql.ExpirationManager - Removed 8 outdated record(s) from 'job' table.
+WARN 48 LuckyPennySoftware.AutoMapper.License - You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+INFO 48 PulseMap.Service.LocationService - Updating location with ID: 52
+INFO 46 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (3ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT l."Id", l."Category", l."CreatorId", l."Description", l."ExpiresAt", l."IsExpired", l."Latitude", l."Longitude", l."Name", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Locations" AS l
+LEFT JOIN "Users" AS u ON l."CreatorId" = u."Id"
+WHERE l."Id" = @__id_0
+LIMIT 1
+INFO 46 Microsoft.EntityFrameworkCore.Database.Command - Executed DbCommand (3ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT m."Id", m."Content", m."LocationId", m."MessageType", m."SenderId", m."SentAt", m."ParentMessageId", u."Id", u."Email", u."FirstName", u."LastName", u."Password", u."UserName"
+FROM "Messages" AS m
+INNER JOIN "Users" AS u ON m."SenderId" = u."Id"
+WHERE m."LocationId" = @__id_0
+INFO 46 PulseMap.Service.LocationService - Updating data for location with ID: 52
+ERROR 46 PulseMap.Middlewares.GlobalExceptionMiddleware - An error occurred.
+System.Text.Json.JsonException: A possible object cycle was detected. This can either be due to a cycle or if the object depth is larger than the maximum allowed depth of 64. Consider using ReferenceHandler.Preserve on JsonSerializerOptions to support cycles. Path: $.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Creator.PlacedLocations.Id.
+   at System.Text.Json.ThrowHelper.ThrowJsonException_SerializerCycleDetected(Int32 maxDepth)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.WriteCore(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Serialize(Utf8JsonWriter writer, T& rootValue, Object rootValueBoxed)
+   at System.Text.Json.JsonSerializer.WriteString[TValue](TValue& value, JsonTypeInfo`1 jsonTypeInfo)
+   at System.Text.Json.JsonSerializer.Serialize[TValue](TValue value, JsonSerializerOptions options)
+   at PulseMap.Service.LocationService.UpdateLocationAsync(LocationPutDTO locationPutDto, Int32 id) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Service\LocationService.cs:line 79
+   at PulseMap.Controllers.LocationController.UpdateLocation(Int32 id, LocationPutDTO locationResponseDTO) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Controllers\LocationController.cs:line 46
+   at lambda_method39(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at PulseMap.Middlewares.GlobalExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Code\Facultate\Licenta\PulseMap\backend\PulseMap\Middlewares\GlobalExceptionMiddleware.cs:line 22
