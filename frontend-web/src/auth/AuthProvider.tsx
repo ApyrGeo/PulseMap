@@ -14,6 +14,7 @@ const defaultUser: User = {
   username: 'UNAME',
   email: 'a@b.c',
   password: 'Parola123!',
+  role: 'User',
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

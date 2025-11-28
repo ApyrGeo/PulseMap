@@ -1,10 +1,14 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { useState } from 'react';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   Location,
   LocationCategory,
-  LocationPostDTO,
   MessagePostDTO,
   ResponseMessagePostDTO,
 } from '../Interfaces';
@@ -12,8 +16,8 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import AddLocationModal from './AddLocationModal';
 import LocationPopup from './LocationPopup';
+import AdminLocationPopup from './admin/AdminLocationPopup';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -39,9 +43,16 @@ const categoryColors: { [key: string]: string } = {
 };
 
 // Create a colored marker icon
-const getMarkerIcon = (category: LocationCategory) => {
+const getMarkerIcon = (
+  category: LocationCategory,
+  isExpired: boolean,
+  shouldBeColored: boolean
+) => {
+  // If expired or shouldn't be colored, use gray
   const color =
-    categoryColors[category] || categoryColors[LocationCategory.NotSet];
+    isExpired || !shouldBeColored
+      ? '#6B7280'
+      : categoryColors[category] || categoryColors[LocationCategory.NotSet];
 
   const svgIcon = `
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
@@ -67,6 +78,8 @@ interface LeafletMapProps {
   onAddComment?: (message: MessagePostDTO) => Promise<void>;
   onAddResponse?: (message: ResponseMessagePostDTO) => Promise<void>;
   onContextMenu?: (e: React.MouseEvent, location: Location) => void;
+  isAdmin?: boolean;
+  currentUserId?: number;
 }
 
 const MapClickHandler = ({
@@ -88,11 +101,22 @@ const LeafletMap = ({
   onAddComment,
   onAddResponse,
   onContextMenu,
+  isAdmin = false,
+  currentUserId,
 }: LeafletMapProps) => {
   const center: [number, number] =
     locations.length > 0
       ? [locations[0].latitude, locations[0].longitude]
-      : [46.76073058700941, 23.571628332138065]; // Default center
+      : [46.76073058700941, 23.571628332138065];
+
+  const shouldBeColored = (location: Location) => {
+    if (isAdmin) {
+      return !location.isExpired;
+    } else if (currentUserId) {
+      return location.creator.id === currentUserId;
+    }
+    return !location.isExpired;
+  };
 
   return (
     <MapContainer
@@ -112,7 +136,11 @@ const LeafletMap = ({
         <Marker
           key={loc.id}
           position={[loc.latitude, loc.longitude]}
-          icon={getMarkerIcon(loc.category)}
+          icon={getMarkerIcon(
+            loc.category,
+            loc.isExpired,
+            shouldBeColored(loc)
+          )}
           eventHandlers={
             onContextMenu
               ? {
@@ -125,16 +153,22 @@ const LeafletMap = ({
               : undefined
           }
         >
-          {onAddComment && onAddResponse && (
-            <LocationPopup
-              location={loc}
-              onAddComment={onAddComment}
-              onAddResponse={onAddResponse}
-            />
+          {isAdmin ? (
+            <Popup>
+              <AdminLocationPopup location={loc} />
+            </Popup>
+          ) : (
+            onAddComment &&
+            onAddResponse && (
+              <LocationPopup
+                location={loc}
+                onAddComment={onAddComment}
+                onAddResponse={onAddResponse}
+              />
+            )
           )}
         </Marker>
       ))}
-
       {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
     </MapContainer>
   );

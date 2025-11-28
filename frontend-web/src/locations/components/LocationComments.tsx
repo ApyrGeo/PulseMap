@@ -5,7 +5,7 @@ interface LocationCommentsProps {
   comments: Message[];
   currentUser: SimplifiedUser;
   onAddComment: (content: string) => void;
-  onAddResponse: (messageId: string, content: string) => void;
+  onAddResponse: (messageId: number, content: string) => void;
 }
 
 const LocationComments = ({
@@ -15,7 +15,7 @@ const LocationComments = ({
   onAddResponse,
 }: LocationCommentsProps) => {
   const [newComment, setNewComment] = useState('');
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
   const formatDateTime = (date: Date) => {
@@ -37,7 +37,7 @@ const LocationComments = ({
     }
   };
 
-  const handleSubmitReply = (messageId: string, e: React.FormEvent) => {
+  const handleSubmitReply = (messageId: number, e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (replyContent.trim()) {

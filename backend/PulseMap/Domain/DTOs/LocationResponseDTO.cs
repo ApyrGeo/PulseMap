@@ -11,4 +11,5 @@ public class LocationResponseDTO
     public required string? Category { get; set; }
     public List<MessageResponseDTO>? Messages { get; set; } = [];
     public required DateTime ExpiresAt { get; set; }
+    public required bool IsExpired { get; set; }
 }

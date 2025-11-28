@@ -4,8 +4,8 @@ import { Location } from '../Interfaces';
 
 const LOCATIONS_URL = BASE_API_URL + '/Location';
 
-export async function fetchLocations(): Promise<Location[]> {
-  const response = await fetch(`${LOCATIONS_URL}`);
+export async function fetchLocations(active: boolean): Promise<Location[]> {
+  const response = await fetch(`${LOCATIONS_URL}?active=${active}`);
   if (!response.ok) {
     throw new Error('Failed to fetch locations');
   }
@@ -22,11 +22,12 @@ export async function createLocation(dto: LocationPostDTO): Promise<Location> {
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to create location:', errorText);
     throw new Error('Failed to create location');
   }
 
   const newLocation = await response.json();
-  console.log('Created location:', newLocation);
   return newLocation;
 }
 
@@ -43,14 +44,12 @@ export async function updateLocation(
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to update location:', errorText);
     throw new Error('Failed to update location');
   }
 
-  const updatedLocation = await response.json();
-  return {
-    ...updatedLocation,
-    messages: updatedLocation.messages || [],
-  };
+  return response.json();
 }
 
 export async function deleteLocation(id: number): Promise<void> {
@@ -59,6 +58,42 @@ export async function deleteLocation(id: number): Promise<void> {
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to delete location:', errorText);
     throw new Error('Failed to delete location');
   }
+}
+
+export async function expireLocation(id: number): Promise<Location> {
+  const response = await fetch(`${LOCATIONS_URL}/${id}/expire`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to expire location:', errorText);
+    throw new Error('Failed to expire location');
+  }
+
+  return response.json();
+}
+
+export async function extendLocation(id: number): Promise<Location> {
+  const response = await fetch(`${LOCATIONS_URL}/${id}/extend`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to extend location:', errorText);
+    throw new Error('Failed to extend location');
+  }
+
+  return response.json();
 }

@@ -8,6 +8,7 @@ export interface Location {
   description?: string;
   messages: Message[];
   expiresAt: Date;
+  isExpired: boolean;
 }
 
 export enum LocationCategory {

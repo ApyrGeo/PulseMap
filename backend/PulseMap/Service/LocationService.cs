@@ -53,6 +53,13 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
         return _mapper.Map<List<LocationResponseDTO>>(locations);
     }
 
+    public async Task<List<LocationResponseDTO>> GetActiveLocationsAsync()
+    {
+        _logger.Info("Getting active locations");
+        var locations = await _locationRepository.GetActiveLocationsAsync();
+        return _mapper.Map<List<LocationResponseDTO>>(locations);
+    }
+
     public async Task<LocationResponseDTO?> UpdateLocationAsync(LocationPutDTO locationPutDto, int id)
     {
         _logger.InfoFormat("Updating location with ID: {0}", id);
@@ -89,5 +96,30 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
 
         await _locationRepository.DeleteLocationAsync(location);
         await _locationRepository.SaveChangesAsync();
+    }
+
+    public async Task<LocationResponseDTO> ExpireLocationAsync(int id)
+    {
+        _logger.InfoFormat("Expiring location with ID: {0}", id);
+        var location = await _locationRepository.GetLocationByIdAsync(id) ??
+            throw new NotFoundException("Location does not exist");
+
+        location.IsExpired = true;
+        await _locationRepository.SaveChangesAsync();
+
+        return _mapper.Map<LocationResponseDTO>(location);
+    }
+
+    public async Task<LocationResponseDTO> ExtendLocationExpirationAsync(int id)
+    {
+        _logger.InfoFormat("Extending expiration for location with ID: {0}", id);
+        var location = await _locationRepository.GetLocationByIdAsync(id) ??
+            throw new NotFoundException("Location does not exist");
+
+        location.IsExpired = false;
+        location.ExpiresAt = DateTime.UtcNow.AddHours(1);
+        await _locationRepository.SaveChangesAsync();
+
+        return _mapper.Map<LocationResponseDTO>(location);
     }
 }

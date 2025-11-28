@@ -23,9 +23,9 @@ public class LocationController(ILocationService locationService) : ControllerBa
 
     [HttpGet]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<List<LocationResponseDTO>>> GetAllLocations()
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetAllLocations([FromQuery] bool active = true)
     {
-        var locations = await _locationService.GetAllLocationsAsync();
+        var locations = active ? await _locationService.GetActiveLocationsAsync() : await _locationService.GetAllLocationsAsync();
         return Ok(locations);
     }
 
@@ -53,5 +53,19 @@ public class LocationController(ILocationService locationService) : ControllerBa
     {
         await _locationService.DeleteLocationAsync(id);
         return NoContent();
+    }
+
+    [HttpPatch("{id}/expire")]
+    public async Task<ActionResult<LocationResponseDTO>> ExpireLocation(int id)
+    {
+        var updatedLocation = await _locationService.ExpireLocationAsync(id);
+        return Ok(updatedLocation);
+    }
+
+    [HttpPatch("{id}/extend")]
+    public async Task<ActionResult<LocationResponseDTO>> ExtendLocationExpiration(int id)
+    {
+        var updatedLocation = await _locationService.ExtendLocationExpirationAsync(id);
+        return Ok(updatedLocation);
     }
 }
