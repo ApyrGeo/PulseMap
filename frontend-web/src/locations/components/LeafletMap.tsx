@@ -77,6 +77,8 @@ interface LeafletMapProps {
   onMapClick?: (lat: number, lng: number) => void;
   onAddComment?: (message: MessagePostDTO) => Promise<void>;
   onAddResponse?: (message: ResponseMessagePostDTO) => Promise<void>;
+  onLike?: (locationId: number) => void;
+  onUnlike?: (locationId: number) => void;
   onContextMenu?: (e: React.MouseEvent, location: Location) => void;
   isAdmin?: boolean;
   currentUserId?: number;
@@ -101,6 +103,8 @@ const LeafletMap = ({
   onAddComment,
   onAddResponse,
   onContextMenu,
+  onLike,
+  onUnlike,
   isAdmin = false,
   currentUserId,
 }: LeafletMapProps) => {
@@ -159,11 +163,15 @@ const LeafletMap = ({
             </Popup>
           ) : (
             onAddComment &&
-            onAddResponse && (
+            onAddResponse &&
+            onLike &&
+            onUnlike && (
               <LocationPopup
                 location={loc}
                 onAddComment={onAddComment}
                 onAddResponse={onAddResponse}
+                onLike={onLike}
+                onUnlike={onUnlike}
               />
             )
           )}

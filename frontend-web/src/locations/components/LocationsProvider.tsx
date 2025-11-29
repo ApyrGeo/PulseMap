@@ -5,6 +5,7 @@ import {
   ReactNode,
   useCallback,
   useMemo,
+  useEffect,
 } from 'react';
 import {
   fetchLocations,
@@ -13,6 +14,8 @@ import {
   updateLocation,
   expireLocation,
   extendLocation,
+  unlikeLocationAPI,
+  likeLocationAPI,
 } from '../services/LocationsApiService';
 import {
   Location,
@@ -20,8 +23,12 @@ import {
   LocationPostDTO,
   MessagePostDTO,
   ResponseMessagePostDTO,
+  Message,
+  ResponseMessage,
+  LocationLikesSummaryDTO,
 } from '../Interfaces';
 import { addComment, addResponse } from '../services/MessagesApiService';
+import { LocationWsService, PayloadEntityType } from '../services/WsService';
 
 interface LocationsContextType {
   locations: Location[];
@@ -35,6 +42,8 @@ interface LocationsContextType {
   deleteLocationById: (id: number) => Promise<void>;
   expireLocationById: (id: number) => Promise<void>;
   extendLocationById: (id: number) => Promise<void>;
+  likeLocation: (locationId: number) => Promise<void>;
+  unlikeLocation: (locationId: number) => Promise<void>;
 }
 
 const LocationsContext = createContext<LocationsContextType | undefined>(
@@ -44,22 +53,127 @@ const LocationsContext = createContext<LocationsContextType | undefined>(
 export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [, setIsLoading] = useState(false);
+  const [wsService] = useState(
+    () => new LocationWsService('wss://localhost:7215/ws')
+  );
+
+  const handleLocationCreated = useCallback((location: Location) => {
+    console.log('Location created via WebSocket:', location);
+    setLocations((prev) => {
+      if (prev.find((loc) => loc.id === location.id)) {
+        return prev;
+      }
+      return [...prev, location];
+    });
+  }, []);
+
+  const handleLocationUpdated = useCallback((updated: any) => {
+    console.log('Location updated via WebSocket:', updated);
+
+    setLocations((prev) =>
+      prev.map((loc) => {
+        if (loc.id !== updated.id) return loc;
+
+        // Merge backend partial update into existing location while preserving arrays/fields
+        const merged: Location = {
+          ...loc,
+          ...updated,
+          // preserve messages if backend update doesn't include them
+          messages: updated.messages ?? loc.messages ?? [],
+          // normalize likes shape returned by backend (LocationLikesSummaryDTO)
+          likeCount:
+            updated.likesCount !== undefined
+              ? updated.likesCount
+              : loc.likesCount,
+          currentUserLiked:
+            updated.isNowLiked !== undefined
+              ? updated.isNowLiked
+              : loc.isLikedByCurrentUser,
+        };
+
+        return merged;
+      })
+    );
+  }, []);
+
+  const handleLocationDeleted = useCallback((locationId: number) => {
+    console.log('Location deleted via WebSocket:', locationId);
+    setLocations((prev) => prev.filter((loc) => loc.id !== locationId));
+  }, []);
+
+  const handleMessageCreated = useCallback((message: Message) => {
+    console.log('Message created via WebSocket:', message);
+    setLocations((prev) =>
+      prev.map((loc) => {
+        if (loc.id !== message.locationId) return loc;
+
+        // avoid duplicates
+        const exists = (loc.messages || []).some((m) => m.id === message.id);
+        if (exists) return loc;
+
+        return { ...loc, messages: [...(loc.messages || []), message] };
+      })
+    );
+  }, []);
+
+  const handleResponseCreated = useCallback((response: ResponseMessage) => {
+    console.log('Response created via WebSocket:', response);
+    setLocations((prev) =>
+      prev.map((loc) => {
+        if (loc.id !== response.locationId) return loc;
+
+        return {
+          ...loc,
+          messages: (loc.messages || []).map((msg) => {
+            if (msg.id !== response.parentMessageId) return msg;
+
+            // avoid duplicate responses
+            const exists = (msg.responses || []).some(
+              (r) => r.id === response.id
+            );
+            if (exists) return msg;
+
+            return { ...msg, responses: [...(msg.responses || []), response] };
+          }),
+        };
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    wsService.registerEntityHandlers(PayloadEntityType.Location, {
+      onCreate: handleLocationCreated,
+      onUpdate: handleLocationUpdated,
+      onDelete: handleLocationDeleted,
+    });
+
+    wsService.registerEntityHandlers(PayloadEntityType.Message, {
+      onCreate: handleMessageCreated,
+    });
+
+    wsService.registerEntityHandlers(PayloadEntityType.Response, {
+      onCreate: handleResponseCreated,
+    });
+
+    wsService.connect();
+
+    return () => {
+      wsService.disconnect();
+    };
+  }, [
+    wsService,
+    handleLocationCreated,
+    handleLocationUpdated,
+    handleLocationDeleted,
+    handleMessageCreated,
+    handleResponseCreated,
+  ]);
 
   const refreshLocations = useCallback(async (activeOnly = true) => {
     setIsLoading(true);
     try {
       const data = await fetchLocations(activeOnly);
-      console.log('Raw data from API:', data);
-      console.log(
-        'Expired locations in data:',
-        data.filter((loc) => loc.isExpired)
-      );
-      console.log(
-        'Active locations in data:',
-        data.filter((loc) => !loc.isExpired)
-      );
       setLocations(data);
-      console.log('Loaded locations:', data.length, 'activeOnly:', activeOnly);
     } catch (error) {
       console.error('Failed to fetch locations:', error);
     } finally {
@@ -70,8 +184,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const addLocation = useCallback(async (location: LocationPostDTO) => {
     setIsLoading(true);
     try {
-      const newLocation = await createLocation(location);
-      setLocations((prev) => [...prev, newLocation]);
+      await createLocation(location);
     } catch (error) {
       console.error('Failed to create location:', error);
     } finally {
@@ -81,15 +194,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
 
   const addCommentToLocation = useCallback(async (message: MessagePostDTO) => {
     try {
-      const newComment = await addComment(message);
-
-      setLocations((prev) =>
-        prev.map((loc) =>
-          loc.id === message.locationId
-            ? { ...loc, messages: [...loc.messages, newComment] }
-            : loc
-        )
-      );
+      await addComment(message);
     } catch (error) {
       console.error('Failed to add comment:', error);
     }
@@ -98,28 +203,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const addResponseToMessage = useCallback(
     async (message: ResponseMessagePostDTO) => {
       try {
-        const newResponse = await addResponse(message);
-
-        setLocations((prev) =>
-          prev.map((loc) =>
-            loc.id === newResponse.locationId
-              ? {
-                  ...loc,
-                  messages: loc.messages.map((comment) =>
-                    comment.id === message.messageId
-                      ? {
-                          ...comment,
-                          responses: [
-                            ...(comment.responses || []),
-                            newResponse,
-                          ],
-                        }
-                      : comment
-                  ),
-                }
-              : loc
-          )
-        );
+        await addResponse(message);
       } catch (error) {
         console.error('Failed to add response:', error);
       }
@@ -130,10 +214,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const updateLocationById = useCallback(
     async (id: number, data: LocationPutDTO) => {
       try {
-        const updatedLocation = await updateLocation(id, data);
-        setLocations((prev) =>
-          prev.map((loc) => (loc.id === id ? updatedLocation : loc))
-        );
+        await updateLocation(id, data);
       } catch (error) {
         console.error('Failed to update location:', error);
         throw error;
@@ -145,7 +226,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const deleteLocationById = useCallback(async (id: number) => {
     try {
       await deleteLocation(id);
-      setLocations((prev) => prev.filter((loc) => loc.id !== id));
     } catch (error) {
       console.error('Failed to delete location:', error);
       throw error;
@@ -154,11 +234,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
 
   const expireLocationById = useCallback(async (id: number) => {
     try {
-      const updatedLocation = await expireLocation(id);
-      // Update with the returned location from backend
-      setLocations((prev) =>
-        prev.map((loc) => (loc.id === id ? updatedLocation : loc))
-      );
+      await expireLocation(id);
     } catch (error) {
       console.error('Failed to expire location:', error);
       throw error;
@@ -167,16 +243,53 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
 
   const extendLocationById = useCallback(async (id: number) => {
     try {
-      const updatedLocation = await extendLocation(id);
-      // Update with the returned location from backend
-      setLocations((prev) =>
-        prev.map((loc) => (loc.id === id ? updatedLocation : loc))
-      );
+      await extendLocation(id);
     } catch (error) {
       console.error('Failed to extend location:', error);
       throw error;
     }
   }, []);
+
+  const applyLikesSummary = useCallback((summary: LocationLikesSummaryDTO) => {
+    setLocations((prev) =>
+      prev.map((loc) =>
+        loc.id === summary.id
+          ? {
+              ...loc,
+              likesCount: summary.likesCount,
+              isLikedByCurrentUser: summary.isNowLiked,
+            }
+          : loc
+      )
+    );
+  }, []);
+
+  const likeLocation = useCallback(
+    async (locationId: number) => {
+      try {
+        const summary = await likeLocationAPI(locationId);
+        applyLikesSummary(summary);
+        // optionally broadcast or rely on WS instead
+      } catch (error) {
+        console.error('Failed to like location:', error);
+        throw error;
+      }
+    },
+    [applyLikesSummary]
+  );
+
+  const unlikeLocation = useCallback(
+    async (locationId: number) => {
+      try {
+        const summary = await unlikeLocationAPI(locationId);
+        applyLikesSummary(summary);
+      } catch (error) {
+        console.error('Failed to unlike location:', error);
+        throw error;
+      }
+    },
+    [applyLikesSummary]
+  );
 
   const activeLocations = useMemo(
     () => locations.filter((loc) => !loc.isExpired),
@@ -199,6 +312,8 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         deleteLocationById,
         expireLocationById,
         extendLocationById,
+        likeLocation,
+        unlikeLocation,
       }}
     >
       {children}

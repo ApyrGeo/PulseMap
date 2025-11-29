@@ -9,6 +9,8 @@ export interface Location {
   messages: Message[];
   expiresAt: Date;
   isExpired: boolean;
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
 }
 
 export enum LocationCategory {
@@ -52,6 +54,14 @@ export interface ResponseMessage {
   content: string;
   sentAt: Date;
   locationId: number;
+  parentMessageId: number;
+}
+
+export interface LocationLikesSummaryDTO {
+  id: number;
+  likesCount: number;
+  toggledByUserId?: number | null;
+  isNowLiked: boolean;
 }
 
 export interface LocationPostDTO {

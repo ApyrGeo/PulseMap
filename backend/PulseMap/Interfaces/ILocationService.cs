@@ -8,8 +8,9 @@ public interface ILocationService
     Task DeleteLocationAsync(int id);
     Task<LocationResponseDTO> ExpireLocationAsync(int id);
     Task<LocationResponseDTO> ExtendLocationExpirationAsync(int id);
-    Task<List<LocationResponseDTO>> GetActiveLocationsAsync();
-    Task<List<LocationResponseDTO>> GetAllLocationsAsync();
-    Task<LocationResponseDTO?> GetLocationByIdAsync(int id);
+    Task<List<LocationResponseDTO>> GetActiveLocationsAsync(int userId = 1);
+    Task<List<LocationResponseDTO>> GetAllLocationsAsync(int userId = 1);
+    Task<LocationResponseDTO?> GetLocationByIdAsync(int id, int userId = 1);
+    Task<LocationResponseDTO> LikeLocationAsync(int id, int userId = 1);
     Task<LocationResponseDTO?> UpdateLocationAsync(LocationPutDTO locationResponseDTO, int id);
 }

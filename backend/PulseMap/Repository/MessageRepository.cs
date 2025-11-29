@@ -23,11 +23,11 @@ public class MessageRepository(PulseMapContext context) : IMessageRepository
     public async Task<Message?> GetMessageByIdAsync(int messageId)
     {
         return await _context.Messages
-            .OfType<Message>()
-            .Include(m => m.Sender)
-            .Include(m => m.Responses)
-                .ThenInclude(r =>  r.Sender)
-            .SingleOrDefaultAsync(m => m.Id == messageId);
+        .Include(m => m.Sender)
+        .Include(m => m.Responses!)
+            .ThenInclude(r => r.Sender)
+        .SingleOrDefaultAsync(m => m.Id == messageId);
+
     }
 
     public async Task SaveChangesAsync()

@@ -5,25 +5,28 @@ using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
 using PulseMap.Domain.Enums;
 using PulseMap.Interfaces;
+using PulseMap.Repository;
+using PulseMap.Service.WS;
 using System.Text.Json;
 
 namespace PulseMap.Service;
 
-public class LocationService(ILocationRepository locationRepository, IMapper mapper, IValidatorFactory validatorFactory) : ILocationService
+public class LocationService(ILocationRepository locationRepository, IUserRepository userRepository, IMapper mapper, IValidatorFactory validatorFactory, IWebSocketNotificationService webSocketNotificationService) : ILocationService
 {
     private readonly ILocationRepository _locationRepository = locationRepository;
+    private readonly IUserRepository _userRepository = userRepository;
     private readonly IMapper _mapper = mapper;
     private readonly IValidatorFactory _validator = validatorFactory;
+    private readonly IWebSocketNotificationService _webSocketNotificationService = webSocketNotificationService;
     private readonly ILog _logger = LogManager.GetLogger(typeof(LocationService));
 
-
-    public async Task<LocationResponseDTO?> GetLocationByIdAsync(int id)
+    public async Task<LocationResponseDTO?> GetLocationByIdAsync(int id, int userId = 1)
     {
         _logger.InfoFormat("Getting location by ID: {0}", id);
         var location = await _locationRepository.GetLocationByIdAsync(id)
             ?? throw new NotFoundException("Location not found");
 
-        return _mapper.Map<LocationResponseDTO>(location);
+        return _mapper.Map<LocationResponseDTO>(location) with { IsLikedByCurrentUser = location.Likes.Any(l => l.Id == userId) };
     }
 
     public async Task<LocationResponseDTO> AddLocationAsync(LocationPostDTO locationPostDTO)
@@ -43,21 +46,50 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
 
         var addedlocation = await _locationRepository.AddLocationAsync(location);
         await _locationRepository.SaveChangesAsync();
-        return _mapper.Map<LocationResponseDTO>(addedlocation);
+
+        var addedLocationDTO = _mapper.Map<LocationResponseDTO>(addedlocation);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Created,
+            Data = addedLocationDTO
+        });
+
+        return addedLocationDTO;
     }
 
-    public async Task<List<LocationResponseDTO>> GetAllLocationsAsync()
+    public async Task<List<LocationResponseDTO>> GetAllLocationsAsync(int userId = 1)
     {
         _logger.Info("Getting all locations");
         var locations = await _locationRepository.GetAllLocationsAsync();
-        return _mapper.Map<List<LocationResponseDTO>>(locations);
+        foreach (var loc in locations)
+        {
+            loc.Comments = loc.Comments?
+                .Where(c => c is not ResponseMessage)
+                .ToList();
+        }
+        return [.. locations.Select(loc =>
+        _mapper.Map<LocationResponseDTO>(loc) with
+        {
+            IsLikedByCurrentUser = loc.Likes.Any(l => l.Id == userId),
+        })];
     }
 
-    public async Task<List<LocationResponseDTO>> GetActiveLocationsAsync()
+    public async Task<List<LocationResponseDTO>> GetActiveLocationsAsync(int userId = 1)
     {
         _logger.Info("Getting active locations");
         var locations = await _locationRepository.GetActiveLocationsAsync();
-        return _mapper.Map<List<LocationResponseDTO>>(locations);
+        foreach (var loc in locations)
+        {
+            loc.Comments = loc.Comments?
+                .Where(c => c is not ResponseMessage)
+                .ToList();
+        }
+        return [.. locations.Select(loc =>
+        _mapper.Map<LocationResponseDTO>(loc) with
+        {
+            IsLikedByCurrentUser = loc.Likes.Any(l => l.Id == userId),
+        })];
     }
 
     public async Task<LocationResponseDTO?> UpdateLocationAsync(LocationPutDTO locationPutDto, int id)
@@ -69,7 +101,7 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
 
         var validator = _validator.Get<LocationPutDTO>();
         var result = await validator.ValidateAsync(locationPutDto);
-        if(!result.IsValid)
+        if (!result.IsValid)
         {
             throw new EntityValidationException("Invalid data for updating the location");
         }
@@ -85,7 +117,15 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
 
         await _locationRepository.SaveChangesAsync();
 
-        return _mapper.Map<LocationResponseDTO>(existingLocation);
+        var updatedLocationDTO = _mapper.Map<LocationResponseDTO>(existingLocation);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = updatedLocationDTO
+        });
+
+        return updatedLocationDTO;
     }
 
     public async Task DeleteLocationAsync(int id)
@@ -96,6 +136,13 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
 
         await _locationRepository.DeleteLocationAsync(location);
         await _locationRepository.SaveChangesAsync();
+
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Deleted,
+            Data = new { Id = id }
+        });
     }
 
     public async Task<LocationResponseDTO> ExpireLocationAsync(int id)
@@ -107,7 +154,15 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
         location.IsExpired = true;
         await _locationRepository.SaveChangesAsync();
 
-        return _mapper.Map<LocationResponseDTO>(location);
+        var expiredLocationDTO = _mapper.Map<LocationResponseDTO>(location);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = expiredLocationDTO
+        });
+
+        return expiredLocationDTO;
     }
 
     public async Task<LocationResponseDTO> ExtendLocationExpirationAsync(int id)
@@ -120,6 +175,58 @@ public class LocationService(ILocationRepository locationRepository, IMapper map
         location.ExpiresAt = DateTime.UtcNow.AddHours(1);
         await _locationRepository.SaveChangesAsync();
 
-        return _mapper.Map<LocationResponseDTO>(location);
+        var extendedLocationDTO = _mapper.Map<LocationResponseDTO>(location);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = extendedLocationDTO
+        });
+
+        return extendedLocationDTO;
+    }
+
+    public async Task<LocationResponseDTO> LikeLocationAsync(int id, int userId = 1)
+    {
+        _logger.InfoFormat("Liking location with ID: {0} by user ID: {1}", id, userId);
+
+        var location = await _locationRepository.GetLocationByIdAsync(id) ??
+            throw new NotFoundException("Location does not exist");
+
+        var user = await _userRepository.GetUserByIdAsync(userId) ??
+            throw new NotFoundException("User does not exist");
+
+        var wasLiked = location.Likes.Any(u => u.Id == user.Id);
+        if (wasLiked)
+        {
+            location.Likes.Remove(user);
+        }
+        else
+        {
+            location.Likes.Add(user);
+        }
+        await _locationRepository.SaveChangesAsync();
+
+        var likeLocationDTO = _mapper.Map<LocationResponseDTO>(location) with
+        {
+            IsLikedByCurrentUser = location.Likes.Any(u => u.Id == userId),
+        };
+
+        var broadcastDto = new LocationLikesSummaryDTO
+        {
+            Id = location.Id,
+            LikesCount = location.Likes.Count,
+            ToggledByUserId = userId,
+            IsNowLiked = !wasLiked
+        };
+
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = broadcastDto
+        });
+
+        return likeLocationDTO;
     }
 }

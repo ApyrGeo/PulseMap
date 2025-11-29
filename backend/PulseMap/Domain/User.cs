@@ -11,4 +11,7 @@ public class User
 
     public List<Location>? PlacedLocations { get; set; } = [];
     public List<Message>? SentMessages { get; set; } = [];
+
+    public List<Location> LikedLocations { get; set; } = [];
+    public List<Location> OwnedLocations { get; set; } = [];
 }

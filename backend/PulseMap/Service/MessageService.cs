@@ -4,15 +4,17 @@ using log4net;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
 using PulseMap.Interfaces;
+using PulseMap.Service.WS;
 
 namespace PulseMap.Service;
 
-public class MessageService(IMessageRepository messageRepository, IValidatorFactory validatorFactory, IMapper mapper) : IMessageService
+public class MessageService(IMessageRepository messageRepository, IValidatorFactory validatorFactory, IMapper mapper, IWebSocketNotificationService webSocketNotificationService) : IMessageService
 {
     private readonly IMapper _mapper = mapper;
     private readonly IMessageRepository _messageRepository = messageRepository;
     private readonly IValidatorFactory _validator = validatorFactory;
     private readonly ILog _logger = LogManager.GetLogger(typeof(MessageService));
+    private readonly IWebSocketNotificationService _webSocketNotificationService = webSocketNotificationService;
 
     public async Task<MessageResponseDTO> CreateMessageAsync(MessagePostDTO messageDto)
     {
@@ -30,7 +32,16 @@ public class MessageService(IMessageRepository messageRepository, IValidatorFact
 
         var createdMessage = await _messageRepository.AddMessageAsync(message);
         await _messageRepository.SaveChangesAsync();
-        return _mapper.Map<MessageResponseDTO>(createdMessage);
+
+        var createdMessageDTO = _mapper.Map<MessageResponseDTO>(createdMessage);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            ActionType = PayloadActionType.Created,
+            EntityType = PayloadEntityType.Message,
+            Data = createdMessageDTO
+        });
+
+        return createdMessageDTO;
     }
 
     public async Task<ResponseMessageResponseDTO> CreateResponseMessageAsync(int messageId, ResponseMessagePostDTO responseMessagePostDTO)
@@ -56,7 +67,16 @@ public class MessageService(IMessageRepository messageRepository, IValidatorFact
 
         var createdMessage = await _messageRepository.AddResponseMessageAsync(message);
         await _messageRepository.SaveChangesAsync();
-        return _mapper.Map<ResponseMessageResponseDTO>(createdMessage);
+
+        var createdMessageDTO = _mapper.Map<ResponseMessageResponseDTO>(createdMessage);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            ActionType = PayloadActionType.Created,
+            EntityType = PayloadEntityType.Response,
+            Data = createdMessageDTO
+        });
+
+        return createdMessageDTO;
     }
 
     public async Task<MessageResponseDTO> GetMessageByIdAsync(int messageId)

@@ -15,6 +15,8 @@ const UserMapComponent = () => {
     addLocation,
     addCommentToLocation,
     addResponseToMessage,
+    likeLocation,
+    unlikeLocation,
   } = useLocations();
 
   useEffect(() => {
@@ -45,6 +47,12 @@ const UserMapComponent = () => {
   const handleAddResponse = async (message: ResponseMessagePostDTO) => {
     await addResponseToMessage(message);
   };
+  const handleLike = async (locationId: number) => {
+    await likeLocation(locationId);
+  };
+  const handleUnlike = async (locationId: number) => {
+    await unlikeLocation(locationId);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -61,6 +69,8 @@ const UserMapComponent = () => {
           onMapClick={handleMapClick}
           onAddComment={handleAddComment}
           onAddResponse={handleAddResponse}
+          onLike={handleLike}
+          onUnlike={handleUnlike}
         />
       </div>
 

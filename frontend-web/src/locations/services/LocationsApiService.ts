@@ -1,5 +1,9 @@
 import { BASE_API_URL } from '../../core';
-import { LocationPostDTO, LocationPutDTO } from '../Interfaces';
+import {
+  LocationLikesSummaryDTO,
+  LocationPostDTO,
+  LocationPutDTO,
+} from '../Interfaces';
 import { Location } from '../Interfaces';
 
 const LOCATIONS_URL = BASE_API_URL + '/Location';
@@ -95,5 +99,35 @@ export async function extendLocation(id: number): Promise<Location> {
     throw new Error('Failed to extend location');
   }
 
+  return response.json();
+}
+
+export async function likeLocationAPI(
+  locationId: number
+): Promise<LocationLikesSummaryDTO> {
+  const response = await fetch(`${LOCATIONS_URL}/${locationId}/like`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    const txt = await response.text();
+    console.error('Failed to like location:', txt);
+    throw new Error('Failed to like location');
+  }
+  return response.json();
+}
+
+export async function unlikeLocationAPI(
+  locationId: number
+): Promise<LocationLikesSummaryDTO> {
+  const response = await fetch(`${LOCATIONS_URL}/${locationId}/like`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    const txt = await response.text();
+    console.error('Failed to unlike location:', txt);
+    throw new Error('Failed to unlike location');
+  }
   return response.json();
 }

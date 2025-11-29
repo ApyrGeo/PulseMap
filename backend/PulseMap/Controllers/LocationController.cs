@@ -68,4 +68,11 @@ public class LocationController(ILocationService locationService) : ControllerBa
         var updatedLocation = await _locationService.ExtendLocationExpirationAsync(id);
         return Ok(updatedLocation);
     }
+
+    [HttpPatch("{id}/like")]
+    public async Task<ActionResult<LocationResponseDTO>> LikeLocation(int id)
+    {
+        var updatedLocation = await _locationService.LikeLocationAsync(id);
+        return Ok(updatedLocation);
+    }
 }
