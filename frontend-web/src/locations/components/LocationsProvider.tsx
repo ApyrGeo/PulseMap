@@ -67,33 +67,41 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
-  const handleLocationUpdated = useCallback((updated: any) => {
+  const handleLocationUpdated = useCallback((updated: Location) => {
     console.log('Location updated via WebSocket:', updated);
 
-    setLocations((prev) =>
-      prev.map((loc) => {
-        if (loc.id !== updated.id) return loc;
+    setLocations((prev) => {
+      const exists = prev.some((loc) => loc.id === updated.id);
 
-        // Merge backend partial update into existing location while preserving arrays/fields
-        const merged: Location = {
+      const mergeFromExisting = (loc: Location): Location => {
+        return {
           ...loc,
           ...updated,
-          // preserve messages if backend update doesn't include them
           messages: updated.messages ?? loc.messages ?? [],
-          // normalize likes shape returned by backend (LocationLikesSummaryDTO)
-          likeCount:
+          likesCount:
             updated.likesCount !== undefined
               ? updated.likesCount
-              : loc.likesCount,
-          currentUserLiked:
-            updated.isNowLiked !== undefined
-              ? updated.isNowLiked
-              : loc.isLikedByCurrentUser,
+              : (loc as any).likeCount ?? (loc as any).likesCount ?? 0,
         };
+      };
 
-        return merged;
-      })
-    );
+      if (exists) {
+        return prev.map((loc) =>
+          loc.id === updated.id ? mergeFromExisting(loc) : loc
+        );
+      }
+
+      if (updated.isExpired) return prev;
+
+      const newLoc: Location = {
+        ...(updated as Partial<Location>),
+        messages: updated.messages ?? [],
+        likesCount: updated.likesCount ?? (updated as any).likesCount ?? 0,
+        isLikedByCurrentUser: updated.isLikedByCurrentUser ?? false,
+      } as Location;
+
+      return [...prev, newLoc];
+    });
   }, []);
 
   const handleLocationDeleted = useCallback((locationId: number) => {
@@ -107,7 +115,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
       prev.map((loc) => {
         if (loc.id !== message.locationId) return loc;
 
-        // avoid duplicates
         const exists = (loc.messages || []).some((m) => m.id === message.id);
         if (exists) return loc;
 

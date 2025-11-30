@@ -22,4 +22,6 @@ public class Location
     public List<User> Likes { get; set; } = [];
     public int? OwnerId { get; set; } = null;
     public User? Owner { get; set; } = null;
+
+    public LikeStatus? LikeStatus { get; set; } = null;
 }

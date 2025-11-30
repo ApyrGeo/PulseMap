@@ -49,5 +49,9 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.HasOne(l => l.Owner)
             .WithMany(o => o.OwnedLocations)
             .HasForeignKey(l => l.OwnerId);
+
+        builder.HasOne(l => l.LikeStatus)
+            .WithOne(ls => ls.Location)
+            .HasForeignKey<LikeStatus>(ls => ls.LocationId);
     }
 }

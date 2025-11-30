@@ -11,7 +11,7 @@ public class ResponseMessageConfiguration : IEntityTypeConfiguration<ResponseMes
         builder.HasOne(r => r.ParentMessage)
             .WithMany(m => m.Responses)
             .HasForeignKey(r => r.ParentMessageId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(r => r.ParentMessageId);
     }

@@ -163,24 +163,26 @@ const LocationPopup = ({
           </button>
         </div>
 
-        <LocationComments
-          comments={location.messages}
-          currentUser={location.creator}
-          onAddComment={(content) =>
-            onAddComment({
-              locationId: location.id,
-              content,
-              senderId: user.id,
-            })
-          }
-          onAddResponse={(messageId, content) =>
-            onAddResponse({
-              messageId,
-              content,
-              senderId: user.id,
-            })
-          }
-        />
+        {user && (
+          <LocationComments
+            comments={location.messages}
+            currentUser={location.creator}
+            onAddComment={(content) =>
+              onAddComment({
+                locationId: location.id,
+                content,
+                senderId: user.id,
+              })
+            }
+            onAddResponse={(messageId, content) =>
+              onAddResponse({
+                messageId,
+                content,
+                senderId: user.id,
+              })
+            }
+          />
+        )}
       </div>
     </Popup>
   );

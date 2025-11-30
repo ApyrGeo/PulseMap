@@ -30,5 +30,12 @@ namespace PulseMap.Controllers
             var addedUser = await _userService.CreateUserAsync(userPostDTO);
             return CreatedAtAction(nameof(GetUserById), new { id = addedUser.Id }, addedUser);
         }
+
+        [HttpGet("login")]
+        public async Task<ActionResult<UserResponseDTO>> Login([FromQuery] string email, [FromQuery] string password)
+        {
+            var user = await _userService.LoginUser(email, password);
+            return Ok(user);
+        }
     }
 }

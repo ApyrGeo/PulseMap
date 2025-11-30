@@ -3,7 +3,6 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using PulseMap.BackgroundServices;
 using PulseMap.Context;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
@@ -11,6 +10,7 @@ using PulseMap.Interfaces;
 using PulseMap.Middlewares;
 using PulseMap.Repository;
 using PulseMap.Service;
+using PulseMap.Service.BackgroundServices;
 using PulseMap.Service.Validators;
 using PulseMap.Service.WS;
 
@@ -104,7 +104,7 @@ builder.Services.AddHangfire(config =>
 
 builder.Services.AddHangfireServer();
 
-builder.Services.AddScoped<LocationExpirationService>();
+builder.Services.AddScoped<LocationBackGroundService>();
 
 
 var app = builder.Build();
@@ -145,7 +145,6 @@ app.Map("/ws", async context =>
     await notifier.HandleClientAsync(webSocket, context.RequestAborted);
 });
 
-
 // Hangfire Dashboard
 app.MapHangfireDashboard();
 
@@ -156,14 +155,20 @@ using (var scope = app.Services.CreateScope())
     var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
     // Run when app starts
-    backgroundJobClient.Enqueue<LocationExpirationService>(x => x.CheckExpiredLocations());
+    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
+    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
 
     // Run every minute
-    recurringJobManager.AddOrUpdate<LocationExpirationService>(
+    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
         "check-expired-locations",
         x => x.CheckExpiredLocations(),
         Cron.Minutely
     );
+    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+        "extend-duration-by-likes",
+        x => x.ExtendLocationDurationByLikeCounts(),
+        Cron.Daily);
+
 }
 
 app.Run();

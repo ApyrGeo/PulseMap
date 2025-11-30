@@ -39,4 +39,13 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IValida
         await _userRepository.SaveChangesAsync();
         return _mapper.Map<UserResponseDTO>(addedUser);
     }
+
+    public async Task<UserResponseDTO> LoginUser(string email, string password)
+    {
+        _logger.InfoFormat("Logging in user with email: {0}", email);
+        var user = await _userRepository.LoginUser(email, password)
+            ?? throw new NotFoundException("Invalid email or password");
+
+        return _mapper.Map<UserResponseDTO>(user);
+    }
 }

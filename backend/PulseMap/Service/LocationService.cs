@@ -5,7 +5,6 @@ using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
 using PulseMap.Domain.Enums;
 using PulseMap.Interfaces;
-using PulseMap.Repository;
 using PulseMap.Service.WS;
 using System.Text.Json;
 
@@ -152,6 +151,7 @@ public class LocationService(ILocationRepository locationRepository, IUserReposi
             throw new NotFoundException("Location does not exist");
 
         location.IsExpired = true;
+        location.LikeStatus = null;
         await _locationRepository.SaveChangesAsync();
 
         var expiredLocationDTO = _mapper.Map<LocationResponseDTO>(location);
@@ -173,6 +173,12 @@ public class LocationService(ILocationRepository locationRepository, IUserReposi
 
         location.IsExpired = false;
         location.ExpiresAt = DateTime.UtcNow.AddHours(1);
+        location.LikeStatus = new LikeStatus
+        {
+            LastChecked = DateTime.UtcNow,
+            Location = location,
+            PreviousLikeCount = location.Likes.Count
+        };
         await _locationRepository.SaveChangesAsync();
 
         var extendedLocationDTO = _mapper.Map<LocationResponseDTO>(location);

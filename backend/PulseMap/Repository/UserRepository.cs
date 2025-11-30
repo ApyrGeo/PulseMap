@@ -28,4 +28,9 @@ public class UserRepository(PulseMapContext context) : IUserRepository
     {
         return _context.Users.SingleOrDefaultAsync(u => u.Email == email);
     }
+
+    public Task<User?> LoginUser(string email, string password)
+    {
+        return _context.Users.SingleOrDefaultAsync(u => u.Email == email && u.Password == password);
+    }
 }
