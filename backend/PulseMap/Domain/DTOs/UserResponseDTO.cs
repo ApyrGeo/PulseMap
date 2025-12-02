@@ -1,3 +1,5 @@
+using PulseMap.Domain.Enums;
+
 namespace PulseMap.Domain.DTOs;
 
 public class UserResponseDTO
@@ -8,4 +10,5 @@ public class UserResponseDTO
     public required string Username { get; set; } 
     public required string Email { get; set; } 
     public required string Password { get; set; }
+    public required UserRole Role { get; set; }
 }

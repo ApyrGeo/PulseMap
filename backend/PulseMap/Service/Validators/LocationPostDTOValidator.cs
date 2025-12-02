@@ -51,5 +51,15 @@ public class LocationPostDTOValidator : AbstractValidator<LocationPostDTO>
             .WithMessage("Duration is required.")
             .Must(duration => duration > TimeSpan.Zero)
             .WithMessage("Duration must be a positive time span.");
+
+        RuleFor(location => location.OwnerId)
+            .MustAsync(async (ownerId, cancellation) =>
+            {
+                if (ownerId == null)
+                    return true;
+                var user = await _userRepository.GetUserByIdAsync(ownerId.Value);
+                return user != null;
+            })
+            .WithMessage("OwnerId must correspond to an existing user if provided.");
     }
 }

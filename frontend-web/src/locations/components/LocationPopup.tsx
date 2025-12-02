@@ -4,7 +4,7 @@ import {
   MessagePostDTO,
   ResponseMessagePostDTO,
 } from '../Interfaces';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import LocationComments from './LocationComments';
 import { useAuth } from '../../auth/AuthProvider';
 
@@ -12,15 +12,21 @@ interface LocationPopupProps {
   location: Location;
   onAddComment: (message: MessagePostDTO) => void;
   onAddResponse: (message: ResponseMessagePostDTO) => void;
+  onLike: (locationId: number) => void;
+  onUnlike: (locationId: number) => void;
 }
 
 const LocationPopup = ({
   location,
   onAddComment,
   onAddResponse,
+  onLike,
+  onUnlike,
 }: LocationPopupProps) => {
   const { user } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [likeCount, setLikeCount] = useState(location.likesCount || 0);
+  const [isLiked, setIsLiked] = useState(!(location.likesCount > 0));
 
   const placeholderImages = ['📍 Image 1', '🗺️ Image 2', '📷 Image 3'];
 
@@ -33,6 +39,21 @@ const LocationPopup = ({
       prev === 0 ? placeholderImages.length - 1 : prev - 1
     );
   };
+
+  const handleLikeToggle = () => {
+    if (location.isLikedByCurrentUser) {
+      onUnlike(location.id);
+      setLikeCount((prev) => prev - 1);
+    } else {
+      onLike(location.id);
+      setLikeCount((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    setLikeCount(location.likesCount);
+    setIsLiked(!isLiked);
+  }, [location.likesCount]);
 
   return (
     <Popup>
@@ -87,7 +108,7 @@ const LocationPopup = ({
         {location.creator && (
           <div className="pt-3 border-t border-gray-200">
             <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-              Creator
+              {location.owner ? 'Owner' : 'Creator'}
             </h4>
 
             <div className="flex items-center space-x-3">
@@ -119,24 +140,49 @@ const LocationPopup = ({
           </p>
         </div>
 
-        <LocationComments
-          comments={location.messages}
-          currentUser={location.creator}
-          onAddComment={(content) =>
-            onAddComment({
-              locationId: location.id,
-              content,
-              senderId: user.id,
-            })
-          }
-          onAddResponse={(messageId, content) =>
-            onAddResponse({
-              messageId,
-              content,
-              senderId: user.id,
-            })
-          }
-        />
+        <div className="mb-3 pb-3 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+              Likes
+            </h4>
+            <span className="text-sm font-medium text-gray-800">
+              {likeCount} {likeCount === 1 ? 'like' : 'likes'}
+            </span>
+          </div>
+
+          <button
+            onClick={handleLikeToggle}
+            className={`mt-2 w-full py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+              isLiked
+                ? 'bg-red-500 text-white hover:bg-red-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <span className="text-lg">{isLiked ? '🤍' : '❤️'}</span>
+            <span>{isLiked ? 'Unlike' : 'Like'}</span>
+          </button>
+        </div>
+
+        {user && (
+          <LocationComments
+            comments={location.messages}
+            currentUser={location.creator}
+            onAddComment={(content) =>
+              onAddComment({
+                locationId: location.id,
+                content,
+                senderId: user.id,
+              })
+            }
+            onAddResponse={(messageId, content) =>
+              onAddResponse({
+                messageId,
+                content,
+                senderId: user.id,
+              })
+            }
+          />
+        )}
       </div>
     </Popup>
   );

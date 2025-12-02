@@ -3,7 +3,6 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using PulseMap.BackgroundServices;
 using PulseMap.Context;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
@@ -11,7 +10,9 @@ using PulseMap.Interfaces;
 using PulseMap.Middlewares;
 using PulseMap.Repository;
 using PulseMap.Service;
+using PulseMap.Service.BackgroundServices;
 using PulseMap.Service.Validators;
+using PulseMap.Service.WS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,15 +22,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var AppAllowSpecificOrigins = "_appAllowSpecificOrigins";
+var AppAllowSpecificOrigins = "AllowFrontend";
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: AppAllowSpecificOrigins, policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowAnyOrigin();
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -64,7 +66,9 @@ builder.Services.AddAutoMapper(cfg => {
     // Location 
     cfg.CreateMap<Location, LocationResponseDTO>()
         .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.Comments))
-        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()));
+        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
+        .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.Likes.Count))
+        .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore());
 
     cfg.CreateMap<LocationPostDTO, Location>().ReverseMap();
 });
@@ -89,6 +93,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 //builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 //services
+builder.Services.AddSingleton<IWebSocketNotificationService, WebSocketNotificationService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
@@ -99,7 +104,7 @@ builder.Services.AddHangfire(config =>
 
 builder.Services.AddHangfireServer();
 
-builder.Services.AddScoped<LocationExpirationService>();
+builder.Services.AddScoped<LocationBackGroundService>();
 
 
 var app = builder.Build();
@@ -121,6 +126,25 @@ app.MapControllers();
 
 app.UseCors(AppAllowSpecificOrigins);
 
+// WS
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(120),
+});
+
+app.Map("/ws", async context =>
+{
+    if (!context.WebSockets.IsWebSocketRequest)
+    {
+        context.Response.StatusCode = 400;
+        return;
+    }
+
+    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+    var notifier = context.RequestServices.GetRequiredService<IWebSocketNotificationService>();
+    await notifier.HandleClientAsync(webSocket, context.RequestAborted);
+});
+
 // Hangfire Dashboard
 app.MapHangfireDashboard();
 
@@ -131,14 +155,20 @@ using (var scope = app.Services.CreateScope())
     var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
     // Run when app starts
-    backgroundJobClient.Enqueue<LocationExpirationService>(x => x.CheckExpiredLocations());
+    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
+    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
 
     // Run every minute
-    recurringJobManager.AddOrUpdate<LocationExpirationService>(
+    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
         "check-expired-locations",
         x => x.CheckExpiredLocations(),
         Cron.Minutely
     );
+    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+        "extend-duration-by-likes",
+        x => x.ExtendLocationDurationByLikeCounts(),
+        Cron.Daily);
+
 }
 
 app.Run();

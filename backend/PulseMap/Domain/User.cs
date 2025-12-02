@@ -1,3 +1,5 @@
+using PulseMap.Domain.Enums;
+
 namespace PulseMap.Domain;
 
 public class User
@@ -11,4 +13,9 @@ public class User
 
     public List<Location>? PlacedLocations { get; set; } = [];
     public List<Message>? SentMessages { get; set; } = [];
+
+    public List<Location> LikedLocations { get; set; } = [];
+    public List<Location> OwnedLocations { get; set; } = [];
+
+    public required UserRole Role { get; set; }
 }

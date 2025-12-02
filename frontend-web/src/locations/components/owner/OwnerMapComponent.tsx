@@ -1,20 +1,22 @@
-import { useState, useMemo } from 'react';
-import LeafletMap from '../../locations/components/LeafletMap';
-import { useLocations } from '../../locations/LocationsProvider';
-import { useAuth } from '../../auth/AuthProvider';
-import {
-  Location,
-  LocationPutDTO,
-  LocationPostDTO,
-} from '../../locations/Interfaces';
-import LocationContextMenu from '../../locations/components/LocationContextMenu';
-import EditLocationModal from '../../locations/components/EditLocationModal';
-import AddLocationModal from '../../locations/components/AddLocationModal';
+import { useState, useEffect } from 'react';
+import LeafletMap from '../LeafletMap';
+import { useLocations } from '../LocationsProvider';
+import { useAuth } from '../../../auth/AuthProvider';
+import { Location, LocationPutDTO, LocationPostDTO } from '../../Interfaces';
+import OwnerContextMenu from './OwnerContextMenu';
+import EditLocationModal from '../EditLocationModal';
+import AddLocationModal from '../AddLocationModal';
 
 const OwnerMapComponent = () => {
   const { user } = useAuth();
-  const { locations, updateLocationById, deleteLocationById, addLocation } =
-    useLocations();
+  const {
+    ownedLocations,
+    refreshLocations,
+    updateLocationById,
+    deleteLocationById,
+    addLocation,
+  } = useLocations();
+
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -27,17 +29,28 @@ const OwnerMapComponent = () => {
     lng: number;
   } | null>(null);
 
-  const userLocations = useMemo(
-    () => locations.filter((loc) => loc.creator.id === user?.id),
-    [locations, user?.id]
+  useEffect(() => {
+    refreshLocations(true); // Load active locations
+  }, [refreshLocations]);
+
+  const canAddLocation = !ownedLocations.some(
+    (loc) => loc.owner?.id === user?.id
   );
 
   const handleMapClick = (lat: number, lng: number) => {
+    if (!canAddLocation) {
+      alert(
+        'You can only have one location. Delete your existing location first.'
+      );
+      return;
+    }
     setClickedCoords({ lat, lng });
     setAddModalOpen(true);
   };
 
   const handleAddSubmit = async (location: LocationPostDTO) => {
+    if (!user) return;
+    location.ownerId = user.id;
     await addLocation(location);
     setAddModalOpen(false);
     setClickedCoords(null);
@@ -45,6 +58,10 @@ const OwnerMapComponent = () => {
 
   const handleContextMenu = (e: React.MouseEvent, location: Location) => {
     e.preventDefault();
+
+    if (location.owner?.id !== user?.id) {
+      return;
+    }
     setContextMenu({ x: e.clientX, y: e.clientY, location });
   };
 
@@ -80,17 +97,20 @@ const OwnerMapComponent = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">My Locations</h1>
+        <h1 className="text-3xl font-bold text-gray-800">My Location</h1>
         <p className="text-gray-600 mt-2">
-          Click to add • Right-click marker to edit or delete
+          {canAddLocation
+            ? 'Click to add your location (other locations shown in gray)'
+            : 'Right-click your marker to edit or delete'}
         </p>
       </header>
 
       <div className="bg-white rounded-lg shadow-lg p-4">
         <LeafletMap
-          locations={userLocations}
+          locations={ownedLocations}
           onMapClick={handleMapClick}
           onContextMenu={handleContextMenu}
+          currentUserId={user?.id}
         />
       </div>
 
@@ -104,11 +124,12 @@ const OwnerMapComponent = () => {
             setClickedCoords(null);
           }}
           onSubmit={handleAddSubmit}
+          isOwner={true}
         />
       )}
 
       {contextMenu && (
-        <LocationContextMenu
+        <OwnerContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
           onEdit={handleEdit}

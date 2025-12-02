@@ -8,4 +8,6 @@ public interface IMessageRepository
     Task<ResponseMessage> AddResponseMessageAsync(ResponseMessage message);
     Task<Message?> GetMessageByIdAsync(int messageId);
     Task SaveChangesAsync();
+
+    Task DeleteMessagesByLocationIdAsync(int locationId);
 }

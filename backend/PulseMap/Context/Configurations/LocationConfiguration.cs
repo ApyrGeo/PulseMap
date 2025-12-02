@@ -37,5 +37,21 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.IsExpired)
             .HasDefaultValue(false)
             .IsRequired();
+
+        builder.HasMany(l => l.Likes)
+            .WithMany(u => u.LikedLocations)
+            .UsingEntity<Dictionary<string, object>>(
+            "LocationLikes",
+            j => j.HasOne<User>().WithMany().HasForeignKey("UserId"),
+            j => j.HasOne<Location>().WithMany().HasForeignKey("LocationId")
+        );
+
+        builder.HasOne(l => l.Owner)
+            .WithMany(o => o.OwnedLocations)
+            .HasForeignKey(l => l.OwnerId);
+
+        builder.HasOne(l => l.LikeStatus)
+            .WithOne(ls => ls.Location)
+            .HasForeignKey<LikeStatus>(ls => ls.LocationId);
     }
 }

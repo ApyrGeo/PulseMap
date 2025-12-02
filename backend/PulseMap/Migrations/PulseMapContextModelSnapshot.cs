@@ -22,6 +22,48 @@ namespace PulseMap.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("LocationLikes", b =>
+                {
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LocationId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("LocationLikes");
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.LikeStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("LastChecked")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PreviousLikeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId")
+                        .IsUnique();
+
+                    b.ToTable("LikeStatuses");
+                });
+
             modelBuilder.Entity("PulseMap.Domain.Location", b =>
                 {
                     b.Property<int>("Id")
@@ -60,9 +102,14 @@ namespace PulseMap.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("OwnerId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Locations");
                 });
@@ -131,6 +178,12 @@ namespace PulseMap.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("User");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -155,13 +208,45 @@ namespace PulseMap.Migrations
                     b.HasDiscriminator().HasValue("Response");
                 });
 
+            modelBuilder.Entity("LocationLikes", b =>
+                {
+                    b.HasOne("PulseMap.Domain.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PulseMap.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.LikeStatus", b =>
+                {
+                    b.HasOne("PulseMap.Domain.Location", "Location")
+                        .WithOne("LikeStatus")
+                        .HasForeignKey("PulseMap.Domain.LikeStatus", "LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+                });
+
             modelBuilder.Entity("PulseMap.Domain.Location", b =>
                 {
                     b.HasOne("PulseMap.Domain.User", "Creator")
                         .WithMany("PlacedLocations")
                         .HasForeignKey("CreatorId");
 
+                    b.HasOne("PulseMap.Domain.User", "Owner")
+                        .WithMany("OwnedLocations")
+                        .HasForeignKey("OwnerId");
+
                     b.Navigation("Creator");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.Message", b =>
@@ -188,7 +273,7 @@ namespace PulseMap.Migrations
                     b.HasOne("PulseMap.Domain.Message", "ParentMessage")
                         .WithMany("Responses")
                         .HasForeignKey("ParentMessageId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ParentMessage");
@@ -197,6 +282,8 @@ namespace PulseMap.Migrations
             modelBuilder.Entity("PulseMap.Domain.Location", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("LikeStatus");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.Message", b =>
@@ -206,6 +293,8 @@ namespace PulseMap.Migrations
 
             modelBuilder.Entity("PulseMap.Domain.User", b =>
                 {
+                    b.Navigation("OwnedLocations");
+
                     b.Navigation("PlacedLocations");
 
                     b.Navigation("SentMessages");

@@ -20,14 +20,23 @@ public class MessageRepository(PulseMapContext context) : IMessageRepository
         return Task.FromResult(message);
     }
 
+    public async Task DeleteMessagesByLocationIdAsync(int locationId)
+    {
+        var allMessages = await _context.Messages
+            .Where(m => m.LocationId == locationId)
+            .ToListAsync();
+
+        _context.Messages.RemoveRange(allMessages);
+    }
+
     public async Task<Message?> GetMessageByIdAsync(int messageId)
     {
         return await _context.Messages
-            .OfType<Message>()
-            .Include(m => m.Sender)
-            .Include(m => m.Responses)
-                .ThenInclude(r =>  r.Sender)
-            .SingleOrDefaultAsync(m => m.Id == messageId);
+        .Include(m => m.Sender)
+        .Include(m => m.Responses!)
+            .ThenInclude(r => r.Sender)
+        .SingleOrDefaultAsync(m => m.Id == messageId);
+
     }
 
     public async Task SaveChangesAsync()

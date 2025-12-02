@@ -9,4 +9,5 @@ public class LocationPostDTO
     public required int CreatorId { get; set; }
     public required string Category { get; set; }
     public required TimeSpan Duration { get; set; }
+    public int? OwnerId { get; set; }
 }

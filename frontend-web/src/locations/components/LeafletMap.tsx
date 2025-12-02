@@ -1,10 +1,14 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { useState } from 'react';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   Location,
   LocationCategory,
-  LocationPostDTO,
   MessagePostDTO,
   ResponseMessagePostDTO,
 } from '../Interfaces';
@@ -12,8 +16,8 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import AddLocationModal from './AddLocationModal';
 import LocationPopup from './LocationPopup';
+import AdminLocationPopup from './admin/AdminLocationPopup';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -39,15 +43,25 @@ const categoryColors: { [key: string]: string } = {
 };
 
 // Create a colored marker icon
-const getMarkerIcon = (category: LocationCategory) => {
+const getMarkerIcon = (
+  category: LocationCategory,
+  isExpired: boolean,
+  shouldBeColored: boolean,
+  hasOwner: boolean
+) => {
   const color =
-    categoryColors[category] || categoryColors[LocationCategory.NotSet];
+    isExpired || !shouldBeColored
+      ? '#6B7280'
+      : categoryColors[category] || categoryColors[LocationCategory.NotSet];
+
+  // if has owner make a color that is not in categoryColors
+  const middleDotColor = hasOwner ? '#000' : '#fff';
 
   const svgIcon = `
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.4 12.5 28.5 12.5 28.5S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z" 
-            fill="${color}" stroke="#fff" stroke-width="2"/>
-      <circle cx="12.5" cy="12.5" r="6" fill="#fff"/>
+      <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.4 12.5 28.5 12.5 28.5S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z"
+            fill="${color}" stroke="fff" stroke-width=".5"/>
+      <circle cx="12.5" cy="12.5" r="6" fill="${middleDotColor}"/>
     </svg>
   `;
 
@@ -66,7 +80,11 @@ interface LeafletMapProps {
   onMapClick?: (lat: number, lng: number) => void;
   onAddComment?: (message: MessagePostDTO) => Promise<void>;
   onAddResponse?: (message: ResponseMessagePostDTO) => Promise<void>;
+  onLike?: (locationId: number) => void;
+  onUnlike?: (locationId: number) => void;
   onContextMenu?: (e: React.MouseEvent, location: Location) => void;
+  isAdmin?: boolean;
+  currentUserId?: number;
 }
 
 const MapClickHandler = ({
@@ -88,11 +106,24 @@ const LeafletMap = ({
   onAddComment,
   onAddResponse,
   onContextMenu,
+  onLike,
+  onUnlike,
+  isAdmin = false,
+  currentUserId,
 }: LeafletMapProps) => {
   const center: [number, number] =
     locations.length > 0
       ? [locations[0].latitude, locations[0].longitude]
-      : [46.76073058700941, 23.571628332138065]; // Default center
+      : [46.76073058700941, 23.571628332138065];
+
+  const shouldBeColored = (location: Location) => {
+    if (isAdmin) {
+      return !location.isExpired;
+    } else if (currentUserId) {
+      return location.creator.id === currentUserId;
+    }
+    return !location.isExpired;
+  };
 
   return (
     <MapContainer
@@ -112,7 +143,12 @@ const LeafletMap = ({
         <Marker
           key={loc.id}
           position={[loc.latitude, loc.longitude]}
-          icon={getMarkerIcon(loc.category)}
+          icon={getMarkerIcon(
+            loc.category,
+            loc.isExpired,
+            shouldBeColored(loc),
+            loc.owner !== null
+          )}
           eventHandlers={
             onContextMenu
               ? {
@@ -125,16 +161,26 @@ const LeafletMap = ({
               : undefined
           }
         >
-          {onAddComment && onAddResponse && (
-            <LocationPopup
-              location={loc}
-              onAddComment={onAddComment}
-              onAddResponse={onAddResponse}
-            />
+          {isAdmin ? (
+            <Popup>
+              <AdminLocationPopup location={loc} />
+            </Popup>
+          ) : (
+            onAddComment &&
+            onAddResponse &&
+            onLike &&
+            onUnlike && (
+              <LocationPopup
+                location={loc}
+                onAddComment={onAddComment}
+                onAddResponse={onAddResponse}
+                onLike={onLike}
+                onUnlike={onUnlike}
+              />
+            )
           )}
         </Marker>
       ))}
-
       {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
     </MapContainer>
   );

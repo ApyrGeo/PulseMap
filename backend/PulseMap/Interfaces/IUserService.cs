@@ -6,4 +6,5 @@ public interface IUserService
 {
     Task<UserResponseDTO> GetUserByIdAsync(int id);
     Task<UserResponseDTO> CreateUserAsync(UserPostDTO userPostDTO);
+    Task<UserResponseDTO> LoginUser(string email, string password);
 }

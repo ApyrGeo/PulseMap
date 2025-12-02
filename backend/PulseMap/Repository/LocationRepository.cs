@@ -12,6 +12,7 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
     {
         var location = await _context.Locations
             .Include(l => l.Creator)
+            .Include(l => l.Likes)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (location == null) return null;
@@ -44,12 +45,25 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
     public async Task<List<Location>> GetAllLocationsAsync()
     {
         return await _context.Locations
-            .Where(l => !l.IsExpired)
+            .Include(l => l.Likes)
             .Include(l => l.Creator)
-            .Include(l => l.Comments)
+            .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
-            .Include(l => l.Comments)
-                .ThenInclude(c => c.Responses)
+            .Include(l => l.Comments!)
+                .ThenInclude(c => c.Responses!)
+                    .ThenInclude(r => r.Sender)
+            .ToListAsync();
+    }
+    public Task<List<Location>> GetActiveLocationsAsync()
+    {
+        return _context.Locations
+            .Where(l => !l.IsExpired)
+            .Include(l => l.Likes)
+            .Include(l => l.Creator)
+            .Include(l => l.Comments!)
+                .ThenInclude(c => c.Sender)
+            .Include(l => l.Comments!)
+                .ThenInclude(c => c.Responses!)
                     .ThenInclude(r => r.Sender)
             .ToListAsync();
     }
@@ -62,4 +76,5 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
     {
         _context.Locations.Remove(location);
     }
+
 }

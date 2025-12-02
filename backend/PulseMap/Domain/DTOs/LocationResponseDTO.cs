@@ -1,6 +1,6 @@
 namespace PulseMap.Domain.DTOs;
 
-public class LocationResponseDTO
+public record LocationResponseDTO
 {
     public required int Id { get; set; }
     public required double Latitude { get; set; }
@@ -11,4 +11,8 @@ public class LocationResponseDTO
     public required string? Category { get; set; }
     public List<MessageResponseDTO>? Messages { get; set; } = [];
     public required DateTime ExpiresAt { get; set; }
+    public required bool IsExpired { get; set; }
+    public required int LikesCount { get; set; }
+    public required bool IsLikedByCurrentUser { get; set; }
+    public SimplifiedUserResponseDTO? Owner { get; set; }
 }

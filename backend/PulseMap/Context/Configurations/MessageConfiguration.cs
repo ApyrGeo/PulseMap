@@ -30,5 +30,10 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
             .HasForeignKey(m => m.LocationId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
+
+        builder.HasMany(m => m.Responses)
+            .WithOne(r => r.ParentMessage)
+            .HasForeignKey(r => r.ParentMessageId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
