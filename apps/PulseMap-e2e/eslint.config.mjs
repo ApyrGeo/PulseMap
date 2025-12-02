@@ -9,4 +9,10 @@ export default [
     // Override or add rules here
     rules: {},
   },
+  {
+    files: ['**/out-tsc/**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
 ];

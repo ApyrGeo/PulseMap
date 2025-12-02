@@ -48,6 +48,11 @@ const AddLocationModal = ({
       return;
     }
 
+    if (!user) {
+      alert('User is not authenticated');
+      return;
+    }
+
     onSubmit({
       latitude,
       longitude,

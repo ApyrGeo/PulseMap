@@ -9,10 +9,7 @@ describe('App', () => {
   });
 
   it('should have a greeting as the title', () => {
-    const { getAllByText } = render(<App />);
-    expect(
-      getAllByText(new RegExp('Welcome @pulse-map/frontend-web', 'gi')).length >
-        0
-    ).toBeTruthy();
+    const { getByText } = render(<App />);
+    expect(getByText('Sign in to PulseMap')).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import LeafletMap from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
 import { useAuth } from '../../../auth/AuthProvider';
