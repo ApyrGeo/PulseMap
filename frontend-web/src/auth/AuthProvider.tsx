@@ -34,6 +34,3 @@ export function useAuth() {
   }
   return context;
 }
-function random() {
-  throw new Error('Function not implemented.');
-}

@@ -108,7 +108,7 @@ const LocationPopup = ({
         {location.creator && (
           <div className="pt-3 border-t border-gray-200">
             <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-              Creator
+              {location.owner ? 'Owner' : 'Creator'}
             </h4>
 
             <div className="flex items-center space-x-3">

@@ -10,7 +10,7 @@ import AddLocationModal from '../AddLocationModal';
 const OwnerMapComponent = () => {
   const { user } = useAuth();
   const {
-    activeLocations, // Show all active locations
+    ownedLocations,
     refreshLocations,
     updateLocationById,
     deleteLocationById,
@@ -33,12 +33,9 @@ const OwnerMapComponent = () => {
     refreshLocations(true); // Load active locations
   }, [refreshLocations]);
 
-  const userLocation = useMemo(
-    () => activeLocations.find((loc) => loc.creator.id === user?.id),
-    [activeLocations, user?.id]
+  const canAddLocation = !ownedLocations.some(
+    (loc) => loc.owner?.id === user?.id
   );
-
-  const canAddLocation = !userLocation;
 
   const handleMapClick = (lat: number, lng: number) => {
     if (!canAddLocation) {
@@ -52,6 +49,8 @@ const OwnerMapComponent = () => {
   };
 
   const handleAddSubmit = async (location: LocationPostDTO) => {
+    if (!user) return;
+    location.ownerId = user.id;
     await addLocation(location);
     setAddModalOpen(false);
     setClickedCoords(null);
@@ -59,8 +58,8 @@ const OwnerMapComponent = () => {
 
   const handleContextMenu = (e: React.MouseEvent, location: Location) => {
     e.preventDefault();
-    // Only allow context menu on own location
-    if (location.creator.id !== user?.id) {
+
+    if (location.owner?.id !== user?.id) {
       return;
     }
     setContextMenu({ x: e.clientX, y: e.clientY, location });
@@ -108,10 +107,10 @@ const OwnerMapComponent = () => {
 
       <div className="bg-white rounded-lg shadow-lg p-4">
         <LeafletMap
-          locations={activeLocations} // Show ALL active locations
+          locations={ownedLocations}
           onMapClick={handleMapClick}
           onContextMenu={handleContextMenu}
-          currentUserId={user?.id} // Only owner's location is colored
+          currentUserId={user?.id}
         />
       </div>
 

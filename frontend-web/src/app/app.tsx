@@ -45,13 +45,16 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<AdminRoutes />}>
-        <Route path="/map" element={<Navigate to="/admin/map" replace />} />
+        {/* <Route path="/map" element={<Navigate to="/admin/map" replace />} /> */}
         <Route path="/admin/map" element={<AdminLocationsPage />} />
       </Route>
 
       <Route element={<UserRoutes />}>
-        <Route path="/owner/map" element={<OwnerLocationsPage />} />
         <Route path="/map" element={<UserLocationsPage />} />
+      </Route>
+
+      <Route path="/owner" element={<UserRoutes />}>
+        <Route path="map" element={<OwnerLocationsPage />} />
       </Route>
 
       <Route

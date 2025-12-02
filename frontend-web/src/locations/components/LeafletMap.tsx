@@ -46,19 +46,22 @@ const categoryColors: { [key: string]: string } = {
 const getMarkerIcon = (
   category: LocationCategory,
   isExpired: boolean,
-  shouldBeColored: boolean
+  shouldBeColored: boolean,
+  hasOwner: boolean
 ) => {
-  // If expired or shouldn't be colored, use gray
   const color =
     isExpired || !shouldBeColored
       ? '#6B7280'
       : categoryColors[category] || categoryColors[LocationCategory.NotSet];
 
+  // if has owner make a color that is not in categoryColors
+  const middleDotColor = hasOwner ? '#000' : '#fff';
+
   const svgIcon = `
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.4 12.5 28.5 12.5 28.5S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z" 
-            fill="${color}" stroke="#fff" stroke-width="2"/>
-      <circle cx="12.5" cy="12.5" r="6" fill="#fff"/>
+      <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.4 12.5 28.5 12.5 28.5S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z"
+            fill="${color}" stroke="fff" stroke-width=".5"/>
+      <circle cx="12.5" cy="12.5" r="6" fill="${middleDotColor}"/>
     </svg>
   `;
 
@@ -143,7 +146,8 @@ const LeafletMap = ({
           icon={getMarkerIcon(
             loc.category,
             loc.isExpired,
-            shouldBeColored(loc)
+            shouldBeColored(loc),
+            loc.owner !== null
           )}
           eventHandlers={
             onContextMenu

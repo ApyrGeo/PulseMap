@@ -11,6 +11,7 @@ export interface Location {
   isExpired: boolean;
   likesCount: number;
   isLikedByCurrentUser: boolean;
+  owner?: SimplifiedUser;
 }
 
 export enum LocationCategory {
@@ -72,6 +73,7 @@ export interface LocationPostDTO {
   creatorId: number;
   category: LocationCategory;
   duration: string;
+  ownerId?: number;
 }
 
 export interface LocationPutDTO {

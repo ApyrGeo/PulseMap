@@ -33,7 +33,7 @@ public class LocationBackGroundService(PulseMapContext dbContext)
         int totalUsers = await _context.Users.CountAsync();
 
         var locations = await _context.Locations
-            .Where(l => !l.IsExpired)
+            .Where(l => !l.IsExpired && l.Owner == null)
             .Include(l => l.Likes)
             .ToListAsync();
 

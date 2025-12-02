@@ -14,4 +14,5 @@ public record LocationResponseDTO
     public required bool IsExpired { get; set; }
     public required int LikesCount { get; set; }
     public required bool IsLikedByCurrentUser { get; set; }
+    public SimplifiedUserResponseDTO? Owner { get; set; }
 }

@@ -29,9 +29,11 @@ import {
 } from '../Interfaces';
 import { addComment, addResponse } from '../services/MessagesApiService';
 import { LocationWsService, PayloadEntityType } from '../services/WsService';
+import { useAuth } from '../../auth/AuthProvider';
 
 interface LocationsContextType {
   locations: Location[];
+  ownedLocations: Location[];
   activeLocations: Location[];
   allLocations: Location[];
   refreshLocations: (activeOnly?: boolean) => Promise<void>;
@@ -51,6 +53,7 @@ const LocationsContext = createContext<LocationsContextType | undefined>(
 );
 
 export const LocationsProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [, setIsLoading] = useState(false);
   const [wsService] = useState(
@@ -303,6 +306,10 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     [locations]
   );
 
+  const ownedLocations = useMemo(() => {
+    return locations.filter((loc) => loc.owner?.id === user?.id);
+  }, [locations, user?.id]);
+
   const allLocations = useMemo(() => locations, [locations]);
 
   return (
@@ -310,6 +317,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
       value={{
         locations,
         activeLocations,
+        ownedLocations,
         allLocations,
         refreshLocations,
         addLocation,
