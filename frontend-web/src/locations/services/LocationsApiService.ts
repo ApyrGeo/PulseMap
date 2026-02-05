@@ -182,3 +182,26 @@ export async function unlikeLocationAPI(
     toggledByUserId: userId,
   };
 }
+
+export async function classifyLocation(description: string): Promise<string[]> {
+  try {
+    const response = await fetch(`${BASE_API_URL}/AI/classify-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    });
+
+    if (!response.ok) {
+      const txt = await response.text();
+      console.error('Failed to classify location:', txt);
+      return [];
+    }
+
+    const data = await response.json();
+    // Expecting array of category strings from API
+    return Array.isArray(data) ? data : data?.categories || [];
+  } catch (err) {
+    console.error('Error classifying location', err);
+    return [];
+  }
+}

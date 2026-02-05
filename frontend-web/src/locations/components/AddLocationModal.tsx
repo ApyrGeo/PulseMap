@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LocationCategory, LocationPostDTO } from '../Interfaces';
+import { classifyLocation } from '../services/LocationsApiService';
 import { useAuth } from '../../auth/AuthProvider';
 import './LocationModal.css';
 
@@ -26,13 +27,24 @@ const AddLocationModal = ({
   const [category, setCategory] = useState<LocationCategory>(
     LocationCategory.NotSet
   );
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [suggestedCategories, setSuggestedCategories] = useState<string[]>([]);
+  const [showManualSelect, setShowManualSelect] = useState(false);
+  const [showUncategorizedWarning, setShowUncategorizedWarning] =
+    useState(false);
   const [hours, setHours] = useState<number>(0);
   const [days, setDays] = useState<number>(isOwner ? 0 : 1); // Default 1 day for users
 
-  const categories = Object.keys(LocationCategory).map((key) => ({
-    value: LocationCategory[key as keyof typeof LocationCategory],
-    label: key,
-  }));
+  const categories = Object.keys(LocationCategory)
+    .filter(
+      (key) =>
+        LocationCategory[key as keyof typeof LocationCategory] !==
+        LocationCategory.NotSet
+    )
+    .map((key) => ({
+      value: LocationCategory[key as keyof typeof LocationCategory],
+      label: key,
+    }));
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const dayOptions = Array.from({ length: 30 }, (_, i) => i);
@@ -113,21 +125,139 @@ const AddLocationModal = ({
           </div>
 
           <div className="form-group">
+            <label className="form-label">Description</label>
+            <textarea
+              className="form-textarea"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                setShowUncategorizedWarning(false);
+                setSuggestedCategories([]);
+                setShowManualSelect(false);
+                setCategory(LocationCategory.NotSet);
+              }}
+              onBlur={async () => {
+                // Only classify if there's some description text
+                if (!description || description.trim().length === 0) return;
+                setIsClassifying(true);
+                setShowUncategorizedWarning(false);
+                setSuggestedCategories([]);
+                setShowManualSelect(false);
+                try {
+                  const categories = await classifyLocation(description);
+                  // Check if we got valid suggestions
+                  const validCategories = categories.filter(
+                    (cat) =>
+                      cat &&
+                      cat !== 'Uncategorized' &&
+                      cat !== LocationCategory.NotSet &&
+                      cat !== 'Not Set'
+                  );
+                  if (validCategories.length > 0) {
+                    setSuggestedCategories(validCategories);
+                  } else {
+                    setShowUncategorizedWarning(true);
+                    setShowManualSelect(true);
+                  }
+                } catch (err) {
+                  console.error('Classification error', err);
+                } finally {
+                  setIsClassifying(false);
+                }
+              }}
+              placeholder="Optional description"
+              rows={3}
+            />
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Category *</label>
-            <select
-              className="form-select"
-              value={category}
-              onChange={(e) =>
-                setCategory(String(e.target.value) as LocationCategory)
-              }
-              required
-            >
-              {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+            {isClassifying && (
+              <p className="duration-info">
+                Se generează potrivirea cea mai bună pentru descriere...
+              </p>
+            )}
+            {!isClassifying &&
+              suggestedCategories.length > 0 &&
+              !showManualSelect && (
+                <div>
+                  <p className="duration-info">Tag-uri sugerate:</p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      flexWrap: 'wrap',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    {suggestedCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setCategory(cat as LocationCategory);
+                          setShowUncategorizedWarning(false);
+                        }}
+                        className="form-input"
+                        style={{
+                          padding: '8px 16px',
+                          cursor: 'pointer',
+                          backgroundColor:
+                            category === cat ? '#3b82f6' : '#f3f4f6',
+                          color: category === cat ? 'white' : '#1f2937',
+                          border:
+                            category === cat
+                              ? '2px solid #3b82f6'
+                              : '2px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontWeight: category === cat ? 'bold' : 'normal',
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualSelect(true)}
+                    className="duration-info"
+                    style={{
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                    }}
+                  >
+                    Selectare manuală
+                  </button>
+                </div>
+              )}
+            {!isClassifying && showManualSelect && (
+              <div>
+                <select
+                  className="form-select"
+                  value={category}
+                  onChange={(e) => {
+                    setCategory(String(e.target.value) as LocationCategory);
+                    setShowUncategorizedWarning(false);
+                  }}
+                  required
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                {showUncategorizedWarning && (
+                  <p className="duration-info" style={{ color: '#b91c1c' }}>
+                    Descrierea este prea vagă. Încearcă să adaugi mai multe
+                    detalii sau selectează manual categoria.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {isOwner && (
@@ -171,17 +301,6 @@ const AddLocationModal = ({
               </p>
             </div>
           )}
-
-          <div className="form-group">
-            <label className="form-label">Description</label>
-            <textarea
-              className="form-textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
-              rows={3}
-            />
-          </div>
 
           <div className="modal-footer">
             <button

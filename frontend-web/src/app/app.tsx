@@ -10,6 +10,7 @@ import { Role } from '../auth/Interfaces';
 import { AdminRoutes } from '../auth/routes/AdminRoutes';
 import { UserRoutes } from '../auth/routes/UserRoutes';
 import NavigationBar from '../users/NavigationBar';
+import AdminEventsPage from '../locations/components/admin/AdminEventsPage';
 
 export function App() {
   return (
@@ -47,6 +48,7 @@ function AppRoutes() {
       <Route element={<AdminRoutes />}>
         {/* <Route path="/map" element={<Navigate to="/admin/map" replace />} /> */}
         <Route path="/admin/map" element={<AdminLocationsPage />} />
+        <Route path="/admin/events" element={<AdminEventsPage />} />
       </Route>
 
       <Route element={<UserRoutes />}>

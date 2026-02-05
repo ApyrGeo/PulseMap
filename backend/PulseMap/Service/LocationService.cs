@@ -10,10 +10,17 @@ using System.Text.Json;
 
 namespace PulseMap.Service;
 
-public class LocationService(ILocationRepository locationRepository, IUserRepository userRepository, IMapper mapper, IValidatorFactory validatorFactory, IWebSocketNotificationService webSocketNotificationService) : ILocationService
+public class LocationService(
+    ILocationRepository locationRepository, 
+    IUserRepository userRepository, 
+    IMessageRepository messageRepository,
+    IMapper mapper, 
+    IValidatorFactory validatorFactory, 
+    IWebSocketNotificationService webSocketNotificationService) : ILocationService
 {
     private readonly ILocationRepository _locationRepository = locationRepository;
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IMessageRepository _messageRepository = messageRepository;
     private readonly IMapper _mapper = mapper;
     private readonly IValidatorFactory _validator = validatorFactory;
     private readonly IWebSocketNotificationService _webSocketNotificationService = webSocketNotificationService;
@@ -256,4 +263,142 @@ public class LocationService(ILocationRepository locationRepository, IUserReposi
 
         return _mapper.Map<List<LocationResponseDTO>>(locations);
     }
+
+    public async Task<List<(int Location1Id, int Location2Id, double Distance)>> GetNearbyLocationPairsAsync(double maxDistanceMeters = 20)
+    {
+        _logger.InfoFormat("Finding location pairs within {0} meters", maxDistanceMeters);
+
+        var activeLocations = await _locationRepository.GetActiveLocationsAsync();
+        var pairs = new List<(int, int, double)>();
+
+        for (int i = 0; i < activeLocations.Count; i++)
+        {
+            for (int j = i + 1; j < activeLocations.Count; j++)
+            {
+                var loc1 = activeLocations[i];
+                var loc2 = activeLocations[j];
+
+                var distance = CalculateDistance(loc1.Latitude, loc1.Longitude, loc2.Latitude, loc2.Longitude);
+
+                if (distance <= maxDistanceMeters)
+                {
+                    pairs.Add((loc1.Id, loc2.Id, distance));
+                    _logger.InfoFormat("Found nearby pair: Location {0} and {1} at {2:F2}m distance", loc1.Id, loc2.Id, distance);
+                }
+            }
+        }
+
+        _logger.InfoFormat("Found {0} location pairs within {1} meters", pairs.Count, maxDistanceMeters);
+        return pairs;
+    }
+
+    public async Task<bool> MergeLocationsAsync(int keepLocationId, int removeLocationId)
+    {
+        _logger.InfoFormat("Merging locations: keeping {0}, removing {1}", keepLocationId, removeLocationId);
+
+        var keepLocation = await _locationRepository.GetLocationByIdAsync(keepLocationId) ??
+            throw new NotFoundException($"Location {keepLocationId} not found");
+
+        var removeLocation = await _locationRepository.GetLocationByIdAsync(removeLocationId) ??
+            throw new NotFoundException($"Location {removeLocationId} not found");
+
+        // Determine which description is more relevant (longer)
+        if (removeLocation.Description.Length > keepLocation.Description.Length)
+        {
+            _logger.InfoFormat("Swapping: removing location has longer description");
+            (keepLocation, removeLocation) = (removeLocation, keepLocation);
+            (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
+        }
+
+        // Add the removed location's description as a comment to the kept location
+        if (!string.IsNullOrWhiteSpace(removeLocation.Description) && 
+            removeLocation.Description != keepLocation.Description)
+        {
+            _logger.InfoFormat("Adding removed location's description as a comment");
+            
+            // Get the creator (or fallback to first user)
+            var creatorId = keepLocation.CreatorId ?? removeLocation.CreatorId ?? 1;
+            
+            var mergeComment = new Message
+            {
+                Id = 0, // Will be set by DB
+                Content = $"[Merged location]: {removeLocation.Description}",
+                LocationId = keepLocationId,
+                SenderId = creatorId,
+                SentAt = DateTime.UtcNow
+            };
+
+            await _messageRepository.AddMessageAsync(mergeComment);
+            
+            _logger.InfoFormat("Added merge comment with removed description");
+        }
+
+        // Transfer comments from removeLocation to keepLocation as messages
+        if (removeLocation.Comments != null && removeLocation.Comments.Any())
+        {
+            _logger.InfoFormat("Transferring {0} comments from location {1} to {2}", removeLocation.Comments.Count, removeLocationId, keepLocationId);
+            
+            foreach (var comment in removeLocation.Comments.Where(c => c is not ResponseMessage))
+            {
+                comment.LocationId = keepLocationId;
+            }
+        }
+
+        // Transfer likes (avoiding duplicates)
+        if (removeLocation.Likes != null && removeLocation.Likes.Any())
+        {
+            _logger.InfoFormat("Transferring {0} likes from location {1} to {2}", removeLocation.Likes.Count, removeLocationId, keepLocationId);
+            
+            foreach (var user in removeLocation.Likes)
+            {
+                if (!keepLocation.Likes.Any(u => u.Id == user.Id))
+                {
+                    keepLocation.Likes.Add(user);
+                }
+            }
+        }
+
+        // Delete the redundant location
+        await _locationRepository.DeleteLocationAsync(removeLocation);
+        await _locationRepository.SaveChangesAsync();
+
+        _logger.InfoFormat("Successfully merged location {0} into {1}", removeLocationId, keepLocationId);
+
+        // Broadcast update for the kept location
+        var updatedLocationDTO = _mapper.Map<LocationResponseDTO>(keepLocation);
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = updatedLocationDTO
+        });
+
+        // Broadcast deletion for the removed location
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Deleted,
+            Data = new { Id = removeLocationId }
+        });
+
+        return true;
+    }
+
+    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        // Haversine formula to calculate distance in meters
+        const double R = 6371000; // Earth's radius in meters
+        var dLat = ToRadians(lat2 - lat1);
+        var dLon = ToRadians(lon2 - lon1);
+
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c; // Distance in meters
+    }
+
+    private static double ToRadians(double degrees) => degrees * Math.PI / 180.0;
 }
+

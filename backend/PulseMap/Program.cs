@@ -10,6 +10,7 @@ using PulseMap.Interfaces;
 using PulseMap.Middlewares;
 using PulseMap.Repository;
 using PulseMap.Service;
+using PulseMap.Service.AI;
 using PulseMap.Service.BackgroundServices;
 using PulseMap.Service.Validators;
 using PulseMap.Service.WS;
@@ -98,6 +99,111 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 
+// HttpClient for Hugging Face
+builder.Services.AddHttpClient("HuggingFace", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+//AI Classifiers - Register all implementations
+builder.Services.AddScoped<HuggingFaceLocationClassifier>();
+
+// Check if OpenAI is configured before registering classifiers
+var openAiKey = builder.Configuration["OpenAI:ApiKey"];
+var hasOpenAiKey = !string.IsNullOrEmpty(openAiKey);
+
+if (hasOpenAiKey)
+{
+    builder.Services.AddScoped<OpenAiLocationClassifier>();
+    // builder.Services.AddScoped<AzureOpenAiLocationClassifier>(); // Not used anymore
+    Console.WriteLine("✅ OpenAI classifier registered");
+}
+else
+{
+    Console.WriteLine("⚠️ OpenAI API key not configured - using HuggingFace only (free)");
+}
+
+// Composite Classifier - Tries classifiers in order with automatic fallback
+builder.Services.AddScoped<ILocationClassifier>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<CompositeLocationClassifier>>();
+    
+    // Always include HuggingFace (free)
+    var classifiers = new List<ILocationClassifier>
+    {
+        sp.GetRequiredService<HuggingFaceLocationClassifier>()  // 1st: Free, fast
+    };
+
+    // Add OpenAI if available
+    if (hasOpenAiKey)
+    {
+        try
+        {
+            classifiers.Add(sp.GetRequiredService<OpenAiLocationClassifier>());  // 2nd: Paid, reliable
+            logger.LogInformation("CompositeLocationClassifier initialized with HuggingFace + OpenAI");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to initialize OpenAI classifier, using HuggingFace only");
+        }
+    }
+    else
+    {
+        logger.LogInformation("CompositeLocationClassifier initialized with HuggingFace only (free)");
+    }
+    
+    return new CompositeLocationClassifier(classifiers, logger);
+});
+
+//AI Location Matchers - Register all implementations
+builder.Services.AddScoped<KeywordLocationMatcher>();
+
+if (hasOpenAiKey)
+{
+    builder.Services.AddScoped<EmbeddingLocationMatcher>();
+    builder.Services.AddScoped<GptLocationMatcher>();
+    Console.WriteLine("✅ OpenAI matchers registered (GPT + Embeddings available)");
+}
+else
+{
+    Console.WriteLine("⚠️ OpenAI matchers not configured - using keyword matching only (free)");
+}
+
+// Composite Location Matcher - Uses available matchers with keyword fallback
+builder.Services.AddScoped<ILocationMatcher>(sp =>
+{
+    var keywordMatcher = sp.GetRequiredService<KeywordLocationMatcher>();
+    var logger = sp.GetRequiredService<ILogger<CompositeLocationMatcher>>();
+
+    EmbeddingLocationMatcher? embeddingMatcher = null;
+    GptLocationMatcher? gptMatcher = null;
+
+    if (hasOpenAiKey)
+    {
+        try
+        {
+            embeddingMatcher = sp.GetRequiredService<EmbeddingLocationMatcher>();
+            gptMatcher = sp.GetRequiredService<GptLocationMatcher>();
+            logger.LogInformation("CompositeLocationMatcher initialized with GPT + Embeddings + Keyword");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to initialize OpenAI matchers, using keyword matching only");
+        }
+    }
+    else
+    {
+        logger.LogInformation("CompositeLocationMatcher initialized with Keyword matching only (free)");
+    }
+
+    return new CompositeLocationMatcher(keywordMatcher, logger, embeddingMatcher, gptMatcher);
+});
+
+// Alternative: Use a single classifier directly (no fallback)
+// builder.Services.AddScoped<ILocationClassifier, HuggingFaceLocationClassifier>();
+// builder.Services.AddScoped<ILocationClassifier, OpenAiLocationClassifier>();
+// builder.Services.AddScoped<ILocationClassifier, AzureOpenAiLocationClassifier>();
+
 // Hangfire
 builder.Services.AddHangfire(config =>
     config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -120,11 +226,12 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
+// CORS must be before Authorization and MapControllers
+app.UseCors(AppAllowSpecificOrigins);
+
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseCors(AppAllowSpecificOrigins);
 
 // WS
 app.UseWebSockets(new WebSocketOptions
@@ -169,6 +276,11 @@ using (var scope = app.Services.CreateScope())
         x => x.ExtendLocationDurationByLikeCounts(),
         Cron.Daily);
 
+    // Check and merge duplicate locations every 24 hours
+    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+        "check-merge-duplicate-locations",
+        x => x.CheckAndMergeDuplicateLocations(),
+        Cron.Daily);
 }
 
 app.Run();

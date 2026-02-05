@@ -2,6 +2,7 @@ import {
   Location,
   MessagePostDTO,
   ResponseMessagePostDTO,
+  LocationCategory,
 } from '../Interfaces';
 import { useEffect, useState } from 'react';
 import LocationComments from './LocationComments';
@@ -24,6 +25,20 @@ import {
   NavigateNext,
   AccessTime,
 } from '@mui/icons-material';
+
+const categoryColors: { [key: string]: string } = {
+  [LocationCategory.NotSet]: '#6B7280', // Gray
+  [LocationCategory.Music]: '#8B5CF6', // Purple
+  [LocationCategory.Sport]: '#10B981', // Green
+  [LocationCategory.Food]: '#F59E0B', // Orange
+  [LocationCategory.Entertainment]: '#EF4444', // Red
+  [LocationCategory.Education]: '#3B82F6', // Blue
+  [LocationCategory.Health]: '#EC4899', // Pink
+  [LocationCategory.Technology]: '#14B8A6', // Teal
+  [LocationCategory.Travel]: '#F97316', // Orange-Red
+  [LocationCategory.Art]: '#A855F7', // Purple-Pink
+  [LocationCategory.Business]: '#06B6D4', // Cyan
+};
 
 interface LocationPopupProps {
   location: Location;
@@ -117,6 +132,22 @@ const LocationPopup = ({
 
           {/* Compact Info Section */}
           <Stack spacing={1} sx={{ mb: 1 }}>
+            {/* Category */}
+            {location.category && (
+              <Chip
+                label={location.category}
+                size="small"
+                sx={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  alignSelf: 'flex-start',
+                  backgroundColor:
+                    categoryColors[location.category] || '#6B7280',
+                  color: 'white',
+                }}
+              />
+            )}
+
             {/* Creator */}
             {location.creator && (
               <Stack direction="row" spacing={1} alignItems="center">

@@ -14,4 +14,6 @@ public interface ILocationService
     Task<LocationResponseDTO?> GetLocationByIdAsync(int id, int userId = 1);
     Task<LocationResponseDTO> LikeLocationAsync(int id, int userId);
     Task<LocationResponseDTO?> UpdateLocationAsync(LocationPutDTO locationResponseDTO, int id);
+    Task<List<(int Location1Id, int Location2Id, double Distance)>> GetNearbyLocationPairsAsync(double maxDistanceMeters = 20);
+    Task<bool> MergeLocationsAsync(int keepLocationId, int removeLocationId);
 }
