@@ -14,7 +14,6 @@ import {
   IconButton,
   Chip,
   Card,
-  CardContent,
   Divider,
   Stack,
 } from '@mui/material';
@@ -24,7 +23,6 @@ import {
   NavigateBefore,
   NavigateNext,
   AccessTime,
-  Person,
 } from '@mui/icons-material';
 
 interface LocationPopupProps {

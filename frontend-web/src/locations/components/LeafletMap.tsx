@@ -171,7 +171,7 @@ const MapBoundsHandler = ({ onBoundsChange }: MapBoundsHandlerProps) => {
 // Component to handle marker animations
 interface AnimatedMarkerProps {
   location: Location;
-  icon: L.Icon;
+  icon: L.Icon | L.DivIcon;
   animationState?: 'new' | 'updated' | 'liked' | null;
   onContextMenu?: (e: React.MouseEvent, location: Location) => void;
   isAdmin?: boolean;
@@ -245,6 +245,7 @@ const AnimatedMarker = ({
         return () => clearTimeout(cleanupTimeout);
       }
     }
+    return;
   }, [animationState, location.id]);
 
   return (

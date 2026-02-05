@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import LeafletMap, { ZOOM_THRESHOLDS } from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
