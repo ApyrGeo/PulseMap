@@ -29,6 +29,14 @@ public class LocationController(ILocationService locationService) : ControllerBa
         return Ok(locations);
     }
 
+    [HttpGet("bounds")]
+    [ProducesResponseType(200)]
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsInBounds([FromQuery] double minLat, [FromQuery] double maxLat, [FromQuery] double minLng, [FromQuery] double maxLng, [FromQuery] string? type, [FromQuery] bool active = true)
+    {
+        var locations = await _locationService.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng, type);
+        return Ok(locations);
+    }
+
     [HttpPost]
     [ProducesResponseType(201)]
     [ProducesResponseType(422)]
@@ -69,10 +77,10 @@ public class LocationController(ILocationService locationService) : ControllerBa
         return Ok(updatedLocation);
     }
 
-    [HttpPatch("{id}/like")]
-    public async Task<ActionResult<LocationResponseDTO>> LikeLocation(int id)
+    [HttpPatch("{locationId}/like")]
+    public async Task<ActionResult<LocationResponseDTO>> LikeLocation([FromRoute] int locationId, [FromQuery] int userId)
     {
-        var updatedLocation = await _locationService.LikeLocationAsync(id);
+        var updatedLocation = await _locationService.LikeLocationAsync(locationId, userId);
         return Ok(updatedLocation);
     }
 }

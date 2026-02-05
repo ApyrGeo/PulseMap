@@ -1,35 +1,151 @@
-import { useEffect, useState } from 'react';
-import LeafletMap from '../LeafletMap';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import toast from 'react-hot-toast';
+import LeafletMap, { ZOOM_THRESHOLDS } from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
 import {
   LocationPostDTO,
   MessagePostDTO,
   ResponseMessagePostDTO,
+  Location,
+  LocationCategory,
 } from '../../Interfaces';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import AddLocationModal from '../AddLocationModal';
+import {
+  fetchLocationsByBounds,
+  MapBounds,
+} from '../../services/LocationsApiService';
+import '../../../users/LocationsPage.css';
 
 const UserMapComponent = () => {
   const {
-    activeLocations,
-    refreshLocations,
     addLocation,
     addCommentToLocation,
     addResponseToMessage,
     likeLocation,
     unlikeLocation,
+    activeLocations,
+    refreshLocations,
   } = useLocations();
 
-  useEffect(() => {
-    refreshLocations(true);
-  }, []);
-
+  const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
+  const [currentZoom, setCurrentZoom] = useState(15);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [clickedCoords, setClickedCoords] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
+  const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  // Load initial locations on mount
+  useEffect(() => {
+    refreshLocations(true);
+  }, [refreshLocations]);
+
+  // Merge activeLocations from WebSocket with bounds-filtered locations
+  useEffect(() => {
+    if (!lastBounds) return;
+
+    const selectedNorm = selectedType
+      ? selectedType.replace(/\s+/g, '').toLowerCase()
+      : null;
+
+    // Filter activeLocations by current bounds and selected type (if any)
+    const filtered = activeLocations.filter((loc) => {
+      const inBounds =
+        loc.latitude >= lastBounds.minLat &&
+        loc.latitude <= lastBounds.maxLat &&
+        loc.longitude >= lastBounds.minLng &&
+        loc.longitude <= lastBounds.maxLng;
+
+      if (!inBounds) return false;
+
+      if (!selectedNorm) return true;
+
+      const cat = (loc.category ?? '').toString();
+      const catNorm = cat.replace(/\s+/g, '').toLowerCase();
+      return catNorm === selectedNorm;
+    });
+
+    setVisibleLocations(filtered);
+  }, [activeLocations, lastBounds, selectedType]);
+
+  const handleBoundsChange = useCallback(
+    async (bounds: MapBounds, zoom: number) => {
+      setCurrentZoom(zoom);
+      setLastBounds(bounds);
+
+      // Don't fetch if zoomed out too far
+      if (zoom < ZOOM_THRESHOLDS.CITY) {
+        setVisibleLocations([]);
+        setLastBounds(null);
+        return;
+      }
+
+      try {
+        const typeForApi = selectedType
+          ? selectedType.replace(/\s+/g, '')
+          : null;
+        const data = await fetchLocationsByBounds(bounds, true, typeForApi);
+        // Use server response immediately to populate visible locations
+        setVisibleLocations(data);
+      } catch (error) {
+        console.error('Failed to fetch locations by bounds:', error);
+      }
+    },
+    [selectedType]
+  );
+
+  // Re-fetch when the selected type filter changes while we have bounds
+  useEffect(() => {
+    if (!lastBounds) return;
+    if (currentZoom < ZOOM_THRESHOLDS.CITY) return;
+
+    (async () => {
+      try {
+        const typeForApi = selectedType
+          ? selectedType.replace(/\s+/g, '')
+          : null;
+        const data = await fetchLocationsByBounds(lastBounds, true, typeForApi);
+        setVisibleLocations(data);
+      } catch (err) {
+        console.error(
+          'Failed to fetch locations by bounds (type change):',
+          err
+        );
+      }
+    })();
+  }, [selectedType, lastBounds, currentZoom]);
 
   const handleMapClick = (lat: number, lng: number) => {
+    // Don't show any error when zoom is too far out (< 12)
+    if (currentZoom < 12) {
+      return;
+    }
+
+    // Show warning if zoom is between 12 and 15
+    if (currentZoom >= 12 && currentZoom <= 15) {
+      toast.error(
+        (t) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img
+              src="https://www.ag-grid.com/charts/images/zoom-out-touch.gif"
+              alt="Zoom in"
+              style={{ width: '50px', height: '50px', borderRadius: '4px' }}
+            />
+            <span>
+              Please zoom in more to be more precise with the placement
+            </span>
+          </div>
+        ),
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    // Allow placement when zoom > 15
     setClickedCoords({ lat, lng });
     setAddModalOpen(true);
   };
@@ -55,22 +171,41 @@ const UserMapComponent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Locations Map</h1>
-        <p className="text-gray-600 mt-2">
-          Click on the map to add a location (1 day duration by default)
+    <div className="locations-page">
+      <header className="locations-header">
+        <h1 className="locations-title">Locations Map</h1>
+        <p className="locations-subtitle">
+          {currentZoom < ZOOM_THRESHOLDS.CITY
+            ? 'Zoom in to see locations'
+            : currentZoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD
+            ? 'Click on the map to add a location (1 day duration by default)'
+            : `${visibleLocations.length} locations in this area - zoom in to see details`}
         </p>
+        <div style={{ width: 260, marginTop: 8 }}>
+          <Autocomplete
+            size="small"
+            options={['None', ...Object.values(LocationCategory)]}
+            value={selectedType ?? 'None'}
+            onChange={(_, value) =>
+              setSelectedType(value === 'None' ? null : value)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Ping Type" variant="outlined" />
+            )}
+          />
+        </div>
       </header>
 
-      <div className="bg-white rounded-lg shadow-lg p-4">
+      <div className="locations-map-container">
         <LeafletMap
-          locations={activeLocations}
+          locations={visibleLocations}
           onMapClick={handleMapClick}
           onAddComment={handleAddComment}
           onAddResponse={handleAddResponse}
           onLike={handleLike}
           onUnlike={handleUnlike}
+          onBoundsChange={handleBoundsChange}
+          currentZoom={currentZoom}
         />
       </div>
 

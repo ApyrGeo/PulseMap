@@ -1,27 +1,128 @@
-import { useState, useEffect } from 'react';
-import LeafletMap from '../LeafletMap';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import LeafletMap, {
+  ZOOM_THRESHOLDS,
+  LocationAnimationState,
+} from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
 import { Location } from '../../Interfaces';
 import AdminContextMenu from './AdminContextMenu';
+import {
+  fetchLocationsByBounds,
+  MapBounds,
+} from '../../services/LocationsApiService';
+import '../../../users/LocationsPage.css';
 
 const AdminMapComponent = () => {
   const {
-    allLocations,
-    refreshLocations,
     deleteLocationById,
     expireLocationById,
     extendLocationById,
+    allLocations,
+    refreshLocations,
   } = useLocations();
 
+  const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
+  const [currentZoom, setCurrentZoom] = useState(15);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     location: Location;
   } | null>(null);
+  const [animationStates, setAnimationStates] =
+    useState<LocationAnimationState>({});
+  const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
+  const seenLocationIdsRef = useRef<Set<number>>(new Set());
+  const prevVisibleLocationsRef = useRef<Location[]>([]);
 
+  // Load initial locations on mount (admin sees all)
   useEffect(() => {
-    refreshLocations(false); // Load all locations (active + expired)
+    refreshLocations(false);
   }, [refreshLocations]);
+
+  // Track all locations we've seen to prevent re-animating on bounds changes
+  useEffect(() => {
+    allLocations.forEach((loc) => {
+      seenLocationIdsRef.current.add(loc.id);
+    });
+  }, [allLocations]);
+
+  // Merge allLocations from WebSocket with bounds-filtered locations
+  useEffect(() => {
+    if (!lastBounds) return;
+
+    // Filter allLocations by current bounds
+    const filtered = allLocations.filter((loc) => {
+      return (
+        loc.latitude >= lastBounds.minLat &&
+        loc.latitude <= lastBounds.maxLat &&
+        loc.longitude >= lastBounds.minLng &&
+        loc.longitude <= lastBounds.maxLng
+      );
+    });
+
+    // Check for changes to trigger animations
+    const prevLocationsRef = new Map(
+      prevVisibleLocationsRef.current.map((loc) => [loc.id, loc])
+    );
+
+    filtered.forEach((loc) => {
+      const prev = prevLocationsRef.get(loc.id);
+
+      // Only animate if this is truly new (not just entering bounds)
+      if (!prev && !seenLocationIdsRef.current.has(loc.id)) {
+        // New location from WebSocket
+        setAnimationStates((states) => ({ ...states, [loc.id]: 'new' }));
+        setTimeout(() => {
+          setAnimationStates((states) => ({ ...states, [loc.id]: null }));
+        }, 1800);
+      } else if (
+        prev &&
+        prev.likesCount !== undefined &&
+        loc.likesCount !== undefined &&
+        loc.likesCount > prev.likesCount
+      ) {
+        // Location got liked
+        setAnimationStates((states) => ({ ...states, [loc.id]: 'liked' }));
+        setTimeout(() => {
+          setAnimationStates((states) => ({ ...states, [loc.id]: null }));
+        }, 500);
+      } else if (
+        prev &&
+        JSON.stringify(prev) !== JSON.stringify(loc) &&
+        prev.likesCount === loc.likesCount
+      ) {
+        // Location updated (but not just likes)
+        setAnimationStates((states) => ({ ...states, [loc.id]: 'updated' }));
+        setTimeout(() => {
+          setAnimationStates((states) => ({ ...states, [loc.id]: null }));
+        }, 600);
+      }
+    });
+
+    prevVisibleLocationsRef.current = filtered;
+    setVisibleLocations(filtered);
+  }, [allLocations, lastBounds]);
+
+  const handleBoundsChange = useCallback(
+    async (bounds: MapBounds, zoom: number) => {
+      setCurrentZoom(zoom);
+      setLastBounds(bounds);
+
+      if (zoom < ZOOM_THRESHOLDS.CITY) {
+        setVisibleLocations([]);
+        setLastBounds(null);
+        return;
+      }
+
+      try {
+        await fetchLocationsByBounds(bounds, false); // Admin sees all
+        // Don't set visibleLocations here - let the useEffect handle it
+      } catch (error) {
+        console.error('Failed to fetch locations by bounds:', error);
+      }
+    },
+    []
+  );
 
   const handleContextMenu = (e: React.MouseEvent, location: Location) => {
     e.preventDefault();
@@ -73,19 +174,22 @@ const AdminMapComponent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
-        <p className="text-gray-600 mt-2">
+    <div className="locations-page">
+      <header className="locations-header">
+        <h1 className="locations-title">Admin Panel</h1>
+        <p className="locations-subtitle">
           Right-click on a marker to manage locations
         </p>
       </header>
 
-      <div className="bg-white rounded-lg shadow-lg p-4">
+      <div className="locations-map-container">
         <LeafletMap
-          locations={allLocations}
+          locations={visibleLocations}
           onContextMenu={handleContextMenu}
           isAdmin={true}
+          onBoundsChange={handleBoundsChange}
+          currentZoom={currentZoom}
+          animationStates={animationStates}
         />
       </div>
 

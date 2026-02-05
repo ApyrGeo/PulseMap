@@ -1,0 +1,250 @@
+/* Location Comments Styles */
+.comments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comments-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* Comment form */
+.comment-form {
+  margin-bottom: 0.75rem;
+}
+
+.comment-input-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.comment-input:focus {
+  ring: 2px;
+  ring-color: #3b82f6;
+}
+
+.comment-submit-button {
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.comment-submit-button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Comments list */
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comment-item {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.comment-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.comment-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #60a5fa, #a78bfa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.comment-username {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.comment-timestamp {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.comment-text {
+  font-size: 0.875rem;
+  color: #374151;
+  margin-top: 0.25rem;
+}
+
+.comment-reply-button {
+  font-size: 0.75rem;
+  color: #2563eb;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.25rem;
+  padding: 0;
+}
+
+.comment-reply-button:hover {
+  color: #1e40af;
+}
+
+/* Responses */
+.responses-container {
+  margin-left: 2.5rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.response-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.response-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #34d399, #14b8a6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.response-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.response-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.response-username {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.response-timestamp {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.response-text {
+  font-size: 0.75rem;
+  color: #374151;
+  margin-top: 0.25rem;
+}
+
+/* Reply form */
+.reply-form {
+  margin-left: 2.5rem;
+  margin-top: 0.5rem;
+}
+
+.reply-input-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.reply-input {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+.reply-input:focus {
+  ring: 1px;
+  ring-color: #3b82f6;
+}
+
+.reply-submit-button {
+  padding: 0.25rem 0.75rem;
+  background-color: #2563eb;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+}
+
+.reply-submit-button:hover {
+  background-color: #1d4ed8;
+}
+
+.reply-cancel-button {
+  padding: 0.25rem 0.75rem;
+  background-color: #d1d5db;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+}
+
+.reply-cancel-button:hover {
+  background-color: #9ca3af;
+}
+
+/* Empty state */
+.comments-empty {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-align: center;
+  padding: 1rem 0;
+}

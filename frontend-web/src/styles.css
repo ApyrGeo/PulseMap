@@ -1,5 +1,37 @@
 @import 'tailwindcss';
-@tailwind base;
-@tailwind components;
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
+
+/* Override Leaflet popup styles for MUI components */
+.leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 550px !important;
+  max-width: 650px !important;
+  width: auto !important;
+}
+
+.leaflet-popup-tip-container {
+  display: none !important;
+}
+
+.leaflet-popup-close-button {
+  font-size: 24px !important;
+  padding: 4px 8px !important;
+  color: #666 !important;
+  z-index: 1000 !important;
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #333 !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 4px;
+}

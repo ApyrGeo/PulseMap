@@ -1,0 +1,62 @@
+/* Context Menu Styles - Shared between Admin and Owner */
+.context-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.context-menu {
+  position: fixed;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0;
+  z-index: 1000;
+}
+
+.context-menu-item {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.context-menu-item:hover {
+  background-color: #f3f4f6;
+}
+
+.context-menu-item.edit:hover {
+  background-color: #f3f4f6;
+}
+
+.context-menu-item.expire {
+  color: #d97706;
+}
+
+.context-menu-item.expire:hover {
+  background-color: #fef3c7;
+}
+
+.context-menu-item.delete {
+  color: #dc2626;
+}
+
+.context-menu-item.delete:hover {
+  background-color: #fef2f2;
+}
+
+.context-menu-item.extend {
+  color: #059669;
+}
+
+.context-menu-item.extend:hover {
+  background-color: #d1fae5;
+}

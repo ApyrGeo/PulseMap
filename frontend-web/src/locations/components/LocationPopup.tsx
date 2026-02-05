@@ -1,4 +1,3 @@
-import { Popup } from 'react-leaflet';
 import {
   Location,
   MessagePostDTO,
@@ -7,6 +6,26 @@ import {
 import { useEffect, useState } from 'react';
 import LocationComments from './LocationComments';
 import { useAuth } from '../../auth/AuthProvider';
+import {
+  Box,
+  Typography,
+  Avatar,
+  Button,
+  IconButton,
+  Chip,
+  Card,
+  CardContent,
+  Divider,
+  Stack,
+} from '@mui/material';
+import {
+  Favorite,
+  FavoriteBorder,
+  NavigateBefore,
+  NavigateNext,
+  AccessTime,
+  Person,
+} from '@mui/icons-material';
 
 interface LocationPopupProps {
   location: Location;
@@ -26,7 +45,7 @@ const LocationPopup = ({
   const { user } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [likeCount, setLikeCount] = useState(location.likesCount || 0);
-  const [isLiked, setIsLiked] = useState(!(location.likesCount > 0));
+  const [isLiked, setIsLiked] = useState(location.isLikedByCurrentUser);
 
   const placeholderImages = ['📍 Image 1', '🗺️ Image 2', '📷 Image 3'];
 
@@ -40,151 +59,239 @@ const LocationPopup = ({
     );
   };
 
-  const handleLikeToggle = () => {
-    if (location.isLikedByCurrentUser) {
+  const handleLikeToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // Optimistically update UI immediately
+    if (isLiked) {
+      setIsLiked(false);
+      setLikeCount((prev) => Math.max(0, prev - 1));
       onUnlike(location.id);
-      setLikeCount((prev) => prev - 1);
     } else {
-      onLike(location.id);
+      setIsLiked(true);
       setLikeCount((prev) => prev + 1);
+      onLike(location.id);
     }
   };
 
   useEffect(() => {
-    setLikeCount(location.likesCount);
-    setIsLiked(!isLiked);
-  }, [location.likesCount]);
+    setLikeCount(location.likesCount || 0);
+    setIsLiked(location.isLikedByCurrentUser);
+  }, [location.likesCount, location.isLikedByCurrentUser]);
 
   return (
-    <Popup>
-      <div className="min-w-[280px] max-w-[320px]">
-        <div className="text-center space-y-3 mb-4">
-          <h3 className="text-xl font-bold text-gray-800">{location.name}</h3>
+    <Box
+      sx={{
+        minWidth: 550,
+        maxWidth: 650,
+        bgcolor: 'background.paper',
+        p: 2,
+        borderRadius: 2,
+      }}
+    >
+      {/* Header */}
+      <Typography
+        variant="h6"
+        component="h3"
+        sx={{
+          fontWeight: 700,
+          mb: 1.5,
+          textAlign: 'center',
+          color: 'primary.main',
+        }}
+      >
+        {location.name}
+      </Typography>
 
-          <div className="relative w-full h-32 bg-linear-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-gray-600 text-sm font-medium shadow-inner overflow-hidden">
-            <div className="text-2xl">
+      {/* Main Content */}
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        {/* Left Side - Info & Comments */}
+        <Box
+          sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}
+        >
+          {/* Description */}
+          {location.description && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {location.description}
+            </Typography>
+          )}
+
+          {/* Compact Info Section */}
+          <Stack spacing={1} sx={{ mb: 1 }}>
+            {/* Creator */}
+            {location.creator && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Avatar
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    bgcolor: 'primary.main',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  {location.creator.username.charAt(0).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {location.owner ? 'Owner' : 'Creator'}
+                  </Typography>
+                  <Typography variant="body2" fontWeight={500}>
+                    {location.creator.username}
+                  </Typography>
+                </Box>
+              </Stack>
+            )}
+
+            {/* Expires & Likes in one row */}
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Chip
+                icon={<AccessTime />}
+                label={new Date(location.expiresAt).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+                size="small"
+                color="error"
+                variant="outlined"
+                sx={{ fontSize: '0.75rem' }}
+              />
+              <Chip
+                label={`${likeCount} ${likeCount === 1 ? 'like' : 'likes'}`}
+                size="small"
+                color="primary"
+                variant="outlined"
+                sx={{ fontSize: '0.75rem' }}
+              />
+            </Stack>
+
+            {/* Like Button */}
+            <Button
+              fullWidth
+              size="small"
+              variant={isLiked ? 'contained' : 'outlined'}
+              color={isLiked ? 'error' : 'primary'}
+              startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
+              onClick={handleLikeToggle}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              {isLiked ? 'Unlike' : 'Like'}
+            </Button>
+          </Stack>
+
+          {/* Comments Section */}
+          {user && (
+            <>
+              <Divider sx={{ my: 1 }} />
+              <Box sx={{ maxHeight: 250, overflowY: 'auto' }}>
+                <LocationComments
+                  comments={location.messages}
+                  currentUser={location.creator}
+                  onAddComment={(content) =>
+                    onAddComment({
+                      locationId: location.id,
+                      content,
+                      senderId: user.id,
+                    })
+                  }
+                  onAddResponse={(messageId, content) =>
+                    onAddResponse({
+                      messageId,
+                      content,
+                      senderId: user.id,
+                    })
+                  }
+                />
+              </Box>
+            </>
+          )}
+        </Box>
+
+        {/* Right Side - Image Carousel */}
+        <Box sx={{ width: 250, flexShrink: 0 }}>
+          <Card
+            sx={{
+              position: 'relative',
+              height: '100%',
+              minHeight: 320,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              }}
+            >
               {placeholderImages[currentImageIndex]}
-            </div>
+            </Typography>
 
             {placeholderImages.length > 1 && (
               <>
-                <button
+                <IconButton
                   onClick={prevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all"
+                  sx={{
+                    position: 'absolute',
+                    left: 8,
+                    bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    '&:hover': { bgcolor: 'white' },
+                  }}
                 >
-                  <span className="text-gray-700 font-bold">‹</span>
-                </button>
+                  <NavigateBefore />
+                </IconButton>
 
-                <button
+                <IconButton
                   onClick={nextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all"
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    '&:hover': { bgcolor: 'white' },
+                  }}
                 >
-                  <span className="text-gray-700 font-bold">›</span>
-                </button>
+                  <NavigateNext />
+                </IconButton>
 
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  sx={{
+                    position: 'absolute',
+                    bottom: 12,
+                  }}
+                >
                   {placeholderImages.map((_, index) => (
-                    <div
+                    <Box
                       key={index}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentImageIndex
-                          ? 'bg-white w-4'
-                          : 'bg-white/50'
-                      }`}
+                      sx={{
+                        width: index === currentImageIndex ? 16 : 8,
+                        height: 8,
+                        borderRadius: 4,
+                        bgcolor:
+                          index === currentImageIndex
+                            ? 'white'
+                            : 'rgba(255, 255, 255, 0.5)',
+                        transition: 'all 0.3s',
+                      }}
                     />
                   ))}
-                </div>
+                </Stack>
               </>
             )}
-          </div>
-
-          {location.description && (
-            <p className="text-gray-700 text-sm px-2 py-2 bg-gray-50 rounded-lg">
-              {location.description}
-            </p>
-          )}
-        </div>
-
-        {location.creator && (
-          <div className="pt-3 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-              {location.owner ? 'Owner' : 'Creator'}
-            </h4>
-
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                {location.creator.username.charAt(0).toUpperCase()}
-              </div>
-
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">
-                  {location.creator.username}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="mb-3 pb-3 border-b border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
-            Expires At
-          </h4>
-          <p className="text-sm text-gray-800 bg-red-50 px-2 py-1 rounded">
-            {new Date(location.expiresAt).toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </p>
-        </div>
-
-        <div className="mb-3 pb-3 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-              Likes
-            </h4>
-            <span className="text-sm font-medium text-gray-800">
-              {likeCount} {likeCount === 1 ? 'like' : 'likes'}
-            </span>
-          </div>
-
-          <button
-            onClick={handleLikeToggle}
-            className={`mt-2 w-full py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-              isLiked
-                ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <span className="text-lg">{isLiked ? '🤍' : '❤️'}</span>
-            <span>{isLiked ? 'Unlike' : 'Like'}</span>
-          </button>
-        </div>
-
-        {user && (
-          <LocationComments
-            comments={location.messages}
-            currentUser={location.creator}
-            onAddComment={(content) =>
-              onAddComment({
-                locationId: location.id,
-                content,
-                senderId: user.id,
-              })
-            }
-            onAddResponse={(messageId, content) =>
-              onAddResponse({
-                messageId,
-                content,
-                senderId: user.id,
-              })
-            }
-          />
-        )}
-      </div>
-    </Popup>
+          </Card>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

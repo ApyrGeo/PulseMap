@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Message, SimplifiedUser } from '../Interfaces';
+import './LocationComments.css';
 
 interface LocationCommentsProps {
   comments: Message[];
@@ -48,50 +49,45 @@ const LocationComments = ({
   };
 
   return (
-    <div className="space-y-3">
-      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-        Comments ({comments.length})
-      </h4>
+    <div className="comments-container">
+      <h4 className="comments-title">Comments ({comments.length})</h4>
 
-      <form onSubmit={handleSubmitComment} className="mb-3">
-        <div className="flex gap-2">
+      <form onSubmit={handleSubmitComment} className="comment-form">
+        <div className="comment-input-container">
           <input
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
-            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="comment-input"
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-          >
+          <button type="submit" className="comment-submit-button">
             Send
           </button>
         </div>
       </form>
 
-      <div className="space-y-3 max-h-[300px] overflow-y-auto">
+      <div className="comments-list">
         {comments.map((message) => (
-          <div key={message.id} className="bg-gray-50 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold text-xs shrink-0">
+          <div key={message.id} className="comment-item">
+            <div className="comment-content">
+              <div className="comment-avatar">
                 {message.sender.username.charAt(0).toUpperCase()}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold text-gray-800">
+              <div className="comment-body">
+                <div className="comment-header">
+                  <span className="comment-username">
                     {message.sender.username}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="comment-timestamp">
                     {formatDateTime(new Date(message.sentAt))}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 mt-1">{message.content}</p>
+                <p className="comment-text">{message.content}</p>
 
                 <button
                   onClick={() => setReplyingTo(message.id)}
-                  className="text-xs text-blue-600 hover:text-blue-800 mt-1 font-medium"
+                  className="comment-reply-button"
                 >
                   Reply
                 </button>
@@ -99,24 +95,22 @@ const LocationComments = ({
             </div>
 
             {message.responses && message.responses.length > 0 && (
-              <div className="ml-10 mt-2 space-y-2">
+              <div className="responses-container">
                 {message.responses.map((response) => (
-                  <div key={response.id} className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-full bg-linear-to-br from-green-400 to-teal-400 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  <div key={response.id} className="response-item">
+                    <div className="response-avatar">
                       {response.sender.username.charAt(0).toUpperCase()}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs font-semibold text-gray-800">
+                    <div className="response-body">
+                      <div className="response-header">
+                        <span className="response-username">
                           {response.sender.username}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="response-timestamp">
                           {formatDateTime(new Date(response.sentAt))}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-700 mt-1">
-                        {response.content}
-                      </p>
+                      <p className="response-text">{response.content}</p>
                     </div>
                   </div>
                 ))}
@@ -124,19 +118,19 @@ const LocationComments = ({
             )}
 
             {replyingTo === message.id && (
-              <div className="ml-10 mt-2">
-                <div className="flex gap-2">
+              <div className="reply-form">
+                <div className="reply-input-container">
                   <input
                     type="text"
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="Write a reply..."
-                    className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="reply-input"
                     autoFocus
                   />
                   <button
                     onClick={(e) => handleSubmitReply(message.id, e)}
-                    className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700"
+                    className="reply-submit-button"
                   >
                     Reply
                   </button>
@@ -145,7 +139,7 @@ const LocationComments = ({
                       setReplyingTo(null);
                       setReplyContent('');
                     }}
-                    className="px-3 py-1 bg-gray-300 text-gray-700 text-xs font-medium rounded hover:bg-gray-400"
+                    className="reply-cancel-button"
                   >
                     Cancel
                   </button>
@@ -156,7 +150,7 @@ const LocationComments = ({
         ))}
 
         {comments.length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-4">
+          <p className="comments-empty">
             No comments yet. Be the first to comment!
           </p>
         )}

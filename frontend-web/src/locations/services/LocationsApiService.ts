@@ -8,10 +8,41 @@ import { Location } from '../Interfaces';
 
 const LOCATIONS_URL = BASE_API_URL + '/Location';
 
+export interface MapBounds {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
 export async function fetchLocations(active: boolean): Promise<Location[]> {
   const response = await fetch(`${LOCATIONS_URL}?active=${active}`);
   if (!response.ok) {
     throw new Error('Failed to fetch locations');
+  }
+  return response.json();
+}
+
+export async function fetchLocationsByBounds(
+  bounds: MapBounds,
+  active: boolean,
+  type?: string | null
+): Promise<Location[]> {
+  const params = new URLSearchParams({
+    minLat: bounds.minLat.toString(),
+    maxLat: bounds.maxLat.toString(),
+    minLng: bounds.minLng.toString(),
+    maxLng: bounds.maxLng.toString(),
+    active: active.toString(),
+  });
+
+  if (type) {
+    params.append('type', type);
+  }
+
+  const response = await fetch(`${LOCATIONS_URL}/bounds?${params}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch locations by bounds');
   }
   return response.json();
 }
@@ -103,31 +134,51 @@ export async function extendLocation(id: number): Promise<Location> {
 }
 
 export async function likeLocationAPI(
-  locationId: number
+  locationId: number,
+  userId: number
 ): Promise<LocationLikesSummaryDTO> {
-  const response = await fetch(`${LOCATIONS_URL}/${locationId}/like`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const response = await fetch(
+    `${LOCATIONS_URL}/${locationId}/like?userId=${userId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
   if (!response.ok) {
     const txt = await response.text();
     console.error('Failed to like location:', txt);
     throw new Error('Failed to like location');
   }
-  return response.json();
+  const location = await response.json();
+  return {
+    id: location.id,
+    likesCount: location.likesCount,
+    isNowLiked: location.isLikedByCurrentUser,
+    toggledByUserId: userId,
+  };
 }
 
 export async function unlikeLocationAPI(
-  locationId: number
+  locationId: number,
+  userId: number
 ): Promise<LocationLikesSummaryDTO> {
-  const response = await fetch(`${LOCATIONS_URL}/${locationId}/like`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const response = await fetch(
+    `${LOCATIONS_URL}/${locationId}/like?userId=${userId}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
   if (!response.ok) {
     const txt = await response.text();
     console.error('Failed to unlike location:', txt);
     throw new Error('Failed to unlike location');
   }
-  return response.json();
+  const location = await response.json();
+  return {
+    id: location.id,
+    likesCount: location.likesCount,
+    isNowLiked: location.isLikedByCurrentUser,
+    toggledByUserId: userId,
+  };
 }

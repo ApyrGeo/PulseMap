@@ -77,4 +77,19 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         _context.Locations.Remove(location);
     }
 
+    public async Task<List<Location>> GetActiveLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng)
+    {
+        return await _context.Locations
+            .Where(l => !l.IsExpired &&
+                l.Latitude >= minLat && l.Latitude <= maxLat &&
+                l.Longitude >= minLng && l.Longitude <= maxLng)
+            .Include(l => l.Likes)
+            .Include(l => l.Creator)
+            .Include(l => l.Comments!)
+                .ThenInclude(c => c.Sender)
+            .Include(l => l.Comments!)
+                .ThenInclude(c => c.Responses!)
+                    .ThenInclude(r => r.Sender)
+            .ToListAsync();
+    }
 }

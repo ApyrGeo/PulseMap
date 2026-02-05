@@ -61,7 +61,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const handleLocationCreated = useCallback((location: Location) => {
-    console.log('Location created via WebSocket:', location);
     setLocations((prev) => {
       if (prev.find((loc) => loc.id === location.id)) {
         return prev;
@@ -71,8 +70,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleLocationUpdated = useCallback((updated: Location) => {
-    console.log('Location updated via WebSocket:', updated);
-
     setLocations((prev) => {
       const exists = prev.some((loc) => loc.id === updated.id);
 
@@ -108,12 +105,10 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleLocationDeleted = useCallback((locationId: number) => {
-    console.log('Location deleted via WebSocket:', locationId);
     setLocations((prev) => prev.filter((loc) => loc.id !== locationId));
   }, []);
 
   const handleMessageCreated = useCallback((message: Message) => {
-    console.log('Message created via WebSocket:', message);
     setLocations((prev) =>
       prev.map((loc) => {
         if (loc.id !== message.locationId) return loc;
@@ -127,7 +122,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleResponseCreated = useCallback((response: ResponseMessage) => {
-    console.log('Response created via WebSocket:', response);
     setLocations((prev) =>
       prev.map((loc) => {
         if (loc.id !== response.locationId) return loc;
@@ -276,8 +270,9 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
 
   const likeLocation = useCallback(
     async (locationId: number) => {
+      if (!user?.id) return;
       try {
-        const summary = await likeLocationAPI(locationId);
+        const summary = await likeLocationAPI(locationId, user.id);
         applyLikesSummary(summary);
         // optionally broadcast or rely on WS instead
       } catch (error) {
@@ -285,20 +280,21 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
     },
-    [applyLikesSummary]
+    [applyLikesSummary, user]
   );
 
   const unlikeLocation = useCallback(
     async (locationId: number) => {
+      if (!user?.id) return;
       try {
-        const summary = await unlikeLocationAPI(locationId);
+        const summary = await unlikeLocationAPI(locationId, user.id);
         applyLikesSummary(summary);
       } catch (error) {
         console.error('Failed to unlike location:', error);
         throw error;
       }
     },
-    [applyLikesSummary]
+    [applyLikesSummary, user]
   );
 
   const activeLocations = useMemo(

@@ -192,7 +192,7 @@ public class LocationService(ILocationRepository locationRepository, IUserReposi
         return extendedLocationDTO;
     }
 
-    public async Task<LocationResponseDTO> LikeLocationAsync(int id, int userId = 1)
+    public async Task<LocationResponseDTO> LikeLocationAsync(int id, int userId)
     {
         _logger.InfoFormat("Liking location with ID: {0} by user ID: {1}", id, userId);
 
@@ -234,5 +234,26 @@ public class LocationService(ILocationRepository locationRepository, IUserReposi
         });
 
         return likeLocationDTO;
+    }
+
+    public async Task<List<LocationResponseDTO>> GetActiveLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng, string? type)
+    {
+        _logger.InfoFormat("Getting active locations in bounds: ({0}, {1}), ({2}, {3})", minLat, maxLat, minLng, maxLng);
+
+        //validation
+        if (minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180 || minLat > maxLat || minLng > maxLng)
+        {
+            throw new EntityValidationException("Invalid geographical bounds provided.");
+        }
+
+        var locations = await _locationRepository.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng);
+
+        if (type != null)
+        {
+            _logger.InfoFormat("Filtering locations by type: {0}", type);
+            locations = [.. locations.Where(loc => loc.Category.ToString().Equals(type, StringComparison.OrdinalIgnoreCase))];
+        }
+
+        return _mapper.Map<List<LocationResponseDTO>>(locations);
     }
 }

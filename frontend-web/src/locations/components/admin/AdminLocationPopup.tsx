@@ -1,4 +1,5 @@
 import { Location } from '../../Interfaces';
+import './AdminLocationPopup.css';
 
 interface AdminLocationPopupProps {
   location: Location;
@@ -16,52 +17,48 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
   };
 
   return (
-    <div className="p-3 min-w-[250px]">
-      <h3 className="text-lg font-bold text-gray-800 mb-2">{location.name}</h3>
+    <div className="admin-popup-container">
+      <h3 className="admin-popup-title">{location.name}</h3>
 
       {location.description && (
-        <p className="text-sm text-gray-600 mb-3">{location.description}</p>
+        <p className="admin-popup-description">{location.description}</p>
       )}
 
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="font-medium text-gray-600">Status:</span>
+      <div className="admin-popup-details">
+        <div className="admin-popup-row">
+          <span className="admin-popup-label">Status:</span>
           <span
-            className={`px-2 py-1 rounded text-xs font-semibold ${
-              location.isExpired
-                ? 'bg-red-100 text-red-700'
-                : 'bg-green-100 text-green-700'
+            className={`admin-popup-status ${
+              location.isExpired ? 'expired' : 'active'
             }`}
           >
             {location.isExpired ? 'Expired' : 'Active'}
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="font-medium text-gray-600">Category:</span>
-          <span className="text-gray-800">{location.category}</span>
+        <div className="admin-popup-row">
+          <span className="admin-popup-label">Category:</span>
+          <span className="admin-popup-value">{location.category}</span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="font-medium text-gray-600">Creator:</span>
-          <span className="text-gray-800">{location.creator.username}</span>
+        <div className="admin-popup-row">
+          <span className="admin-popup-label">Creator:</span>
+          <span className="admin-popup-value">{location.creator.username}</span>
         </div>
 
         {location.isExpired ? (
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-600">Expired:</span>
-            <span className="text-gray-800">
+          <div className="admin-popup-row">
+            <span className="admin-popup-label">Expired:</span>
+            <span className="admin-popup-value">
               {formatDateTime(location.expiresAt)}
             </span>
           </div>
         ) : (
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-600">Expires:</span>
+          <div className="admin-popup-row">
+            <span className="admin-popup-label">Expires:</span>
             <span
-              className={`${
-                location.isExpired
-                  ? 'text-red-600 font-semibold'
-                  : 'text-gray-800'
+              className={`admin-popup-value ${
+                location.isExpired ? 'admin-popup-expired-text' : ''
               }`}
             >
               {formatDateTime(location.expiresAt)}
@@ -69,10 +66,12 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
           </div>
         )}
 
-        <div className="pt-2 border-t border-gray-200">
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-600">Comments:</span>
-            <span className="text-gray-800">{location.messages.length}</span>
+        <div className="admin-popup-divider">
+          <div className="admin-popup-row">
+            <span className="admin-popup-label">Comments:</span>
+            <span className="admin-popup-value">
+              {location.messages.length}
+            </span>
           </div>
         </div>
       </div>
