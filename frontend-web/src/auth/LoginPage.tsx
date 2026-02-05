@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import toast from 'react-hot-toast';
+import './LoginPage.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState<string>('');
@@ -30,25 +31,20 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="login-page">
       <form
         onSubmit={handleLoginButton}
-        className="w-full max-w-md bg-white rounded-lg shadow-md p-6 sm:p-8"
+        className="login-form"
         aria-labelledby="login-heading"
       >
-        <h1
-          id="login-heading"
-          className="text-2xl font-semibold text-gray-800 mb-4 text-center"
-        >
+        <h1 id="login-heading" className="login-heading">
           Sign in to PulseMap
         </h1>
 
-        <label className="block mb-2 text-sm font-medium text-gray-700">
-          Email
-        </label>
+        <label className="login-label">Email</label>
         <input
           type="email"
-          className="w-full mb-4 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="login-input"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -56,12 +52,10 @@ const LoginPage = () => {
           required
         />
 
-        <label className="block mb-2 text-sm font-medium text-gray-700">
-          Password
-        </label>
+        <label className="login-label">Password</label>
         <input
           type="password"
-          className="w-full mb-4 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="login-input"
           placeholder="Your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -73,18 +67,14 @@ const LoginPage = () => {
           type="submit"
           onClick={handleLoginButton}
           disabled={loading}
-          className={`w-full py-2 rounded-lg font-medium transition ${
-            loading
-              ? 'bg-blue-300 text-white cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
+          className="login-button"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
 
-        <div className="mt-4 text-center text-sm text-gray-500">
+        <div className="login-footer">
           <span>Don't have an account? </span>
-          <a className="text-blue-600 hover:underline" href="/register">
+          <a className="login-register-link" href="/register">
             Register
           </a>
         </div>

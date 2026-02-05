@@ -1,0 +1,66 @@
+/* Admin Location Popup Styles */
+.admin-popup-container {
+  padding: 0.75rem;
+  min-width: 250px;
+}
+
+.admin-popup-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.admin-popup-description {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 0.75rem;
+}
+
+.admin-popup-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.admin-popup-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.admin-popup-label {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.admin-popup-value {
+  color: #1f2937;
+}
+
+.admin-popup-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-popup-status.active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.admin-popup-status.expired {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.admin-popup-divider {
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.admin-popup-expired-text {
+  color: #dc2626;
+  font-weight: 600;
+}

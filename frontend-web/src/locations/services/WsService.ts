@@ -48,7 +48,7 @@ export class LocationWsService {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.log('WebSocket connected');
+        // WebSocket connected
       };
 
       this.ws.onmessage = (event) => {
@@ -65,7 +65,6 @@ export class LocationWsService {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket disconnected, attempting to reconnect...');
         this.reconnect();
       };
     } catch (error) {
@@ -106,7 +105,6 @@ export class LocationWsService {
     }
 
     this.reconnectTimeout = setTimeout(() => {
-      console.log('Reconnecting WebSocket...');
       this.connect();
     }, this.reconnectDelay);
   }

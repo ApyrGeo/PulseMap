@@ -1,3 +1,5 @@
+import '../ContextMenu.css';
+
 interface OwnerContextMenuProps {
   x: number;
   y: number;
@@ -15,20 +17,16 @@ const OwnerContextMenu = ({
 }: OwnerContextMenuProps) => {
   return (
     <>
-      <div className="fixed inset-0 z-999" onClick={onClose} />
-      <div
-        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-1000"
-        style={{ left: `${x}px`, top: `${y}px` }}
-      >
+      <div className="context-menu-overlay" onClick={onClose} />
+      <div className="context-menu" style={{ left: `${x}px`, top: `${y}px` }}>
         <button
           onClick={() => {
             onEdit();
             onClose();
           }}
-          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+          className="context-menu-item edit"
         >
-          <span />
-          ✏️
+          <span>✏️</span>
           <span>Modify</span>
         </button>
         <button
@@ -36,10 +34,9 @@ const OwnerContextMenu = ({
             onDelete();
             onClose();
           }}
-          className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+          className="context-menu-item delete"
         >
-          <span />
-          🗑️
+          <span>🗑️</span>
           <span>Delete</span>
         </button>
       </div>

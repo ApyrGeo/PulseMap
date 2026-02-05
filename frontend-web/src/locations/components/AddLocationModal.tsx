@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LocationCategory, LocationPostDTO } from '../Interfaces';
 import { useAuth } from '../../auth/AuthProvider';
+import './LocationModal.css';
 
 interface AddLocationModalProps {
   isOpen: boolean;
@@ -69,55 +70,40 @@ const AddLocationModal = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-1000"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Add New Location</h2>
-          <button
-            className="text-2xl text-gray-500 hover:text-gray-700 cursor-pointer"
-            onClick={onClose}
-          >
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Add New Location</h2>
+          <button className="modal-close-button" onClick={onClose}>
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Latitude
-            </label>
+          <div className="form-group">
+            <label className="form-label">Latitude</label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+              className="form-input"
               type="text"
               value={latitude.toFixed(6)}
               disabled
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Longitude
-            </label>
+          <div className="form-group">
+            <label className="form-label">Longitude</label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+              className="form-input"
               type="text"
               value={longitude.toFixed(6)}
               disabled
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name *
-            </label>
+          <div className="form-group">
+            <label className="form-label">Name *</label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-input"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -126,12 +112,10 @@ const AddLocationModal = ({
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category *
-            </label>
+          <div className="form-group">
+            <label className="form-label">Category *</label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="form-select"
               value={category}
               onChange={(e) =>
                 setCategory(String(e.target.value) as LocationCategory)
@@ -147,17 +131,13 @@ const AddLocationModal = ({
           </div>
 
           {isOwner && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Duration *
-              </label>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="form-group">
+              <label className="form-label">Duration *</label>
+              <div className="duration-controls">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    Days
-                  </label>
+                  <label className="duration-label">Days</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="form-select"
                     value={days}
                     onChange={(e) => setDays(Number(e.target.value))}
                   >
@@ -169,11 +149,9 @@ const AddLocationModal = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    Hours
-                  </label>
+                  <label className="duration-label">Hours</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="form-select"
                     value={hours}
                     onChange={(e) => setHours(Number(e.target.value))}
                   >
@@ -185,7 +163,7 @@ const AddLocationModal = ({
                   </select>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="duration-info">
                 Total: {days > 0 && `${days} day${days !== 1 ? 's' : ''}`}
                 {days > 0 && hours > 0 && ' and '}
                 {hours > 0 && `${hours} hour${hours !== 1 ? 's' : ''}`}
@@ -194,12 +172,10 @@ const AddLocationModal = ({
             </div>
           )}
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
+          <div className="form-group">
+            <label className="form-label">Description</label>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-textarea"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description"
@@ -207,18 +183,15 @@ const AddLocationModal = ({
             />
           </div>
 
-          <div className="flex justify-end gap-2 mt-6">
+          <div className="modal-footer">
             <button
               type="button"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="modal-button-cancel"
               onClick={onClose}
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
+            <button type="submit" className="modal-button-submit">
               Add Location
             </button>
           </div>

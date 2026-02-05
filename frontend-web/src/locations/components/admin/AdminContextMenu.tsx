@@ -1,3 +1,5 @@
+import '../ContextMenu.css';
+
 interface AdminContextMenuProps {
   x: number;
   y: number;
@@ -19,18 +21,15 @@ const AdminContextMenu = ({
 }: AdminContextMenuProps) => {
   return (
     <>
-      <div className="fixed inset-0 z-[999]" onClick={onClose} />
-      <div
-        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-[1000]"
-        style={{ left: `${x}px`, top: `${y}px` }}
-      >
+      <div className="context-menu-overlay" onClick={onClose} />
+      <div className="context-menu" style={{ left: `${x}px`, top: `${y}px` }}>
         {!isExpired && (
           <button
             onClick={() => {
               onExpire();
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-yellow-50 text-yellow-600 flex items-center gap-2"
+            className="context-menu-item expire"
           >
             <span>⏰</span>
             <span>Expire</span>
@@ -42,7 +41,7 @@ const AdminContextMenu = ({
             onDelete();
             onClose();
           }}
-          className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+          className="context-menu-item delete"
         >
           <span>🗑️</span>
           <span>Delete</span>
@@ -54,7 +53,7 @@ const AdminContextMenu = ({
               onExtend();
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-green-50 text-green-600 flex items-center gap-2"
+            className="context-menu-item extend"
           >
             <span>🔄</span>
             <span>Extend</span>

@@ -1,22 +1,33 @@
-import { useState, useEffect } from 'react';
-import LeafletMap from '../LeafletMap';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import toast from 'react-hot-toast';
+import LeafletMap, {
+  ZOOM_THRESHOLDS,
+  LocationAnimationState,
+} from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
 import { useAuth } from '../../../auth/AuthProvider';
 import { Location, LocationPutDTO, LocationPostDTO } from '../../Interfaces';
 import OwnerContextMenu from './OwnerContextMenu';
 import EditLocationModal from '../EditLocationModal';
 import AddLocationModal from '../AddLocationModal';
+import {
+  fetchLocationsByBounds,
+  MapBounds,
+} from '../../services/LocationsApiService';
+import '../../../users/LocationsPage.css';
 
 const OwnerMapComponent = () => {
   const { user } = useAuth();
   const {
-    ownedLocations,
-    refreshLocations,
     updateLocationById,
     deleteLocationById,
     addLocation,
+    activeLocations,
+    refreshLocations,
   } = useLocations();
 
+  const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
+  const [currentZoom, setCurrentZoom] = useState(15);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -28,12 +39,103 @@ const OwnerMapComponent = () => {
     lat: number;
     lng: number;
   } | null>(null);
+  const [animationStates, setAnimationStates] =
+    useState<LocationAnimationState>({});
+  const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
+  const seenLocationIdsRef = useRef<Set<number>>(new Set());
+  const prevVisibleLocationsRef = useRef<Location[]>([]);
 
+  // Load initial locations on mount
   useEffect(() => {
-    refreshLocations(true); // Load active locations
+    refreshLocations(true);
   }, [refreshLocations]);
 
-  const canAddLocation = !ownedLocations.some(
+  // Track all locations we've seen to prevent re-animating on bounds changes
+  useEffect(() => {
+    activeLocations.forEach((loc) => {
+      seenLocationIdsRef.current.add(loc.id);
+    });
+  }, [activeLocations]);
+
+  // Merge activeLocations from WebSocket with bounds-filtered locations
+  useEffect(() => {
+    if (!lastBounds) return;
+
+    // Filter activeLocations by current bounds
+    const filtered = activeLocations.filter((loc) => {
+      return (
+        loc.latitude >= lastBounds.minLat &&
+        loc.latitude <= lastBounds.maxLat &&
+        loc.longitude >= lastBounds.minLng &&
+        loc.longitude <= lastBounds.maxLng
+      );
+    });
+
+    // Check for changes to trigger animations
+    const prevLocationsRef = new Map(
+      prevVisibleLocationsRef.current.map((loc) => [loc.id, loc])
+    );
+
+    filtered.forEach((loc) => {
+      const prev = prevLocationsRef.get(loc.id);
+
+      // Only animate if this is truly new (not just entering bounds)
+      if (!prev && !seenLocationIdsRef.current.has(loc.id)) {
+        // New location from WebSocket
+        setAnimationStates((states) => ({ ...states, [loc.id]: 'new' }));
+        setTimeout(() => {
+          setAnimationStates((states) => ({ ...states, [loc.id]: null }));
+        }, 1800);
+      } else if (
+        prev &&
+        prev.likesCount !== undefined &&
+        loc.likesCount !== undefined &&
+        loc.likesCount > prev.likesCount
+      ) {
+        // Location got liked
+        setAnimationStates((states) => ({ ...states, [loc.id]: 'liked' }));
+        setTimeout(() => {
+          setAnimationStates((states) => ({ ...states, [loc.id]: null }));
+        }, 500);
+      } else if (
+        prev &&
+        JSON.stringify(prev) !== JSON.stringify(loc) &&
+        prev.likesCount === loc.likesCount
+      ) {
+        // Location updated (but not just likes)
+        setAnimationStates((states) => ({ ...states, [loc.id]: 'updated' }));
+        setTimeout(() => {
+          setAnimationStates((states) => ({ ...states, [loc.id]: null }));
+        }, 600);
+      }
+    });
+
+    prevVisibleLocationsRef.current = filtered;
+    setVisibleLocations(filtered);
+  }, [activeLocations, lastBounds]);
+
+  const handleBoundsChange = useCallback(
+    async (bounds: MapBounds, zoom: number) => {
+      setCurrentZoom(zoom);
+      setLastBounds(bounds);
+
+      if (zoom < ZOOM_THRESHOLDS.CITY) {
+        setVisibleLocations([]);
+        setLastBounds(null);
+        return;
+      }
+
+      try {
+        await fetchLocationsByBounds(bounds, true);
+        // Don't set visibleLocations here - let the useEffect handle it
+      } catch (error) {
+        console.error('Failed to fetch locations by bounds:', error);
+      }
+    },
+    []
+  );
+
+  const canAddLocation = !visibleLocations.some(
     (loc) => loc.owner?.id === user?.id
   );
 
@@ -44,6 +146,33 @@ const OwnerMapComponent = () => {
       );
       return;
     }
+
+    // Don't show any error when zoom is too far out (< 12)
+    if (currentZoom < 12) {
+      return;
+    }
+
+    // Show warning if zoom is between 12 and 15
+    if (currentZoom >= 12 && currentZoom <= 15) {
+      toast.error(
+        (t) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img
+              src="https://www.ag-grid.com/charts/images/zoom-out-touch.gif"
+              alt="Zoom in"
+              style={{ width: '50px', height: '50px', borderRadius: '4px' }}
+            />
+            <span>
+              Please zoom in more to be more precise with the placement
+            </span>
+          </div>
+        ),
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    // Allow placement when zoom > 15
     setClickedCoords({ lat, lng });
     setAddModalOpen(true);
   };
@@ -95,22 +224,25 @@ const OwnerMapComponent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">My Location</h1>
-        <p className="text-gray-600 mt-2">
+    <div className="locations-page">
+      <header className="locations-header">
+        <h1 className="locations-title">My Location</h1>
+        <p className="locations-subtitle">
           {canAddLocation
             ? 'Click to add your location (other locations shown in gray)'
             : 'Right-click your marker to edit or delete'}
         </p>
       </header>
 
-      <div className="bg-white rounded-lg shadow-lg p-4">
+      <div className="locations-map-container">
         <LeafletMap
-          locations={ownedLocations}
+          locations={visibleLocations}
           onMapClick={handleMapClick}
           onContextMenu={handleContextMenu}
           currentUserId={user?.id}
+          onBoundsChange={handleBoundsChange}
+          currentZoom={currentZoom}
+          animationStates={animationStates}
         />
       </div>
 

@@ -1,0 +1,66 @@
+.navigation-bar {
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.navigation-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navigation-logo {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+}
+
+.navigation-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navigation-link {
+  font-size: 0.875rem;
+  color: #374151;
+  text-decoration: none;
+}
+
+.navigation-link:hover {
+  color: #111827;
+}
+
+.navigation-login-button {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navigation-login-button:hover {
+  background-color: #1d4ed8;
+}
+
+.navigation-logout-button {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #ef4444;
+  color: white;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+}
+
+.navigation-logout-button:hover {
+  background-color: #dc2626;
+}
