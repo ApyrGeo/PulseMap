@@ -44,11 +44,15 @@ const OwnerMapComponent = () => {
   const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
   const seenLocationIdsRef = useRef<Set<number>>(new Set());
   const prevVisibleLocationsRef = useRef<Location[]>([]);
+  const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
-  // Load initial locations on mount
+  // Load initial locations on mount - only once when user is available
   useEffect(() => {
-    refreshLocations(true);
-  }, [refreshLocations]);
+    if (user?.id && !isInitialLoadDone) {
+      refreshLocations(true);
+      setIsInitialLoadDone(true);
+    }
+  }, [user?.id, isInitialLoadDone, refreshLocations]);
 
   // Track all locations we've seen to prevent re-animating on bounds changes
   useEffect(() => {
@@ -126,7 +130,7 @@ const OwnerMapComponent = () => {
       }
 
       try {
-        await fetchLocationsByBounds(bounds, true);
+        await fetchLocationsByBounds(bounds, true, undefined, user?.id);
         // Don't set visibleLocations here - let the useEffect handle it
       } catch (error) {
         console.error('Failed to fetch locations by bounds:', error);

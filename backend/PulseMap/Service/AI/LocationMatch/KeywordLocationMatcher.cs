@@ -1,17 +1,21 @@
 using PulseMap.Interfaces;
 
-namespace PulseMap.Service.AI;
+namespace PulseMap.Service.AI.LocationMatch;
 
 public class KeywordLocationMatcher : ILocationMatcher
 {
     private readonly ILogger<KeywordLocationMatcher> _logger;
+    private readonly IAIStatisticsService _statisticsService;
 
-    public KeywordLocationMatcher(ILogger<KeywordLocationMatcher> logger)
+    public KeywordLocationMatcher(
+        ILogger<KeywordLocationMatcher> logger,
+        IAIStatisticsService statisticsService)
     {
         _logger = logger;
+        _statisticsService = statisticsService;
     }
 
-    public Task<LocationMatchResult> MatchLocationsAsync(string description1, string description2, CancellationToken ct)
+    public async Task<LocationMatchResult> MatchLocationsAsync(string description1, string description2, CancellationToken ct)
     {
         _logger.LogInformation("Matching locations using keyword-based similarity");
 
@@ -32,7 +36,7 @@ public class KeywordLocationMatcher : ILocationMatcher
         if (words1.Count == 0 || words2.Count == 0)
         {
             _logger.LogWarning("One or both descriptions have no significant words");
-            return Task.FromResult(LocationMatchResult.DifferentLocation);
+            return LocationMatchResult.DifferentLocation;
         }
 
         // Jaccard similarity: intersection / union
@@ -48,11 +52,13 @@ public class KeywordLocationMatcher : ILocationMatcher
         {
             result = LocationMatchResult.SameLocation;
             _logger.LogInformation("HIGH confidence: Same location (similarity: {Similarity:F4})", similarity);
+            await _statisticsService.IncrementKeywordMatcherFallbackAsync();
         }
         else if (similarity > 0.4)
         {
             result = LocationMatchResult.PossiblySameLocation;
             _logger.LogInformation("MEDIUM confidence: Possibly same location (similarity: {Similarity:F4})", similarity);
+            await _statisticsService.IncrementKeywordMatcherFallbackAsync();
         }
         else
         {
@@ -60,6 +66,6 @@ public class KeywordLocationMatcher : ILocationMatcher
             _logger.LogInformation("LOW confidence: Different location (similarity: {Similarity:F4})", similarity);
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 }

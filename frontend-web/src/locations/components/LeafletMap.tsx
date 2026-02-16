@@ -6,7 +6,7 @@ import {
   useMapEvents,
   useMap,
 } from 'react-leaflet';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import './MarkerCluster.css';
@@ -181,7 +181,7 @@ interface AnimatedMarkerProps {
   onUnlike?: (locationId: number) => void;
 }
 
-const AnimatedMarker = ({
+const AnimatedMarker = memo(({
   location,
   icon,
   animationState,
@@ -287,7 +287,26 @@ const AnimatedMarker = ({
       )}
     </Marker>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent re-render on like changes
+  // Only re-render if important properties change
+  const prevLoc = prevProps.location;
+  const nextLoc = nextProps.location;
+  
+  return (
+    prevLoc.id === nextLoc.id &&
+    prevLoc.name === nextLoc.name &&
+    prevLoc.latitude === nextLoc.latitude &&
+    prevLoc.longitude === nextLoc.longitude &&
+    prevLoc.category === nextLoc.category &&
+    prevLoc.isExpired === nextLoc.isExpired &&
+    prevProps.animationState === nextProps.animationState &&
+    prevLoc.messages?.length === nextLoc.messages?.length
+    // Deliberately excluding likesCount and isLikedByCurrentUser for stability
+  );
+});
+
+AnimatedMarker.displayName = 'AnimatedMarker';
 
 const LeafletMap = ({
   locations,

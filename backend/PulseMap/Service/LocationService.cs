@@ -32,6 +32,11 @@ public class LocationService(
         var location = await _locationRepository.GetLocationByIdAsync(id)
             ?? throw new NotFoundException("Location not found");
 
+        // Filter out ResponseMessage from Comments (only return base Message objects)
+        location.Comments = location.Comments?
+            .Where(c => c is not ResponseMessage)
+            .ToList();
+
         return _mapper.Map<LocationResponseDTO>(location) with { IsLikedByCurrentUser = location.Likes.Any(l => l.Id == userId) };
     }
 
@@ -43,6 +48,17 @@ public class LocationService(
         if (!result.IsValid)
         {
             throw new EntityValidationException(result.Errors);
+        }
+
+        // Check if user already owns a location
+        if (locationPostDTO.OwnerId.HasValue)
+        {
+            var existingOwnedLocation = await _locationRepository.GetLocationByOwnerIdAsync(locationPostDTO.OwnerId.Value);
+            if (existingOwnedLocation != null && !existingOwnedLocation.IsExpired)
+            {
+                _logger.WarnFormat("User {0} already owns an active location (ID: {1})", locationPostDTO.OwnerId.Value, existingOwnedLocation.Id);
+                throw new EntityValidationException($"User already owns an active location. Each user can only own one location at a time.");
+            }
         }
 
         _logger.InfoFormat("Adding new location: {0}", JsonSerializer.Serialize(locationPostDTO));
@@ -123,6 +139,11 @@ public class LocationService(
 
         await _locationRepository.SaveChangesAsync();
 
+        // Filter out ResponseMessage from Comments
+        existingLocation.Comments = existingLocation.Comments?
+            .Where(c => c is not ResponseMessage)
+            .ToList();
+
         var updatedLocationDTO = _mapper.Map<LocationResponseDTO>(existingLocation);
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
         {
@@ -161,6 +182,11 @@ public class LocationService(
         location.LikeStatus = null;
         await _locationRepository.SaveChangesAsync();
 
+        // Filter out ResponseMessage from Comments
+        location.Comments = location.Comments?
+            .Where(c => c is not ResponseMessage)
+            .ToList();
+
         var expiredLocationDTO = _mapper.Map<LocationResponseDTO>(location);
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
         {
@@ -187,6 +213,11 @@ public class LocationService(
             PreviousLikeCount = location.Likes.Count
         };
         await _locationRepository.SaveChangesAsync();
+
+        // Filter out ResponseMessage from Comments
+        location.Comments = location.Comments?
+            .Where(c => c is not ResponseMessage)
+            .ToList();
 
         var extendedLocationDTO = _mapper.Map<LocationResponseDTO>(location);
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
@@ -220,6 +251,11 @@ public class LocationService(
         }
         await _locationRepository.SaveChangesAsync();
 
+        // Filter out ResponseMessage from Comments
+        location.Comments = location.Comments?
+            .Where(c => c is not ResponseMessage)
+            .ToList();
+
         var likeLocationDTO = _mapper.Map<LocationResponseDTO>(location) with
         {
             IsLikedByCurrentUser = location.Likes.Any(u => u.Id == userId),
@@ -243,7 +279,7 @@ public class LocationService(
         return likeLocationDTO;
     }
 
-    public async Task<List<LocationResponseDTO>> GetActiveLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng, string? type)
+    public async Task<List<LocationResponseDTO>> GetActiveLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng, string? type, int userId = 1)
     {
         _logger.InfoFormat("Getting active locations in bounds: ({0}, {1}), ({2}, {3})", minLat, maxLat, minLng, maxLng);
 
@@ -261,7 +297,19 @@ public class LocationService(
             locations = [.. locations.Where(loc => loc.Category.ToString().Equals(type, StringComparison.OrdinalIgnoreCase))];
         }
 
-        return _mapper.Map<List<LocationResponseDTO>>(locations);
+        foreach (var loc in locations)
+        {
+            loc.Comments = loc.Comments?
+                .Where(c => c is not ResponseMessage)
+                .ToList();
+        }
+
+        return [.. locations.Select(loc =>
+            _mapper.Map<LocationResponseDTO>(loc) with
+            {
+                IsLikedByCurrentUser = loc.Likes.Any(u => u.Id == userId),
+            }
+        )];
     }
 
     public async Task<List<(int Location1Id, int Location2Id, double Distance)>> GetNearbyLocationPairsAsync(double maxDistanceMeters = 20)
@@ -302,13 +350,30 @@ public class LocationService(
         var removeLocation = await _locationRepository.GetLocationByIdAsync(removeLocationId) ??
             throw new NotFoundException($"Location {removeLocationId} not found");
 
-        // Determine which description is more relevant (longer)
-        if (removeLocation.Description.Length > keepLocation.Description.Length)
+        // PRIORITY 1: Keep owned location (even if non-owned has better description)
+        bool keepHasOwner = keepLocation.OwnerId.HasValue;
+        bool removeHasOwner = removeLocation.OwnerId.HasValue;
+
+        if (removeHasOwner && !keepHasOwner)
         {
-            _logger.InfoFormat("Swapping: removing location has longer description");
+            // Remove location is owned but keep is not - swap them
+            _logger.InfoFormat("Swapping: location {0} is owned by user {1}, prioritizing it over non-owned location {2}", 
+                removeLocationId, removeLocation.OwnerId, keepLocationId);
             (keepLocation, removeLocation) = (removeLocation, keepLocation);
             (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
         }
+        else if (!removeHasOwner && !keepHasOwner)
+        {
+            // PRIORITY 2: Neither is owned - keep the one with longer/better description
+            if (removeLocation.Description.Length > keepLocation.Description.Length)
+            {
+                _logger.InfoFormat("Swapping: both locations are non-owned, keeping location {0} with longer description", 
+                    removeLocationId);
+                (keepLocation, removeLocation) = (removeLocation, keepLocation);
+                (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
+            }
+        }
+        // else: keep is owned, or both are owned - keep the original keepLocationId
 
         // Add the removed location's description as a comment to the kept location
         if (!string.IsNullOrWhiteSpace(removeLocation.Description) && 

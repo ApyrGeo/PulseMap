@@ -3,16 +3,28 @@ using Azure.AI.OpenAI;
 using OpenAI.Embeddings;
 using PulseMap.Interfaces;
 
-namespace PulseMap.Service.AI;
+namespace PulseMap.Service.AI.LocationMatch;
 
 public class EmbeddingLocationMatcher : ILocationMatcher
 {
     private readonly EmbeddingClient _embeddingClient;
     private readonly ILogger<EmbeddingLocationMatcher> _logger;
+    private readonly IAIStatisticsService _statisticsService;
+    private readonly ITranslationService _translationService;
 
-    public EmbeddingLocationMatcher(IConfiguration config, ILogger<EmbeddingLocationMatcher> logger)
+    private const double HIGH_CONFIDENCE_THRESHOLD = 0.65;  // Was 0.80 - more aggressive matching
+    private const double LOW_CONFIDENCE_THRESHOLD = 0.45;   // Was 0.65 - clear different locations
+    // Between 0.45-0.65 = PossiblySameLocation (GPT verification needed)
+
+    public EmbeddingLocationMatcher(
+        IConfiguration config, 
+        ILogger<EmbeddingLocationMatcher> logger,
+        IAIStatisticsService statisticsService,
+        ITranslationService translationService)
     {
         _logger = logger;
+        _statisticsService = statisticsService;
+        _translationService = translationService;
 
         // Always use OpenAI direct for embeddings (simpler, no deployment needed)
         var apiKey = config["OpenAI:ApiKey"];
@@ -29,7 +41,8 @@ public class EmbeddingLocationMatcher : ILocationMatcher
 
         _embeddingClient = new EmbeddingClient(model, new System.ClientModel.ApiKeyCredential(apiKey));
 
-        _logger.LogInformation("EmbeddingLocationMatcher initialized successfully");
+        _logger.LogInformation("EmbeddingLocationMatcher initialized successfully with thresholds: HIGH={High}, LOW={Low}", 
+            HIGH_CONFIDENCE_THRESHOLD, LOW_CONFIDENCE_THRESHOLD);
     }
 
     public async Task<LocationMatchResult> MatchLocationsAsync(string description1, string description2, CancellationToken ct)
@@ -38,11 +51,15 @@ public class EmbeddingLocationMatcher : ILocationMatcher
 
         try
         {
+            // Translate both descriptions to English for better embedding accuracy
+            var englishDesc1 = await _translationService.TranslateToEnglishIfNeededAsync(description1, ct);
+            var englishDesc2 = await _translationService.TranslateToEnglishIfNeededAsync(description2, ct);
+
             _logger.LogInformation("Generating embedding for description 1");
-            var embedding1 = await _embeddingClient.GenerateEmbeddingAsync(description1, cancellationToken: ct);
+            var embedding1 = await _embeddingClient.GenerateEmbeddingAsync(englishDesc1, cancellationToken: ct);
             
             _logger.LogInformation("Generating embedding for description 2");
-            var embedding2 = await _embeddingClient.GenerateEmbeddingAsync(description2, cancellationToken: ct);
+            var embedding2 = await _embeddingClient.GenerateEmbeddingAsync(englishDesc2, cancellationToken: ct);
 
             var vector1 = embedding1.Value.ToFloats();
             var vector2 = embedding2.Value.ToFloats();
@@ -55,20 +72,25 @@ public class EmbeddingLocationMatcher : ILocationMatcher
             _logger.LogInformation("Cosine similarity: {Similarity:F4}", similarity);
 
             LocationMatchResult result;
-            if (similarity > 0.80)
+            if (similarity >= HIGH_CONFIDENCE_THRESHOLD)
             {
                 result = LocationMatchResult.SameLocation;
-                _logger.LogInformation("HIGH confidence: Same location (similarity: {Similarity:F4})", similarity);
+                _logger.LogInformation("HIGH confidence: Same location (similarity: {Similarity:F4} >= {Threshold})", 
+                    similarity, HIGH_CONFIDENCE_THRESHOLD);
+                await _statisticsService.IncrementEmbeddingMatcherAsync();
             }
-            else if (similarity > 0.65)
+            else if (similarity >= LOW_CONFIDENCE_THRESHOLD)
             {
                 result = LocationMatchResult.PossiblySameLocation;
-                _logger.LogInformation("MEDIUM confidence: Possibly same location (similarity: {Similarity:F4})", similarity);
+                _logger.LogInformation("MEDIUM confidence: Possibly same location (similarity: {Similarity:F4}, range: {Low}-{High}) - will trigger GPT verification", 
+                    similarity, LOW_CONFIDENCE_THRESHOLD, HIGH_CONFIDENCE_THRESHOLD);
+                await _statisticsService.IncrementEmbeddingMatcherAsync();
             }
             else
             {
                 result = LocationMatchResult.DifferentLocation;
-                _logger.LogInformation("LOW confidence: Different location (similarity: {Similarity:F4})", similarity);
+                _logger.LogInformation("LOW confidence: Different location (similarity: {Similarity:F4} < {Threshold})", 
+                    similarity, LOW_CONFIDENCE_THRESHOLD);
             }
 
             return result;

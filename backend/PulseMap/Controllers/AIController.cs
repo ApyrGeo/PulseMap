@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PulseMap.Domain.DTOs;
 using PulseMap.Interfaces;
 
 namespace PulseMap.Controllers
@@ -11,15 +12,49 @@ namespace PulseMap.Controllers
         private readonly ILocationClassifier _locationClassifier;
         private readonly ILocationMatcher _locationMatcher;
         private readonly ILocationService _locationService;
+        private readonly IAIStatisticsService _statisticsService;
 
         public AIController(
             ILocationClassifier locationClassifier, 
             ILocationMatcher locationMatcher,
-            ILocationService locationService)
+            ILocationService locationService,
+            IAIStatisticsService statisticsService)
         {
             _locationClassifier = locationClassifier;
             _locationMatcher = locationMatcher;
             _locationService = locationService;
+            _statisticsService = statisticsService;
+        }
+
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var stats = await _statisticsService.GetStatisticsAsync();
+            
+            var response = new AIStatisticsResponseDTO
+            {
+                Classification = new AIStatisticsResponseDTO.ClassificationStats
+                {
+                    HuggingFaceSuccess = stats.HuggingFaceClassifierSuccess,
+                    OpenAISuccess = stats.OpenAIClassifierSuccess,
+                    KeywordFallback = stats.KeywordClassifierFallback,
+                    TotalCalls = stats.TotalClassificationCalls
+                },
+                Matching = new AIStatisticsResponseDTO.MatchingStats
+                {
+                    GptSuccess = stats.GptMatcherSuccess,
+                    EmbeddingSuccess = stats.EmbeddingMatcherSuccess,
+                    KeywordFallback = stats.KeywordMatcherFallback,
+                    TotalCalls = stats.TotalMatchingCalls
+                },
+                Translation = new AIStatisticsResponseDTO.TranslationStats
+                {
+                    TranslationsPerformed = stats.TranslationsPerformed
+                },
+                LastUpdated = stats.LastUpdated
+            };
+
+            return Ok(response);
         }
 
         [HttpPost("classify-location")]

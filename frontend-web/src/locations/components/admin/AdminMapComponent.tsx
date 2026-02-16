@@ -4,6 +4,7 @@ import LeafletMap, {
   LocationAnimationState,
 } from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
+import { useAuth } from '../../../auth/AuthProvider';
 import { Location } from '../../Interfaces';
 import AdminContextMenu from './AdminContextMenu';
 import {
@@ -20,6 +21,7 @@ const AdminMapComponent = () => {
     allLocations,
     refreshLocations,
   } = useLocations();
+  const { user } = useAuth();
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
   const [currentZoom, setCurrentZoom] = useState(15);
@@ -33,11 +35,15 @@ const AdminMapComponent = () => {
   const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
   const seenLocationIdsRef = useRef<Set<number>>(new Set());
   const prevVisibleLocationsRef = useRef<Location[]>([]);
+  const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
-  // Load initial locations on mount (admin sees all)
+  // Load initial locations on mount (admin sees all) - only once when user is available
   useEffect(() => {
-    refreshLocations(false);
-  }, [refreshLocations]);
+    if (user?.id && !isInitialLoadDone) {
+      refreshLocations(false);
+      setIsInitialLoadDone(true);
+    }
+  }, [user?.id, isInitialLoadDone, refreshLocations]);
 
   // Track all locations we've seen to prevent re-animating on bounds changes
   useEffect(() => {
@@ -115,7 +121,7 @@ const AdminMapComponent = () => {
       }
 
       try {
-        await fetchLocationsByBounds(bounds, false); // Admin sees all
+        await fetchLocationsByBounds(bounds, false, undefined, user?.id); // Admin sees all
         // Don't set visibleLocations here - let the useEffect handle it
       } catch (error) {
         console.error('Failed to fetch locations by bounds:', error);

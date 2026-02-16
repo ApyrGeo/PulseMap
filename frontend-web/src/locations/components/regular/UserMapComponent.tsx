@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import LeafletMap, { ZOOM_THRESHOLDS } from '../LeafletMap';
 import { useLocations } from '../LocationsProvider';
+import { useAuth } from '../../../auth/AuthProvider';
 import {
   LocationPostDTO,
   MessagePostDTO,
@@ -28,6 +29,7 @@ const UserMapComponent = () => {
     activeLocations,
     refreshLocations,
   } = useLocations();
+  const { user } = useAuth();
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
   const [currentZoom, setCurrentZoom] = useState(15);
@@ -38,11 +40,15 @@ const UserMapComponent = () => {
   } | null>(null);
   const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
-  // Load initial locations on mount
+  // Load initial locations on mount - only once when user is available
   useEffect(() => {
-    refreshLocations(true);
-  }, [refreshLocations]);
+    if (user?.id && !isInitialLoadDone) {
+      refreshLocations(true);
+      setIsInitialLoadDone(true);
+    }
+  }, [user?.id, isInitialLoadDone, refreshLocations]);
 
   // Merge activeLocations from WebSocket with bounds-filtered locations
   useEffect(() => {
@@ -88,14 +94,14 @@ const UserMapComponent = () => {
         const typeForApi = selectedType
           ? selectedType.replace(/\s+/g, '')
           : null;
-        const data = await fetchLocationsByBounds(bounds, true, typeForApi);
+        const data = await fetchLocationsByBounds(bounds, true, typeForApi, user?.id);
         // Use server response immediately to populate visible locations
         setVisibleLocations(data);
       } catch (error) {
         console.error('Failed to fetch locations by bounds:', error);
       }
     },
-    [selectedType]
+    [selectedType, user?.id]
   );
 
   // Re-fetch when the selected type filter changes while we have bounds
@@ -108,7 +114,7 @@ const UserMapComponent = () => {
         const typeForApi = selectedType
           ? selectedType.replace(/\s+/g, '')
           : null;
-        const data = await fetchLocationsByBounds(lastBounds, true, typeForApi);
+        const data = await fetchLocationsByBounds(lastBounds, true, typeForApi, user?.id);
         setVisibleLocations(data);
       } catch (err) {
         console.error(
@@ -117,7 +123,7 @@ const UserMapComponent = () => {
         );
       }
     })();
-  }, [selectedType, lastBounds, currentZoom]);
+  }, [selectedType, lastBounds, currentZoom, user?.id]);
 
   const handleMapClick = (lat: number, lng: number) => {
     // Don't show any error when zoom is too far out (< 12)

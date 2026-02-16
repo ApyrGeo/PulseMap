@@ -4,7 +4,7 @@ import {
   ResponseMessagePostDTO,
   LocationCategory,
 } from '../Interfaces';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import LocationComments from './LocationComments';
 import { useAuth } from '../../auth/AuthProvider';
 import {
@@ -48,7 +48,7 @@ interface LocationPopupProps {
   onUnlike: (locationId: number) => void;
 }
 
-const LocationPopup = ({
+const LocationPopup = memo(({
   location,
   onAddComment,
   onAddResponse,
@@ -59,6 +59,7 @@ const LocationPopup = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [likeCount, setLikeCount] = useState(location.likesCount || 0);
   const [isLiked, setIsLiked] = useState(location.isLikedByCurrentUser);
+  const isOptimisticUpdate = useRef(false);
 
   const placeholderImages = ['📍 Image 1', '🗺️ Image 2', '📷 Image 3'];
 
@@ -76,6 +77,9 @@ const LocationPopup = ({
     e.stopPropagation();
     e.preventDefault();
 
+    // Mark as optimistic update to prevent useEffect from overwriting
+    isOptimisticUpdate.current = true;
+    
     // Optimistically update UI immediately
     if (isLiked) {
       setIsLiked(false);
@@ -86,9 +90,18 @@ const LocationPopup = ({
       setLikeCount((prev) => prev + 1);
       onLike(location.id);
     }
+    
+    // Reset flag after a short delay to allow server update
+    setTimeout(() => {
+      isOptimisticUpdate.current = false;
+    }, 1000);
   };
 
   useEffect(() => {
+    // Don't update if we're in the middle of an optimistic update
+    if (isOptimisticUpdate.current) {
+      return;
+    }
     setLikeCount(location.likesCount || 0);
     setIsLiked(location.isLikedByCurrentUser);
   }, [location.likesCount, location.isLikedByCurrentUser]);
@@ -322,6 +335,8 @@ const LocationPopup = ({
       </Box>
     </Box>
   );
-};
+});
+
+LocationPopup.displayName = 'LocationPopup';
 
 export default LocationPopup;

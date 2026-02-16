@@ -113,8 +113,18 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
       prev.map((loc) => {
         if (loc.id !== message.locationId) return loc;
 
+        // Skip if this is actually a ResponseMessage (has parentMessageId)
+        // ResponseMessages should only be handled by handleResponseCreated
+        const msgData = message as any;
+        if (msgData.parentMessageId !== undefined && msgData.parentMessageId !== null) {
+          return loc;
+        }
+
+        // Check if this message already exists
         const exists = (loc.messages || []).some((m) => m.id === message.id);
-        if (exists) return loc;
+        if (exists) {
+          return loc;
+        }
 
         return { ...loc, messages: [...(loc.messages || []), message] };
       })
@@ -135,7 +145,9 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
             const exists = (msg.responses || []).some(
               (r) => r.id === response.id
             );
-            if (exists) return msg;
+            if (exists) {
+              return msg;
+            }
 
             return { ...msg, responses: [...(msg.responses || []), response] };
           }),
@@ -145,6 +157,9 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Clear any existing handlers first to prevent duplicates
+    wsService.clearAllHandlers();
+    
     wsService.registerEntityHandlers(PayloadEntityType.Location, {
       onCreate: handleLocationCreated,
       onUpdate: handleLocationUpdated,
@@ -162,6 +177,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     wsService.connect();
 
     return () => {
+      wsService.clearAllHandlers();
       wsService.disconnect();
     };
   }, [
@@ -176,14 +192,14 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const refreshLocations = useCallback(async (activeOnly = true) => {
     setIsLoading(true);
     try {
-      const data = await fetchLocations(activeOnly);
+      const data = await fetchLocations(activeOnly, user?.id);
       setLocations(data);
     } catch (error) {
       console.error('Failed to fetch locations:', error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   const addLocation = useCallback(async (location: LocationPostDTO) => {
     setIsLoading(true);

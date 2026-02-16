@@ -1,11 +1,12 @@
 using PulseMap.Interfaces;
 
-namespace PulseMap.Service.AI;
+namespace PulseMap.Service.AI.Description;
 
 public class CompositeLocationClassifier : ILocationClassifier
 {
     private readonly List<ILocationClassifier> _classifiers;
     private readonly ILogger<CompositeLocationClassifier> _logger;
+    private readonly IAIStatisticsService _statisticsService;
 
     private static readonly string[] Categories =
     {
@@ -23,10 +24,12 @@ public class CompositeLocationClassifier : ILocationClassifier
 
     public CompositeLocationClassifier(
         IEnumerable<ILocationClassifier> classifiers,
-        ILogger<CompositeLocationClassifier> logger)
+        ILogger<CompositeLocationClassifier> logger,
+        IAIStatisticsService statisticsService)
     {
         _classifiers = classifiers.ToList();
         _logger = logger;
+        _statisticsService = statisticsService;
         
         _logger.LogInformation("Initialized Composite Classifier with {Count} classifiers", _classifiers.Count);
     }
@@ -52,6 +55,7 @@ public class CompositeLocationClassifier : ILocationClassifier
                 {
                     _logger.LogInformation("Successfully classified with {Classifier}: {Categories}",
                         classifierName, string.Join(", ", result));
+                    // Statistics are tracked in individual classifiers
                     return result;
                 }
 
@@ -67,7 +71,12 @@ public class CompositeLocationClassifier : ILocationClassifier
 
         // All classifiers failed, use keyword fallback
         _logger.LogWarning("All AI classifiers failed, using keyword-based fallback");
-        return FallbackClassification(description);
+        var fallbackResult = FallbackClassification(description);
+        
+        // Track fallback usage
+        await _statisticsService.IncrementKeywordClassifierFallbackAsync();
+        
+        return fallbackResult;
     }
 
     private List<string> FallbackClassification(string description)
@@ -75,23 +84,23 @@ public class CompositeLocationClassifier : ILocationClassifier
         var lower = description.ToLowerInvariant();
         var matches = new List<string>();
 
-        if (lower.Contains("muzic") || lower.Contains("concert") || lower.Contains("festival"))
+        if (lower.Contains("muzic") || lower.Contains("concert") || lower.Contains("festival") || lower.Contains("music"))
             matches.Add("Music");
         if (lower.Contains("sport") || lower.Contains("fotbal") || lower.Contains("tenis") || lower.Contains("alergare"))
             matches.Add("Sport");
-        if (lower.Contains("mancare") || lower.Contains("restaurant") || lower.Contains("cafenea") || lower.Contains("pizza"))
+        if (lower.Contains("mancare") || lower.Contains("restaurant") || lower.Contains("cafenea") || lower.Contains("pizza") || lower.Contains("food"))
             matches.Add("Food");
         if (lower.Contains("film") || lower.Contains("teatru") || lower.Contains("entertainment") || lower.Contains("spectacol"))
             matches.Add("Entertainment");
-        if (lower.Contains("scoala") || lower.Contains("universitate") || lower.Contains("curs") || lower.Contains("carte") || lower.Contains("student"))
+        if (lower.Contains("scoala") || lower.Contains("universitate") || lower.Contains("curs") || lower.Contains("carte") || lower.Contains("student") || lower.Contains("education"))
             matches.Add("Education");
-        if (lower.Contains("spital") || lower.Contains("sanatate") || lower.Contains("medical") || lower.Contains("doctor"))
+        if (lower.Contains("spital") || lower.Contains("sanatate") || lower.Contains("medical") || lower.Contains("doctor") || lower.Contains("health"))
             matches.Add("Health");
         if (lower.Contains("tech") || lower.Contains("it") || lower.Contains("software") || lower.Contains("calculator"))
             matches.Add("Technology");
-        if (lower.Contains("calatorie") || lower.Contains("vacanta") || lower.Contains("turism") || lower.Contains("excursie"))
+        if (lower.Contains("calatorie") || lower.Contains("vacanta") || lower.Contains("turism") || lower.Contains("excursie") || lower.Contains("travel"))
             matches.Add("Travel");
-        if (lower.Contains("arta") || lower.Contains("pictura") || lower.Contains("sculptura") || lower.Contains("muzeu"))
+        if (lower.Contains("arta") || lower.Contains("pictura") || lower.Contains("sculptura") || lower.Contains("muzeu") || lower.Contains("art"))
             matches.Add("Art");
         if (lower.Contains("business") || lower.Contains("afaceri") || lower.Contains("conferinta") || lower.Contains("seminar"))
             matches.Add("Business");

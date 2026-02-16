@@ -2,16 +2,24 @@ using OpenAI.Chat;
 using PulseMap.Interfaces;
 using System.ClientModel;
 
-namespace PulseMap.Service.AI;
+namespace PulseMap.Service.AI.LocationMatch;
 
 public class GptLocationMatcher : ILocationMatcher
 {
     private readonly ChatClient _chatClient;
     private readonly ILogger<GptLocationMatcher> _logger;
+    private readonly IAIStatisticsService _statisticsService;
+    private readonly ITranslationService _translationService;
 
-    public GptLocationMatcher(IConfiguration config, ILogger<GptLocationMatcher> logger)
+    public GptLocationMatcher(
+        IConfiguration config, 
+        ILogger<GptLocationMatcher> logger,
+        IAIStatisticsService statisticsService,
+        ITranslationService translationService)
     {
         _logger = logger;
+        _statisticsService = statisticsService;
+        _translationService = translationService;
 
         var apiKey = config["OpenAI:ApiKey"];
         var model = config["OpenAI:Model"] ?? "gpt-3.5-turbo";
@@ -32,6 +40,10 @@ public class GptLocationMatcher : ILocationMatcher
     {
         _logger.LogInformation("Matching locations using GPT: '{Desc1}' vs '{Desc2}'", description1, description2);
 
+        // Translate both descriptions to English for better accuracy
+        var englishDesc1 = await _translationService.TranslateToEnglishIfNeededAsync(description1, ct);
+        var englishDesc2 = await _translationService.TranslateToEnglishIfNeededAsync(description2, ct);
+
         var systemPrompt = """
 You are a location matching assistant.
 
@@ -44,8 +56,8 @@ Rules:
 """;
 
         var userPrompt = $"""
-Description 1: "{description1}"
-Description 2: "{description2}"
+Description 1: "{englishDesc1}"
+Description 2: "{englishDesc2}"
 """;
 
         var messages = new List<ChatMessage>
@@ -65,20 +77,30 @@ Description 2: "{description2}"
 
         _logger.LogInformation("GPT returned: {Result}", result);
 
+        LocationMatchResult matchResult;
+        
         if (result.Contains("same location") && !result.Contains("possibly"))
         {
             _logger.LogInformation("HIGH confidence: Same location");
-            return LocationMatchResult.SameLocation;
+            matchResult = LocationMatchResult.SameLocation;
         }
         else if (result.Contains("possibly"))
         {
             _logger.LogInformation("MEDIUM confidence: Possibly same location");
-            return LocationMatchResult.PossiblySameLocation;
+            matchResult = LocationMatchResult.PossiblySameLocation;
         }
         else
         {
             _logger.LogInformation("Different location");
-            return LocationMatchResult.DifferentLocation;
+            matchResult = LocationMatchResult.DifferentLocation;
         }
+
+        // Track statistics only for successful matches
+        if (matchResult == LocationMatchResult.SameLocation || matchResult == LocationMatchResult.PossiblySameLocation)
+        {
+            await _statisticsService.IncrementGptMatcherAsync();
+        }
+
+        return matchResult;
     }
 }

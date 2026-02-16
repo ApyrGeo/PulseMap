@@ -15,8 +15,12 @@ export interface MapBounds {
   maxLng: number;
 }
 
-export async function fetchLocations(active: boolean): Promise<Location[]> {
-  const response = await fetch(`${LOCATIONS_URL}?active=${active}`);
+export async function fetchLocations(active: boolean, userId?: number): Promise<Location[]> {
+  const params = new URLSearchParams({ active: active.toString() });
+  if (userId) {
+    params.append('userId', userId.toString());
+  }
+  const response = await fetch(`${LOCATIONS_URL}?${params}`);
   if (!response.ok) {
     throw new Error('Failed to fetch locations');
   }
@@ -26,7 +30,8 @@ export async function fetchLocations(active: boolean): Promise<Location[]> {
 export async function fetchLocationsByBounds(
   bounds: MapBounds,
   active: boolean,
-  type?: string | null
+  type?: string | null,
+  userId?: number
 ): Promise<Location[]> {
   const params = new URLSearchParams({
     minLat: bounds.minLat.toString(),
@@ -38,6 +43,10 @@ export async function fetchLocationsByBounds(
 
   if (type) {
     params.append('type', type);
+  }
+  
+  if (userId) {
+    params.append('userId', userId.toString());
   }
 
   const response = await fetch(`${LOCATIONS_URL}/bounds?${params}`);

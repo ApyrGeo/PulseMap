@@ -67,6 +67,14 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
                     .ThenInclude(r => r.Sender)
             .ToListAsync();
     }
+    public async Task<Location?> GetLocationByOwnerIdAsync(int ownerId)
+    {
+        return await _context.Locations
+            .Include(l => l.Owner)
+            .Include(l => l.Likes)
+            .FirstOrDefaultAsync(l => l.OwnerId == ownerId && !l.IsExpired);
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

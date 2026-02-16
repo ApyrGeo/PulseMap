@@ -23,17 +23,17 @@ public class LocationController(ILocationService locationService) : ControllerBa
 
     [HttpGet]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<List<LocationResponseDTO>>> GetAllLocations([FromQuery] bool active = true)
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetAllLocations([FromQuery] bool active = true, [FromQuery] int userId = 1)
     {
-        var locations = active ? await _locationService.GetActiveLocationsAsync() : await _locationService.GetAllLocationsAsync();
+        var locations = active ? await _locationService.GetActiveLocationsAsync(userId) : await _locationService.GetAllLocationsAsync(userId);
         return Ok(locations);
     }
 
     [HttpGet("bounds")]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsInBounds([FromQuery] double minLat, [FromQuery] double maxLat, [FromQuery] double minLng, [FromQuery] double maxLng, [FromQuery] string? type, [FromQuery] bool active = true)
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsInBounds([FromQuery] double minLat, [FromQuery] double maxLat, [FromQuery] double minLng, [FromQuery] double maxLng, [FromQuery] string? type, [FromQuery] bool active = true, [FromQuery] int userId = 1)
     {
-        var locations = await _locationService.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng, type);
+        var locations = await _locationService.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng, type, userId);
         return Ok(locations);
     }
 

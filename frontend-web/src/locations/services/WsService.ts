@@ -40,7 +40,18 @@ export class LocationWsService {
     entityType: PayloadEntityType,
     handlers: EntityHandlers
   ) {
+    // Replace existing handlers instead of stacking them
     this.handlers.set(entityType, handlers);
+  }
+
+  // Clear handlers for a specific entity type
+  unregisterEntityHandlers(entityType: PayloadEntityType) {
+    this.handlers.delete(entityType);
+  }
+
+  // Clear all handlers
+  clearAllHandlers() {
+    this.handlers.clear();
   }
 
   connect() {
