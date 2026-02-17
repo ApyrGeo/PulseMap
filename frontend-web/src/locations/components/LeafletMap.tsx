@@ -3,6 +3,8 @@ import {
   TileLayer,
   Marker,
   Popup,
+  Tooltip,
+  Circle,
   useMapEvents,
   useMap,
 } from 'react-leaflet';
@@ -24,6 +26,8 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import LocationPopup from './LocationPopup';
 import AdminLocationPopup from './admin/AdminLocationPopup';
 import { MapBounds } from '../services/LocationsApiService';
+import { EventResponseDTO } from '../../core/api/EventsApiService';
+import { ZOOM_THRESHOLDS } from './mapConstants';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -94,12 +98,79 @@ const getMarkerIcon = (
   });
 };
 
+// Calculate event radius from locations (Haversine distance)
+const calculateEventRadius = (
+  centerLat: number,
+  centerLng: number,
+  locations: Location[]
+): number => {
+  if (locations.length === 0) return 100;
+
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  
+  const distances = locations.map(loc => {
+    const R = 6371000; // Earth radius in meters
+    const dLat = toRad(loc.latitude - centerLat);
+    const dLng = toRad(loc.longitude - centerLng);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(centerLat)) *
+        Math.cos(toRad(loc.latitude)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  });
+
+  return Math.max(...distances) + 50; // Add 50m buffer
+};
+
+// Create event marker icon (pulsing circle)
+const getEventIcon = (category: string, locationsCount: number) => {
+  const color = '#ef4444'; // Red for events
+  const size = Math.min(50 + locationsCount * 2, 100); // Scale based on locations count
+
+  const html = `
+    <div class="event-marker" style="
+      width: ${size}px;
+      height: ${size}px;
+      background-color: ${color};
+      border: 4px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+      position: relative;
+      animation: event-pulse 2s ease-in-out infinite;
+      cursor: pointer;
+    ">
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: bold;
+        font-size: ${Math.max(12, size / 4)}px;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      ">${locationsCount}</div>
+    </div>
+  `;
+
+  return L.divIcon({
+    html: html,
+    className: 'event-marker-icon',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2],
+  });
+};
+
 export interface LocationAnimationState {
   [locationId: number]: 'new' | 'updated' | 'liked' | null;
 }
 
 interface LeafletMapProps {
   locations: Location[];
+  events?: EventResponseDTO[];
   onMapClick?: (lat: number, lng: number) => void;
   onAddComment?: (message: MessagePostDTO) => Promise<void>;
   onAddResponse?: (message: ResponseMessagePostDTO) => Promise<void>;
@@ -112,13 +183,6 @@ interface LeafletMapProps {
   currentZoom?: number;
   animationStates?: LocationAnimationState;
 }
-
-// Zoom level thresholds
-export const ZOOM_THRESHOLDS = {
-  NEIGHBORHOOD: 13, // Show individual markers (neighborhood/street level)
-  CITY: 10, // Show clusters/bubbles (city level)
-  // Below CITY zoom level: show count popup
-};
 
 const MapClickHandler = ({
   onMapClick,
@@ -166,6 +230,81 @@ const MapBoundsHandler = ({ onBoundsChange }: MapBoundsHandlerProps) => {
   });
 
   return null;
+};
+
+// Component for event markers
+interface EventMarkerProps {
+  event: EventResponseDTO;
+  onClick: (event: EventResponseDTO) => void;
+}
+
+const EventMarker = ({ event, onClick }: EventMarkerProps) => {
+  const map = useMap();
+
+  // Safety check for coordinates
+  if (!event.latitude || !event.longitude) {
+    console.warn('Event missing coordinates:', event);
+    return null;
+  }
+
+  // Calculate radius from locations if available (approximate)
+  const radius = event.locations && event.locations.length > 0
+    ? calculateEventRadius(event.latitude, event.longitude, event.locations)
+    : 100; // Default 100m if no locations
+
+  const handleClick = () => {
+    // Zoom into the event area
+    map.setView([event.latitude, event.longitude], ZOOM_THRESHOLDS.NEIGHBORHOOD);
+    onClick(event);
+  };
+
+  return (
+    <>
+      <Circle
+        center={[event.latitude, event.longitude]}
+        radius={radius}
+        pathOptions={{
+          color: '#dc2626',
+          fillColor: '#ef4444',
+          fillOpacity: 0.35,
+          weight: 3,
+          dashArray: '5, 10',
+        }}
+      />
+      <Marker
+        position={[event.latitude, event.longitude]}
+        icon={getEventIcon(event.name, event.locationsCount)}
+        eventHandlers={{
+          click: handleClick,
+        }}
+      >
+        <Tooltip direction="top" offset={[0, -20]} opacity={0.9}>
+          <div style={{ minWidth: '180px' }}>
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#1f2937' }}>
+              {event.name}
+            </h3>
+            <p style={{ margin: '3px 0', fontSize: '13px' }}>
+              <strong>Locations:</strong> {event.locationsCount}
+            </p>
+            <p style={{ margin: '3px 0', fontSize: '13px' }}>
+              <strong>Radius:</strong> {radius.toFixed(0)}m
+            </p>
+            <p style={{ margin: '3px 0', fontSize: '13px' }}>
+              <strong>Confidence:</strong> {(event.confidenceScore * 100).toFixed(0)}%
+            </p>
+            {event.requiresReview && (
+              <p style={{ margin: '3px 0', fontSize: '13px', color: '#f59e0b' }}>
+                ⚠️ Needs Review
+              </p>
+            )}
+            <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#6b7280', fontStyle: 'italic' }}>
+              Click to zoom in
+            </p>
+          </div>
+        </Tooltip>
+      </Marker>
+    </>
+  );
 };
 
 // Component to handle marker animations
@@ -310,6 +449,7 @@ AnimatedMarker.displayName = 'AnimatedMarker';
 
 const LeafletMap = ({
   locations,
+  events = [],
   onMapClick,
   onAddComment,
   onAddResponse,
@@ -338,9 +478,12 @@ const LeafletMap = ({
 
   // Determine if we should show markers based on zoom level
   const shouldShowMarkers = currentZoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD;
+  const shouldShowEvents = 
+    currentZoom >= ZOOM_THRESHOLDS.EVENT && 
+    currentZoom < ZOOM_THRESHOLDS.NEIGHBORHOOD;
   const shouldShowHeatmap =
     currentZoom >= ZOOM_THRESHOLDS.CITY &&
-    currentZoom < ZOOM_THRESHOLDS.NEIGHBORHOOD;
+    currentZoom < ZOOM_THRESHOLDS.EVENT;
   const shouldShowCountOnly = currentZoom < ZOOM_THRESHOLDS.CITY;
 
   // Determine color based on location count
@@ -395,63 +538,65 @@ const LeafletMap = ({
         </MarkerClusterGroup>
       )}
 
-      {shouldShowHeatmap && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '20px',
-            left: '20px',
-            background: 'rgba(255, 255, 255, 0.9)',
-            padding: '10px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            zIndex: 1000,
-            pointerEvents: 'none',
+      {shouldShowEvents && events.length > 0 && events.map((event) => (
+        <EventMarker
+          key={event.id}
+          event={event}
+          onClick={(evt) => {
+            console.log('Event clicked:', evt);
           }}
-        >
-          <div
-            style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: getColorByCount(locations.length),
-            }}
-          >
-            {locations.length}
-          </div>
-          <div style={{ fontSize: '12px', color: '#6b7280' }}>
-            locations in area
-          </div>
-        </div>
-      )}
+        />
+      ))}
 
-      {shouldShowCountOnly && (
+      {/* Footer showing location and event counts */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          padding: '10px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000,
+          pointerEvents: 'none',
+        }}
+      >
         <div
           style={{
-            position: 'absolute',
-            bottom: '20px',
-            left: '20px',
-            background: 'rgba(255, 255, 255, 0.9)',
-            padding: '10px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            zIndex: 1000,
-            pointerEvents: 'none',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: getColorByCount(locations.length),
           }}
         >
-          <div
-            style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: getColorByCount(locations.length),
-            }}
-          >
-            {locations.length}
-          </div>
-          <div style={{ fontSize: '12px', color: '#6b7280' }}>
-            Zoom in more to see locations
-          </div>
+          {locations.length}
         </div>
-      )}
+        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+          {shouldShowMarkers ? 'locations visible' : 'locations in area'}
+        </div>
+        {events.length > 0 && (
+          <>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#ef4444',
+                marginTop: '8px',
+              }}
+            >
+              {events.length}
+            </div>
+            <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}>
+              {shouldShowEvents ? 'events visible' : 'events in area (zoom in to 7+ to see)'}
+            </div>
+          </>
+        )}
+        {shouldShowCountOnly && (
+          <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
+            Zoom in to see details
+          </div>
+        )}
+      </div>
 
       {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
       {onBoundsChange && <MapBoundsHandler onBoundsChange={onBoundsChange} />}

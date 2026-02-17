@@ -13,6 +13,10 @@ public interface IAIStatisticsService
     Task IncrementKeywordMatcherFallbackAsync();
     
     Task IncrementTranslationAsync();
-    
+
+    Task IncrementGptEventExtractorAsync();
+    Task IncrementEmbeddingEventExtractorAsync();
+    Task IncrementEventClusteringRunAsync();
+
     Task<AIStatistics> GetStatisticsAsync();
 }

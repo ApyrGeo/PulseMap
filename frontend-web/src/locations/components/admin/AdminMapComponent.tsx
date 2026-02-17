@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import LeafletMap, {
-  ZOOM_THRESHOLDS,
   LocationAnimationState,
 } from '../LeafletMap';
+import { ZOOM_THRESHOLDS } from '../mapConstants';
 import { useLocations } from '../LocationsProvider';
 import { useAuth } from '../../../auth/AuthProvider';
 import { Location } from '../../Interfaces';
@@ -11,6 +11,10 @@ import {
   fetchLocationsByBounds,
   MapBounds,
 } from '../../services/LocationsApiService';
+import {
+  fetchEventsByBounds,
+  EventResponseDTO,
+} from '../../../core/api/EventsApiService';
 import '../../../users/LocationsPage.css';
 
 const AdminMapComponent = () => {
@@ -24,6 +28,7 @@ const AdminMapComponent = () => {
   const { user } = useAuth();
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
+  const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
   const [currentZoom, setCurrentZoom] = useState(15);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -115,19 +120,25 @@ const AdminMapComponent = () => {
       setLastBounds(bounds);
 
       if (zoom < ZOOM_THRESHOLDS.CITY) {
-        setVisibleLocations([]);
+        setVisibleEvents([]);
         setLastBounds(null);
         return;
       }
 
       try {
+        // Fetch locations for zoom >= CITY
         await fetchLocationsByBounds(bounds, false, undefined, user?.id); // Admin sees all
+        
+        // Fetch events for zoom >= CITY (always fetch to show count in footer)
+        const events = await fetchEventsByBounds(bounds, true);
+        setVisibleEvents(events);
+        
         // Don't set visibleLocations here - let the useEffect handle it
       } catch (error) {
-        console.error('Failed to fetch locations by bounds:', error);
+        console.error('Failed to fetch locations/events by bounds:', error);
       }
     },
-    []
+    [user?.id]
   );
 
   const handleContextMenu = (e: React.MouseEvent, location: Location) => {
@@ -191,6 +202,7 @@ const AdminMapComponent = () => {
       <div className="locations-map-container">
         <LeafletMap
           locations={visibleLocations}
+          events={visibleEvents}
           onContextMenu={handleContextMenu}
           isAdmin={true}
           onBoundsChange={handleBoundsChange}

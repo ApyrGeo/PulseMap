@@ -7,6 +7,7 @@ import {
 } from '../../services/AIApiService';
 import MergeResultItemComponent from './MergeResultItem';
 import ForceMergeModal from './ForceMergeModal';
+import EventDetectionPanel from './EventDetectionPanel';
 import {
   Box,
   Typography,
@@ -67,7 +68,13 @@ const AdminEventsPage = () => {
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
-        Admin Events - Duplicate Location Management
+        Admin Events Management
+      </Typography>
+
+      <EventDetectionPanel />
+
+      <Typography variant="h5" sx={{ mt: 4, mb: 2, fontWeight: 600 }}>
+        Duplicate Location Management
       </Typography>
 
       <Paper sx={{ p: 3, mb: 3 }}>

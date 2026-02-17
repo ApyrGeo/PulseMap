@@ -16,6 +16,11 @@ export interface AIStatistics {
   translation: {
     translationsPerformed: number;
   };
+  events: {
+    gptEventExtractorSuccess: number;
+    embeddingEventExtractorSuccess: number;
+    eventClusteringRuns: number;
+  };
   lastUpdated: string;
 }
 

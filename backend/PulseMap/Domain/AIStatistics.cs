@@ -16,10 +16,17 @@ public class AIStatistics
     
     // Translation Stats
     public int TranslationsPerformed { get; set; }
-    
+
+    // Event Extraction Stats
+    public int GptEventExtractorSuccess { get; set; }
+    public int EmbeddingEventExtractorSuccess { get; set; }
+
+    // Event Clustering Stats
+    public int EventClusteringRuns { get; set; }
+
     // Timestamps
     public DateTime LastUpdated { get; set; }
-    
+
     // Total calls
     public int TotalClassificationCalls { get; set; }
     public int TotalMatchingCalls { get; set; }

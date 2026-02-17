@@ -12,6 +12,8 @@ export interface Location {
   likesCount: number;
   isLikedByCurrentUser: boolean;
   owner?: SimplifiedUser;
+  event?: SimplifiedEvent;
+  eventAssignmentConfidence?: number;
 }
 
 export enum LocationCategory {
@@ -87,4 +89,11 @@ export interface SimplifiedUser {
   firstName: string;
   lastName: string;
   username: string;
+}
+
+export interface SimplifiedEvent {
+  id: number;
+  name: string;
+  requiresReview: boolean;
+  confidenceScore: number;
 }

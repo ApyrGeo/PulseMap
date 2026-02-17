@@ -70,6 +70,12 @@ const StatisticsPage = () => {
     { name: 'Keyword Fallback', value: statistics.matching.keywordFallback },
   ];
 
+  // Prepare data for events chart
+  const eventsData = [
+    { name: 'GPT Event Extractor', value: statistics.events.gptEventExtractorSuccess },
+    { name: 'Embedding Event Extractor', value: statistics.events.embeddingEventExtractorSuccess },
+  ];
+
   // Prepare comparison data
   const comparisonData = [
     {
@@ -83,6 +89,10 @@ const StatisticsPage = () => {
     {
       category: 'Translation',
       total: statistics.translation.translationsPerformed,
+    },
+    {
+      category: 'Event Clustering',
+      total: statistics.events.eventClusteringRuns,
     },
   ];
 
@@ -185,6 +195,44 @@ const StatisticsPage = () => {
             <div className="detail-row">
               <span style={{ color: COLORS[2] }}>●</span>
               <span>Keyword Fallback: {statistics.matching.keywordFallback}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Event Extraction Statistics */}
+        <div className="statistics-card">
+          <h2 className="card-title">Event Extraction Methods</h2>
+          <div className="card-stat">
+            <span className="stat-label">Clustering Runs:</span>
+            <span className="stat-value">{statistics.events.eventClusteringRuns}</span>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={eventsData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, value }) => (value > 0 ? `${name}: ${value}` : '')}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {eventsData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="card-details">
+            <div className="detail-row">
+              <span style={{ color: COLORS[0] }}>●</span>
+              <span>GPT Extractor: {statistics.events.gptEventExtractorSuccess}</span>
+            </div>
+            <div className="detail-row">
+              <span style={{ color: COLORS[1] }}>●</span>
+              <span>Embedding Extractor: {statistics.events.embeddingEventExtractorSuccess}</span>
             </div>
           </div>
         </div>

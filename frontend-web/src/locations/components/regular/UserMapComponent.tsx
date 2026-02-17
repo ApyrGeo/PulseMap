@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import LeafletMap, { ZOOM_THRESHOLDS } from '../LeafletMap';
+import LeafletMap from '../LeafletMap';
+import { ZOOM_THRESHOLDS } from '../mapConstants';
 import { useLocations } from '../LocationsProvider';
 import { useAuth } from '../../../auth/AuthProvider';
 import {
@@ -17,6 +18,10 @@ import {
   fetchLocationsByBounds,
   MapBounds,
 } from '../../services/LocationsApiService';
+import {
+  fetchEventsByBounds,
+  EventResponseDTO,
+} from '../../../core/api/EventsApiService';
 import '../../../users/LocationsPage.css';
 
 const UserMapComponent = () => {
@@ -32,6 +37,7 @@ const UserMapComponent = () => {
   const { user } = useAuth();
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
+  const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
   const [currentZoom, setCurrentZoom] = useState(15);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [clickedCoords, setClickedCoords] = useState<{
@@ -97,6 +103,10 @@ const UserMapComponent = () => {
         const data = await fetchLocationsByBounds(bounds, true, typeForApi, user?.id);
         // Use server response immediately to populate visible locations
         setVisibleLocations(data);
+        
+        // Fetch events for zoom >= CITY
+        const events = await fetchEventsByBounds(bounds, true);
+        setVisibleEvents(events);
       } catch (error) {
         console.error('Failed to fetch locations by bounds:', error);
       }
@@ -205,6 +215,7 @@ const UserMapComponent = () => {
       <div className="locations-map-container">
         <LeafletMap
           locations={visibleLocations}
+          events={visibleEvents}
           onMapClick={handleMapClick}
           onAddComment={handleAddComment}
           onAddResponse={handleAddResponse}

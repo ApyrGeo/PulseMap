@@ -51,6 +51,12 @@ namespace PulseMap.Controllers
                 {
                     TranslationsPerformed = stats.TranslationsPerformed
                 },
+                Events = new AIStatisticsResponseDTO.EventStats
+                {
+                    GptEventExtractorSuccess = stats.GptEventExtractorSuccess,
+                    EmbeddingEventExtractorSuccess = stats.EmbeddingEventExtractorSuccess,
+                    EventClusteringRuns = stats.EventClusteringRuns
+                },
                 LastUpdated = stats.LastUpdated
             };
 

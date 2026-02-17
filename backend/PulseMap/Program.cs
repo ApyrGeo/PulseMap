@@ -13,6 +13,7 @@ using PulseMap.Service;
 using PulseMap.Service.AI;
 using PulseMap.Service.AI.Description;
 using PulseMap.Service.AI.LocationMatch;
+using PulseMap.Service.AI.EventClustering;
 using PulseMap.Service.BackgroundServices;
 using PulseMap.Service.Validators;
 using PulseMap.Service.WS;
@@ -71,9 +72,18 @@ builder.Services.AddAutoMapper(cfg => {
         .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.Comments))
         .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
         .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.Likes.Count))
-        .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore());
+        .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore())
+        .ForMember(dest => dest.Event, opt => opt.MapFrom(src => src.Event))
+        .ForMember(dest => dest.EventAssignmentConfidence, opt => opt.MapFrom(src => src.EventAssignmentConfidence));
 
     cfg.CreateMap<LocationPostDTO, Location>().ReverseMap();
+
+    // Event
+    cfg.CreateMap<Event, SimplifiedEventResponseDTO>();
+
+    cfg.CreateMap<Event, EventResponseDTO>()
+        .ForMember(dest => dest.LocationsCount, opt => opt.MapFrom(src => src.Locations.Count))
+        .ForMember(dest => dest.Locations, opt => opt.MapFrom(src => src.Locations));
 });
 
 //logging
@@ -88,12 +98,14 @@ builder.Services.AddValidatorsFromAssemblyContaining<LocationPostDTOValidator>()
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
 
 //services
 builder.Services.AddSingleton<IWebSocketNotificationService, WebSocketNotificationService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IEventService, EventService>();
 
 // AI Services
 builder.Services.AddScoped<IAIStatisticsService, AIStatisticsService>();
@@ -207,6 +219,44 @@ builder.Services.AddScoped<ILocationMatcher>(sp =>
 
     return new CompositeLocationMatcher(keywordMatcher, logger, embeddingMatcher, gptMatcher);
 });
+
+// AI Event Extractors & Clustering
+if (hasOpenAiKey)
+{
+    builder.Services.AddScoped<GptEventExtractor>();
+    builder.Services.AddScoped<EmbeddingEventExtractor>();
+    Console.WriteLine("✅ Event extractors registered (GPT + Embeddings)");
+}
+
+builder.Services.AddScoped<IEventExtractorService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<CompositeEventExtractor>>();
+
+    GptEventExtractor? gptExtractor = null;
+    EmbeddingEventExtractor? embeddingExtractor = null;
+
+    if (hasOpenAiKey)
+    {
+        try
+        {
+            embeddingExtractor = sp.GetRequiredService<EmbeddingEventExtractor>();
+            gptExtractor = sp.GetRequiredService<GptEventExtractor>();
+            logger.LogInformation("CompositeEventExtractor initialized: Embeddings → GPT");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to initialize event extractors");
+        }
+    }
+    else
+    {
+        logger.LogWarning("No event extractors available - event clustering disabled");
+    }
+
+    return new CompositeEventExtractor(logger, embeddingExtractor, gptExtractor);
+});
+
+builder.Services.AddScoped<IEventClusteringService, EventClusteringService>();
 
 // Hangfire
 builder.Services.AddHangfire(config =>

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import LeafletMap, {
-  ZOOM_THRESHOLDS,
   LocationAnimationState,
 } from '../LeafletMap';
+import { ZOOM_THRESHOLDS } from '../mapConstants';
 import { useLocations } from '../LocationsProvider';
 import { useAuth } from '../../../auth/AuthProvider';
 import { Location, LocationPutDTO, LocationPostDTO } from '../../Interfaces';
@@ -14,6 +14,10 @@ import {
   fetchLocationsByBounds,
   MapBounds,
 } from '../../services/LocationsApiService';
+import {
+  fetchEventsByBounds,
+  EventResponseDTO,
+} from '../../../core/api/EventsApiService';
 import '../../../users/LocationsPage.css';
 
 const OwnerMapComponent = () => {
@@ -27,6 +31,7 @@ const OwnerMapComponent = () => {
   } = useLocations();
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
+  const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
   const [currentZoom, setCurrentZoom] = useState(15);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -131,6 +136,11 @@ const OwnerMapComponent = () => {
 
       try {
         await fetchLocationsByBounds(bounds, true, undefined, user?.id);
+        
+        // Fetch events for zoom >= CITY
+        const events = await fetchEventsByBounds(bounds, true);
+        setVisibleEvents(events);
+        
         // Don't set visibleLocations here - let the useEffect handle it
       } catch (error) {
         console.error('Failed to fetch locations by bounds:', error);
@@ -241,6 +251,7 @@ const OwnerMapComponent = () => {
       <div className="locations-map-container">
         <LeafletMap
           locations={visibleLocations}
+          events={visibleEvents}
           onMapClick={handleMapClick}
           onContextMenu={handleContextMenu}
           currentUserId={user?.id}

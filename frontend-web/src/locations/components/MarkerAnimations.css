@@ -114,3 +114,25 @@
 .custom-marker-icon.animate-liked > div {
   animation: marker-pulse 0.5s ease-in-out !important;
 }
+
+/* Event marker styling */
+.event-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Pulsing animation for events */
+@keyframes event-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+  }
+}

@@ -103,6 +103,33 @@ public class AIStatisticsService : IAIStatisticsService
         _logger.LogDebug("Incremented Translation count");
     }
 
+    public async Task IncrementGptEventExtractorAsync()
+    {
+        var stats = await GetOrCreateStatsAsync();
+        stats.GptEventExtractorSuccess++;
+        stats.LastUpdated = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        _logger.LogDebug("Incremented GPT Event Extractor count");
+    }
+
+    public async Task IncrementEmbeddingEventExtractorAsync()
+    {
+        var stats = await GetOrCreateStatsAsync();
+        stats.EmbeddingEventExtractorSuccess++;
+        stats.LastUpdated = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        _logger.LogDebug("Incremented Embedding Event Extractor count");
+    }
+
+    public async Task IncrementEventClusteringRunAsync()
+    {
+        var stats = await GetOrCreateStatsAsync();
+        stats.EventClusteringRuns++;
+        stats.LastUpdated = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        _logger.LogDebug("Incremented Event Clustering Run count");
+    }
+
     public async Task<AIStatistics> GetStatisticsAsync()
     {
         return await GetOrCreateStatsAsync();

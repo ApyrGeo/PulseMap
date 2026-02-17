@@ -15,4 +15,8 @@ public record LocationResponseDTO
     public required int LikesCount { get; set; }
     public required bool IsLikedByCurrentUser { get; set; }
     public SimplifiedUserResponseDTO? Owner { get; set; }
+
+    // Event clustering
+    public SimplifiedEventResponseDTO? Event { get; set; }
+    public float? EventAssignmentConfidence { get; set; }
 }

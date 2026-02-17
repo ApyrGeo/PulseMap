@@ -5,6 +5,7 @@ public class AIStatisticsResponseDTO
     public ClassificationStats Classification { get; set; } = new();
     public MatchingStats Matching { get; set; } = new();
     public TranslationStats Translation { get; set; } = new();
+    public EventStats Events { get; set; } = new();
     public DateTime LastUpdated { get; set; }
 
     public class ClassificationStats
@@ -26,5 +27,12 @@ public class AIStatisticsResponseDTO
     public class TranslationStats
     {
         public int TranslationsPerformed { get; set; }
+    }
+
+    public class EventStats
+    {
+        public int GptEventExtractorSuccess { get; set; }
+        public int EmbeddingEventExtractorSuccess { get; set; }
+        public int EventClusteringRuns { get; set; }
     }
 }

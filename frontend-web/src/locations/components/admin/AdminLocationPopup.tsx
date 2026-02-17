@@ -46,6 +46,28 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
           <span className="admin-popup-value">{location.creator.username}</span>
         </div>
 
+        {location.event && (
+          <div className={`admin-popup-event-box ${location.event.requiresReview ? 'requires-review' : ''}`}>
+            <div className="admin-popup-event-title">
+              🎯 Part of Event
+            </div>
+            <div className="admin-popup-event-name">
+              {location.event.name}
+              {location.event.requiresReview && ' ⚠️'}
+            </div>
+            {location.eventAssignmentConfidence && (
+              <div className="admin-popup-event-confidence">
+                Match Confidence: {(location.eventAssignmentConfidence * 100).toFixed(0)}%
+              </div>
+            )}
+            {location.event.requiresReview && (
+              <div className="admin-popup-event-warning">
+                This event requires admin review
+              </div>
+            )}
+          </div>
+        )}
+
         {location.isExpired ? (
           <div className="admin-popup-row">
             <span className="admin-popup-label">Expired:</span>

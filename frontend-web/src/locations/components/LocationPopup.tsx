@@ -185,6 +185,47 @@ const LocationPopup = memo(({
               </Stack>
             )}
 
+            {/* Event Info */}
+            {location.event && (
+              <Box
+                sx={{
+                  p: 1.5,
+                  bgcolor: location.event.requiresReview ? '#fef3c7' : '#d1fae5',
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: location.event.requiresReview ? '#f59e0b' : '#10b981',
+                }}
+              >
+                <Stack spacing={0.5}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" fontWeight={600} sx={{ color: location.event.requiresReview ? '#92400e' : '#065f46' }}>
+                      🎯 Part of Event:
+                    </Typography>
+                    <Chip
+                      label={location.event.name}
+                      size="small"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        bgcolor: location.event.requiresReview ? '#f59e0b' : '#10b981',
+                        color: 'white',
+                      }}
+                    />
+                  </Stack>
+                  {location.eventAssignmentConfidence && (
+                    <Typography variant="caption" sx={{ color: location.event.requiresReview ? '#92400e' : '#065f46', fontWeight: 500 }}>
+                      Match Confidence: {(location.eventAssignmentConfidence * 100).toFixed(0)}%
+                    </Typography>
+                  )}
+                  {location.event.requiresReview && (
+                    <Typography variant="caption" sx={{ color: '#92400e', fontStyle: 'italic' }}>
+                      ⚠️ This event requires admin review
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
+            )}
+
             {/* Expires & Likes in one row */}
             <Stack direction="row" spacing={1} alignItems="center">
               <Chip
