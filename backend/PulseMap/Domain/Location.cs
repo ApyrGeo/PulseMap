@@ -29,4 +29,5 @@ public class Location
     public int? EventId { get; set; } = null;
     public Event? Event { get; set; } = null;
     public float? EventAssignmentConfidence { get; set; } = null;
+    public bool RequiresReview { get; set; } = false;
 }

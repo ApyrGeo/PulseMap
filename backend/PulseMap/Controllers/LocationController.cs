@@ -83,4 +83,30 @@ public class LocationController(ILocationService locationService) : ControllerBa
         var updatedLocation = await _locationService.LikeLocationAsync(locationId, userId);
         return Ok(updatedLocation);
     }
+
+    [HttpGet("needs-review")]
+    [ProducesResponseType(200)]
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsNeedingReview([FromQuery] int? eventId = null)
+    {
+        var locations = await _locationService.GetLocationsNeedingReviewAsync(eventId);
+        return Ok(locations);
+    }
+
+    [HttpPatch("{locationId}/confirm-event")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<LocationResponseDTO>> ConfirmLocationEvent(int locationId)
+    {
+        var updatedLocation = await _locationService.ConfirmLocationEventAsync(locationId);
+        return Ok(updatedLocation);
+    }
+
+    [HttpPatch("{locationId}/reject-event")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<LocationResponseDTO>> RejectLocationEvent(int locationId)
+    {
+        var updatedLocation = await _locationService.RejectLocationEventAsync(locationId);
+        return Ok(updatedLocation);
+    }
 }

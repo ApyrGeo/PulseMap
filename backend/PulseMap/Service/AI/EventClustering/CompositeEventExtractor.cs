@@ -32,7 +32,7 @@ public class CompositeEventExtractor : IEventExtractorService
                 _logger.LogInformation("STEP 1: Trying Embedding-based extraction (compare with existing events)");
                 var embeddingResult = await _embeddingExtractor.ExtractEventNameAsync(description, ct);
 
-                if (embeddingResult.EventName != null && embeddingResult.Confidence >= 0.90f)
+                if (embeddingResult.EventName != null && embeddingResult.Confidence >= 0.75f)
                 {
                     _logger.LogInformation("✅ HIGH CONFIDENCE match with existing event: {EventName} (confidence: {Confidence:F2})",
                         embeddingResult.EventName, embeddingResult.Confidence);

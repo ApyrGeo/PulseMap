@@ -76,15 +76,15 @@ Examples:
         try
         {
             var response = await _chatClient.CompleteChatAsync(messages, options, ct);
-            var result = response.Value.Content[0].Text.Trim();
+            var result = response.Value.Content[0].Text.Trim().Trim('"'); // Remove surrounding quotes
 
             _logger.LogInformation("GPT returned: {Result}", result);
 
             // Parse "EventName|confidence"
             var parts = result.Split('|');
-            if (parts.Length == 2 && float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var confidence))
+            if (parts.Length == 2 && float.TryParse(parts[1].Trim('"'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var confidence))
             {
-                var eventName = parts[0].Trim();
+                var eventName = parts[0].Trim().Trim('"'); // Remove quotes from event name
 
                 if (eventName.Equals("NONE", StringComparison.OrdinalIgnoreCase) || confidence < 0.5f)
                 {

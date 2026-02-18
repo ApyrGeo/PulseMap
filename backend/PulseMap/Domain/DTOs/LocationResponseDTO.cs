@@ -19,4 +19,5 @@ public record LocationResponseDTO
     // Event clustering
     public SimplifiedEventResponseDTO? Event { get; set; }
     public float? EventAssignmentConfidence { get; set; }
+    public required bool RequiresReview { get; set; }
 }

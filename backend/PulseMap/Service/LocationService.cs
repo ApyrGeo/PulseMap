@@ -465,5 +465,86 @@ public class LocationService(
     }
 
     private static double ToRadians(double degrees) => degrees * Math.PI / 180.0;
+
+    public async Task<List<LocationResponseDTO>> GetLocationsNeedingReviewAsync(int? eventId = null)
+    {
+        _logger.InfoFormat("Getting locations that need review (eventId: {0})", eventId?.ToString() ?? "all");
+
+        var allLocations = await _locationRepository.GetActiveLocationsAsync();
+
+        var locationsNeedingReview = allLocations
+            .Where(l => l.RequiresReview && l.EventId.HasValue);
+
+        if (eventId.HasValue)
+        {
+            locationsNeedingReview = locationsNeedingReview.Where(l => l.EventId == eventId.Value);
+        }
+
+        var result = locationsNeedingReview
+            .Select(l => _mapper.Map<LocationResponseDTO>(l))
+            .ToList();
+
+        _logger.InfoFormat("Found {0} locations needing review", result.Count);
+        return result;
+    }
+
+    public async Task<LocationResponseDTO> ConfirmLocationEventAsync(int locationId)
+    {
+        _logger.InfoFormat("Confirming location {0} event assignment", locationId);
+
+        var location = await _locationRepository.GetLocationByIdAsync(locationId)
+            ?? throw new NotFoundException($"Location with ID {locationId} not found");
+
+        if (!location.EventId.HasValue)
+        {
+            throw new InvalidOperationException($"Location {locationId} is not assigned to any event");
+        }
+
+        location.RequiresReview = false;
+        await _locationRepository.UpdateLocationAsync(location);
+
+        _logger.InfoFormat("Location {0} event assignment confirmed (EventId: {1})", locationId, location.EventId);
+
+        var dto = _mapper.Map<LocationResponseDTO>(location);
+
+        // Broadcast update
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = dto
+        });
+
+        return dto;
+    }
+
+    public async Task<LocationResponseDTO> RejectLocationEventAsync(int locationId)
+    {
+        _logger.InfoFormat("Rejecting location {0} event assignment", locationId);
+
+        var location = await _locationRepository.GetLocationByIdAsync(locationId)
+            ?? throw new NotFoundException($"Location with ID {locationId} not found");
+
+        var previousEventId = location.EventId;
+
+        location.EventId = null;
+        location.EventAssignmentConfidence = null;
+        location.RequiresReview = false;
+        await _locationRepository.UpdateLocationAsync(location);
+
+        _logger.InfoFormat("Location {0} removed from event {1}", locationId, previousEventId);
+
+        var dto = _mapper.Map<LocationResponseDTO>(location);
+
+        // Broadcast update
+        await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
+        {
+            EntityType = PayloadEntityType.Location,
+            ActionType = PayloadActionType.Updated,
+            Data = dto
+        });
+
+        return dto;
+    }
 }
 

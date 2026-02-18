@@ -53,5 +53,9 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.HasOne(l => l.LikeStatus)
             .WithOne(ls => ls.Location)
             .HasForeignKey<LikeStatus>(ls => ls.LocationId);
+
+        builder.Property(l => l.RequiresReview)
+            .HasDefaultValue(false)
+            .IsRequired();
     }
 }

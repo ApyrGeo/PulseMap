@@ -90,28 +90,35 @@ public class EventClusteringService : IEventClusteringService
             _logger.LogInformation("Processing Event: '{EventName}'", eventName);
             _logger.LogInformation("Locations mentioning this event: {Count}", locationGroup.Count);
 
-            if (locationGroup.Count < MIN_LOCATIONS_FOR_EVENT)
-            {
-                _logger.LogWarning("❌ Not enough locations ({Count} < {Min}), skipping event creation",
-                    locationGroup.Count, MIN_LOCATIONS_FOR_EVENT);
-                result.LocationsIgnored += locationGroup.Count;
-                continue;
-            }
-
             // Check if event already exists
             var existingEvent = await _eventRepository.GetEventByNameAsync(eventName);
 
             if (existingEvent != null)
             {
-                _logger.LogInformation("📝 Event already exists (ID: {EventId}), updating...", existingEvent.Id);
+                // For existing events, allow ANY number of new locations
+                _logger.LogInformation("📝 Event already exists (ID: {EventId}), updating with {Count} new locations...", 
+                    existingEvent.Id, locationGroup.Count);
                 await UpdateExistingEventAsync(existingEvent, locationGroup, maxDistanceMeters, result);
             }
             else
             {
-                _logger.LogInformation("✨ Creating new event...");
+                // For new events, require minimum 3 locations
+                if (locationGroup.Count < MIN_LOCATIONS_FOR_EVENT)
+                {
+                    _logger.LogWarning("❌ Not enough locations to CREATE new event ({Count} < {Min}), ignoring",
+                        locationGroup.Count, MIN_LOCATIONS_FOR_EVENT);
+                    result.LocationsIgnored += locationGroup.Count;
+                    continue;
+                }
+
+                _logger.LogInformation("✨ Creating new event with {Count} locations...", locationGroup.Count);
                 await CreateNewEventAsync(eventName, locationGroup, result);
             }
         }
+
+        // PHASE 2: Proximity-based assignment for locations without event mention
+        _logger.LogInformation("\n--- STEP 3: Proximity-based assignment for remaining locations ---");
+        await AssignNearbyLocationsAsync(locations, maxDistanceMeters, result);
 
         await _statisticsService.IncrementEventClusteringRunAsync();
 
@@ -161,6 +168,7 @@ public class EventClusteringService : IEventClusteringService
         {
             location.EventId = savedEvent.Id;
             location.EventAssignmentConfidence = confidence;
+            location.RequiresReview = confidence < LOW_CONFIDENCE_THRESHOLD;
             await _locationRepository.UpdateLocationAsync(location);
             result.LocationsAssigned++;
         }
@@ -177,6 +185,10 @@ public class EventClusteringService : IEventClusteringService
         double maxDistanceMeters,
         EventClusteringResult result)
     {
+        _logger.LogInformation("\n--- Updating existing Event '{EventName}' (ID: {EventId}) ---", existingEvent.Name, existingEvent.Id);
+        _logger.LogInformation("Event centroid: ({Lat:F6}, {Lng:F6})", existingEvent.Latitude, existingEvent.Longitude);
+        _logger.LogInformation("Attempting to add {Count} locations", locationGroup.Count);
+
         var newLocations = new List<Location>();
 
         foreach (var (location, confidence) in locationGroup)
@@ -186,16 +198,20 @@ public class EventClusteringService : IEventClusteringService
                 existingEvent.Latitude, existingEvent.Longitude,
                 location.Latitude, location.Longitude);
 
+            _logger.LogDebug("Location {LocationId} at ({Lat:F6}, {Lng:F6}), distance: {Distance:F1}m", 
+                location.Id, location.Latitude, location.Longitude, distance);
+
             if (distance <= maxDistanceMeters)
             {
                 location.EventId = existingEvent.Id;
                 location.EventAssignmentConfidence = confidence;
+                location.RequiresReview = confidence < LOW_CONFIDENCE_THRESHOLD;
                 await _locationRepository.UpdateLocationAsync(location);
                 newLocations.Add(location);
                 result.LocationsAssigned++;
 
-                _logger.LogInformation("✅ Location {LocationId} assigned to event (distance: {Distance:F1}m, confidence: {Confidence:F2})",
-                    location.Id, distance, confidence);
+                _logger.LogInformation("✅ Location {LocationId} assigned to event (distance: {Distance:F1}m, confidence: {Confidence:F2}, requiresReview: {RequiresReview})",
+                    location.Id, distance, confidence, location.RequiresReview);
             }
             else
             {
@@ -209,6 +225,8 @@ public class EventClusteringService : IEventClusteringService
         {
             // Recalculate centroid with all ACTIVE locations (existing + new)
             var allActiveLocations = await _locationRepository.GetLocationsByEventIdAsync(existingEvent.Id, activeOnly: true);
+            _logger.LogInformation("Total active locations in event after update: {Count}", allActiveLocations.Count);
+
             var centroid = CalculateCentroid(allActiveLocations);
 
             existingEvent.Latitude = centroid.Latitude;
@@ -226,6 +244,10 @@ public class EventClusteringService : IEventClusteringService
 
             _logger.LogInformation("✅ Event '{EventName}' updated (new centroid: {Lat:F6}, {Lng:F6}, {NewLocations} locations added)",
                 existingEvent.Name, existingEvent.Latitude, existingEvent.Longitude, newLocations.Count);
+        }
+        else
+        {
+            _logger.LogWarning("⚠️ No locations were added to event '{EventName}' (all too far or filtered out)", existingEvent.Name);
         }
     }
 
@@ -259,5 +281,72 @@ public class EventClusteringService : IEventClusteringService
     private double ToRadians(double degrees)
     {
         return degrees * Math.PI / 180.0;
+    }
+
+    private async Task AssignNearbyLocationsAsync(
+        List<Location> allLocations,
+        double maxDistanceMeters,
+        EventClusteringResult result)
+    {
+        const float PROXIMITY_CONFIDENCE = 0.4f; // Low confidence for proximity-based assignment
+
+        // Get locations that weren't assigned to any event
+        var unassignedLocations = allLocations.Where(l => l.EventId == null).ToList();
+
+        if (!unassignedLocations.Any())
+        {
+            _logger.LogInformation("No unassigned locations for proximity check");
+            return;
+        }
+
+        _logger.LogInformation("Checking {Count} unassigned locations for proximity to events", unassignedLocations.Count);
+
+        // Get all existing events
+        var allEvents = await _eventRepository.GetAllEventsAsync();
+
+        if (!allEvents.Any())
+        {
+            _logger.LogInformation("No events exist for proximity check");
+            return;
+        }
+
+        foreach (var location in unassignedLocations)
+        {
+            Event? nearestEvent = null;
+            double nearestDistance = double.MaxValue;
+
+            // Find nearest event
+            foreach (var eventEntity in allEvents.Where(e => !e.IsExpired))
+            {
+                var distance = CalculateDistance(
+                    location.Latitude, location.Longitude,
+                    eventEntity.Latitude, eventEntity.Longitude);
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestEvent = eventEntity;
+                }
+            }
+
+            // If nearest event is within threshold, auto-assign with low confidence
+            if (nearestEvent != null && nearestDistance <= maxDistanceMeters)
+            {
+                location.EventId = nearestEvent.Id;
+                location.EventAssignmentConfidence = PROXIMITY_CONFIDENCE;
+                location.RequiresReview = true; // Always require review for proximity-based assignments
+
+                await _locationRepository.UpdateLocationAsync(location);
+                result.LocationsAssigned++;
+
+                _logger.LogInformation("⚠️ Location {LocationId} AUTO-ASSIGNED to '{EventName}' based on proximity ({Distance:F1}m) - REQUIRES REVIEW",
+                    location.Id, nearestEvent.Name, nearestDistance);
+            }
+            else
+            {
+                _logger.LogDebug("Location {LocationId} too far from any event (nearest: {Distance:F1}m)",
+                    location.Id, nearestDistance);
+            }
+        }
     }
 }
