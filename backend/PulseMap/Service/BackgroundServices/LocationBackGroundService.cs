@@ -1,12 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using PulseMap.Context;
 using PulseMap.Domain;
+using PulseMap.Interfaces;
 
 namespace PulseMap.Service.BackgroundServices;
 
-public class LocationBackGroundService(PulseMapContext dbContext)
+public class LocationBackGroundService(
+    PulseMapContext dbContext, 
+    ILocationService locationService,
+    ILocationMatcher locationMatcher,
+    ILogger<LocationBackGroundService> logger)
 {
     private readonly PulseMapContext _context = dbContext;
+    private readonly ILocationService _locationService = locationService;
+    private readonly ILocationMatcher _locationMatcher = locationMatcher;
+    private readonly ILogger<LocationBackGroundService> _logger = logger;
 
     public async Task CheckExpiredLocations()
     {
@@ -99,4 +107,65 @@ public class LocationBackGroundService(PulseMapContext dbContext)
             }
         }
     }
+
+    public async Task CheckAndMergeDuplicateLocations()
+    {
+        _logger.LogInformation("Starting automatic duplicate location detection");
+
+        const double maxDistanceMeters = 20;
+
+        var pairs = await _locationService.GetNearbyLocationPairsAsync(maxDistanceMeters);
+
+        if (pairs.Count == 0)
+        {
+            _logger.LogInformation("No nearby location pairs found");
+            return;
+        }
+
+        _logger.LogInformation("Found {Count} location pairs to check", pairs.Count);
+
+        var mergedCount = 0;
+
+        foreach (var (loc1Id, loc2Id, distance) in pairs)
+        {
+            try
+            {
+                var location1 = await _locationService.GetLocationByIdAsync(loc1Id);
+                var location2 = await _locationService.GetLocationByIdAsync(loc2Id);
+
+                if (location1 == null || location2 == null)
+                {
+                    _logger.LogWarning("Location {Loc1} or {Loc2} not found, skipping", loc1Id, loc2Id);
+                    continue;
+                }
+
+                var matchResult = await _locationMatcher.MatchLocationsAsync(
+                    location1.Description,
+                    location2.Description,
+                    CancellationToken.None);
+
+                if (matchResult == LocationMatchResult.SameLocation)
+                {
+                    _logger.LogInformation("Merging duplicate locations: {Loc1} and {Loc2} (distance: {Distance:F2}m)", 
+                        loc1Id, loc2Id, distance);
+
+                    await _locationService.MergeLocationsAsync(loc1Id, loc2Id);
+                    mergedCount++;
+                }
+                else
+                {
+                    _logger.LogInformation("Locations {Loc1} and {Loc2} are not duplicates (result: {Result}, distance: {Distance:F2}m)",
+                        loc1Id, loc2Id, matchResult, distance);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing location pair {Loc1} and {Loc2}", loc1Id, loc2Id);
+            }
+        }
+
+        _logger.LogInformation("Automatic duplicate detection completed: checked {Total} pairs, merged {Merged} duplicates",
+            pairs.Count, mergedCount);
+    }
 }
+

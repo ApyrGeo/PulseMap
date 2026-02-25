@@ -24,4 +24,10 @@ public class Location
     public User? Owner { get; set; } = null;
 
     public LikeStatus? LikeStatus { get; set; } = null;
+
+    // Event clustering
+    public int? EventId { get; set; } = null;
+    public Event? Event { get; set; } = null;
+    public float? EventAssignmentConfidence { get; set; } = null;
+    public bool RequiresReview { get; set; } = false;
 }

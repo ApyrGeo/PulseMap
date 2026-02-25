@@ -23,17 +23,17 @@ public class LocationController(ILocationService locationService) : ControllerBa
 
     [HttpGet]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<List<LocationResponseDTO>>> GetAllLocations([FromQuery] bool active = true)
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetAllLocations([FromQuery] bool active = true, [FromQuery] int userId = 1)
     {
-        var locations = active ? await _locationService.GetActiveLocationsAsync() : await _locationService.GetAllLocationsAsync();
+        var locations = active ? await _locationService.GetActiveLocationsAsync(userId) : await _locationService.GetAllLocationsAsync(userId);
         return Ok(locations);
     }
 
     [HttpGet("bounds")]
     [ProducesResponseType(200)]
-    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsInBounds([FromQuery] double minLat, [FromQuery] double maxLat, [FromQuery] double minLng, [FromQuery] double maxLng, [FromQuery] string? type, [FromQuery] bool active = true)
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsInBounds([FromQuery] double minLat, [FromQuery] double maxLat, [FromQuery] double minLng, [FromQuery] double maxLng, [FromQuery] string? type, [FromQuery] bool active = true, [FromQuery] int userId = 1)
     {
-        var locations = await _locationService.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng, type);
+        var locations = await _locationService.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng, type, userId);
         return Ok(locations);
     }
 
@@ -81,6 +81,32 @@ public class LocationController(ILocationService locationService) : ControllerBa
     public async Task<ActionResult<LocationResponseDTO>> LikeLocation([FromRoute] int locationId, [FromQuery] int userId)
     {
         var updatedLocation = await _locationService.LikeLocationAsync(locationId, userId);
+        return Ok(updatedLocation);
+    }
+
+    [HttpGet("needs-review")]
+    [ProducesResponseType(200)]
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetLocationsNeedingReview([FromQuery] int? eventId = null)
+    {
+        var locations = await _locationService.GetLocationsNeedingReviewAsync(eventId);
+        return Ok(locations);
+    }
+
+    [HttpPatch("{locationId}/confirm-event")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<LocationResponseDTO>> ConfirmLocationEvent(int locationId)
+    {
+        var updatedLocation = await _locationService.ConfirmLocationEventAsync(locationId);
+        return Ok(updatedLocation);
+    }
+
+    [HttpPatch("{locationId}/reject-event")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<LocationResponseDTO>> RejectLocationEvent(int locationId)
+    {
+        var updatedLocation = await _locationService.RejectLocationEventAsync(locationId);
         return Ok(updatedLocation);
     }
 }

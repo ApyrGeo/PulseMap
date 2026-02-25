@@ -37,6 +37,151 @@ namespace PulseMap.Migrations
                     b.ToTable("LocationLikes");
                 });
 
+            modelBuilder.Entity("PulseMap.Domain.AIStatistics", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EmbeddingEventExtractorSuccess")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EmbeddingMatcherSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("EventClusteringRuns")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GptEventExtractorSuccess")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GptMatcherSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("HuggingFaceClassifierSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("KeywordClassifierFallback")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("KeywordMatcherFallback")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("LastUpdated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("OpenAIClassifierSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalClassificationCalls")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalMatchingCalls")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TranslationsPerformed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AIStatistics");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EmbeddingEventExtractorSuccess = 0,
+                            EmbeddingMatcherSuccess = 0,
+                            EventClusteringRuns = 0,
+                            GptEventExtractorSuccess = 0,
+                            GptMatcherSuccess = 0,
+                            HuggingFaceClassifierSuccess = 0,
+                            KeywordClassifierFallback = 0,
+                            KeywordMatcherFallback = 0,
+                            LastUpdated = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            OpenAIClassifierSuccess = 0,
+                            TotalClassificationCalls = 0,
+                            TotalMatchingCalls = 0,
+                            TranslationsPerformed = 0
+                        });
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<float>("ConfidenceScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("real")
+                        .HasDefaultValue(1f);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsAIGenerated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsExpired")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("RequiresReview")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("Latitude", "Longitude");
+
+                    b.ToTable("Events");
+                });
+
             modelBuilder.Entity("PulseMap.Domain.LikeStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -84,6 +229,12 @@ namespace PulseMap.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<float?>("EventAssignmentConfidence")
+                        .HasColumnType("real");
+
+                    b.Property<int?>("EventId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -105,9 +256,16 @@ namespace PulseMap.Migrations
                     b.Property<int?>("OwnerId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("RequiresReview")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
+
+                    b.HasIndex("EventId");
 
                     b.HasIndex("OwnerId");
 
@@ -240,11 +398,18 @@ namespace PulseMap.Migrations
                         .WithMany("PlacedLocations")
                         .HasForeignKey("CreatorId");
 
+                    b.HasOne("PulseMap.Domain.Event", "Event")
+                        .WithMany("Locations")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("PulseMap.Domain.User", "Owner")
                         .WithMany("OwnedLocations")
                         .HasForeignKey("OwnerId");
 
                     b.Navigation("Creator");
+
+                    b.Navigation("Event");
 
                     b.Navigation("Owner");
                 });
@@ -277,6 +442,11 @@ namespace PulseMap.Migrations
                         .IsRequired();
 
                     b.Navigation("ParentMessage");
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.Event", b =>
+                {
+                    b.Navigation("Locations");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.Location", b =>

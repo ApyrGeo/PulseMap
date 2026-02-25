@@ -1,15 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { LocationsProvider } from '../locations/components/LocationsProvider';
+import { LocationsProvider } from '../shared/maps/providers/LocationsProvider';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
-import OwnerLocationsPage from '../users/OwnerLocationsPage';
-import AdminLocationsPage from '../users/AdminLocationsPage';
-import UserLocationsPage from '../users/UserLocationsPage';
+import OwnerMapPage from '../owner/map/OwnerMapPage';
+import AdminMapPage from '../admin/map/AdminMapPage';
+import UserMapPage from '../user/map/UserMapPage';
 import LoginPage from '../auth/LoginPage';
 import { Toaster } from 'react-hot-toast';
 import { Role } from '../auth/Interfaces';
 import { AdminRoutes } from '../auth/routes/AdminRoutes';
 import { UserRoutes } from '../auth/routes/UserRoutes';
-import NavigationBar from '../users/NavigationBar';
+import NavigationBar from '../shared/navigation/NavigationBar';
+import AdminEventsPage from '../admin/events/AdminEventsPage';
+import StatisticsPage from '../admin/statistics/StatisticsPage';
 
 export function App() {
   return (
@@ -46,15 +48,17 @@ function AppRoutes() {
     <Routes>
       <Route element={<AdminRoutes />}>
         {/* <Route path="/map" element={<Navigate to="/admin/map" replace />} /> */}
-        <Route path="/admin/map" element={<AdminLocationsPage />} />
+        <Route path="/admin/map" element={<AdminMapPage />} />
+        <Route path="/admin/statistics" element={<StatisticsPage />} />
+        <Route path="/admin/events" element={<AdminEventsPage />} />
       </Route>
 
       <Route element={<UserRoutes />}>
-        <Route path="/map" element={<UserLocationsPage />} />
+        <Route path="/map" element={<UserMapPage />} />
       </Route>
 
       <Route path="/owner" element={<UserRoutes />}>
-        <Route path="map" element={<OwnerLocationsPage />} />
+        <Route path="map" element={<OwnerMapPage />} />
       </Route>
 
       <Route

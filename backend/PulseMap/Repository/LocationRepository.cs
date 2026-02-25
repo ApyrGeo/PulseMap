@@ -13,6 +13,7 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         var location = await _context.Locations
             .Include(l => l.Creator)
             .Include(l => l.Likes)
+            .Include(l => l.Event)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (location == null) return null;
@@ -47,6 +48,7 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         return await _context.Locations
             .Include(l => l.Likes)
             .Include(l => l.Creator)
+            .Include(l => l.Event)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
             .Include(l => l.Comments!)
@@ -60,6 +62,7 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
             .Where(l => !l.IsExpired)
             .Include(l => l.Likes)
             .Include(l => l.Creator)
+            .Include(l => l.Event)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
             .Include(l => l.Comments!)
@@ -67,6 +70,16 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
                     .ThenInclude(r => r.Sender)
             .ToListAsync();
     }
+    public async Task<Location?> GetLocationByOwnerIdAsync(int ownerId)
+    {
+        return await _context.Locations
+            .Include(l => l.Owner)
+            .Include(l => l.Creator)
+            .Include(l => l.Likes)
+            .Include(l => l.Event)
+            .FirstOrDefaultAsync(l => l.OwnerId == ownerId && !l.IsExpired);
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
@@ -85,11 +98,35 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
                 l.Longitude >= minLng && l.Longitude <= maxLng)
             .Include(l => l.Likes)
             .Include(l => l.Creator)
+            .Include(l => l.Event)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Responses!)
                     .ThenInclude(r => r.Sender)
             .ToListAsync();
+    }
+
+    public async Task<List<Location>> GetLocationsByEventIdAsync(int eventId, bool activeOnly = true)
+    {
+        IQueryable<Location> query = _context.Locations
+            .Where(l => l.EventId == eventId);
+
+        if (activeOnly)
+        {
+            query = query.Where(l => !l.IsExpired);
+        }
+
+        return await query
+            .Include(l => l.Creator)
+            .Include(l => l.Likes)
+            .ToListAsync();
+    }
+
+    public async Task<Location> UpdateLocationAsync(Location location)
+    {
+        _context.Locations.Update(location);
+        await _context.SaveChangesAsync();
+        return location;
     }
 }
