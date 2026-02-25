@@ -38,14 +38,16 @@ export interface EventClusteringResultDTO {
  */
 export const fetchEventById = async (
   id: number,
-  includeLocations: boolean = false
+  includeLocations = false
 ): Promise<EventResponseDTO> => {
   const params = new URLSearchParams();
   if (includeLocations) {
     params.append('includeLocations', 'true');
   }
 
-  const url = `${EVENTS_URL}/${id}${params.toString() ? '?' + params.toString() : ''}`;
+  const url = `${EVENTS_URL}/${id}${
+    params.toString() ? '?' + params.toString() : ''
+  }`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -59,7 +61,9 @@ export const fetchEventById = async (
  * GET /api/event
  * Obține toate evenimentele
  */
-export const fetchEvents = async (active: boolean = true): Promise<EventResponseDTO[]> => {
+export const fetchEvents = async (
+  active = true
+): Promise<EventResponseDTO[]> => {
   const params = new URLSearchParams({ active: active.toString() });
   const response = await fetch(`${EVENTS_URL}?${params}`);
 
@@ -76,8 +80,8 @@ export const fetchEvents = async (active: boolean = true): Promise<EventResponse
  */
 export const fetchEventsByBounds = async (
   bounds: MapBounds,
-  active: boolean = true,
-  includeLocations: boolean = true
+  active = true,
+  includeLocations = true
 ): Promise<EventResponseDTO[]> => {
   const params = new URLSearchParams({
     minLat: bounds.minLat.toString(),
@@ -105,7 +109,7 @@ export const fetchEventsByBounds = async (
  * Analizează și clusterizează locațiile în evenimente
  */
 export const analyzeAndClusterEvents = async (
-  maxDistance: number = 100
+  maxDistance = 100
 ): Promise<EventClusteringResultDTO> => {
   const params = new URLSearchParams({ maxDistance: maxDistance.toString() });
   const response = await fetch(`${EVENTS_URL}/analyze?${params}`, {

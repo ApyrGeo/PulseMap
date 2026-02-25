@@ -86,7 +86,7 @@ const LocationsListView = ({
   };
 
   const handleDelete = async (locationId: number) => {
-    if (!confirm('Are you sure you want to delete this location?')) return;
+    if (!window.confirm('Are you sure you want to delete this location?')) return;
     
     try {
       await onDelete(locationId);
@@ -108,7 +108,7 @@ const LocationsListView = ({
   };
 
   const handleRejectEvent = async (locationId: number) => {
-    if (!confirm('Are you sure you want to reject this event?')) return;
+    if (!window.confirm('Are you sure you want to reject this event?')) return;
     
     try {
       await onRejectEvent(locationId);

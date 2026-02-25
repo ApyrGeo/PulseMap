@@ -478,12 +478,9 @@ const LeafletMap = ({
 
   // Determine if we should show markers based on zoom level
   const shouldShowMarkers = currentZoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD;
-  const shouldShowEvents = 
-    currentZoom >= ZOOM_THRESHOLDS.EVENT && 
+  const shouldShowEvents =
+    currentZoom >= ZOOM_THRESHOLDS.EVENT &&
     currentZoom < ZOOM_THRESHOLDS.NEIGHBORHOOD;
-  const shouldShowHeatmap =
-    currentZoom >= ZOOM_THRESHOLDS.CITY &&
-    currentZoom < ZOOM_THRESHOLDS.EVENT;
   const shouldShowCountOnly = currentZoom < ZOOM_THRESHOLDS.CITY;
 
   // Determine color based on location count
