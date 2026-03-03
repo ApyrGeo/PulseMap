@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'Backend/**'
+      - '.github/workflows/main_pulsemap-api.yml'
   workflow_dispatch:
 
 jobs:
@@ -24,10 +27,15 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: |
+          cd Backend
+          dotnet restore
+          dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: |
+          cd Backend
+          dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -47,7 +55,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -62,4 +70,3 @@ jobs:
           app-name: 'pulsemap-api'
           slot-name: 'Production'
           package: .
-          
