@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'Backend/**'
+      - 'backend/**'
       - '.github/workflows/main_pulsemap-api.yml'
   workflow_dispatch:
 
@@ -28,13 +28,13 @@ jobs:
 
       - name: Build with dotnet
         run: |
-          cd Backend
+          cd backend/PulseMap
           dotnet restore
           dotnet build --configuration Release
 
       - name: dotnet publish
         run: |
-          cd Backend
+          cd backend/PulseMap
           dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job

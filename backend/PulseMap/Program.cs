@@ -32,7 +32,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:4200", "https://localhost:4200" };
+
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -54,7 +57,7 @@ builder.Services.AddAutoMapper(cfg => {
     cfg.CreateMap<UserPostDTO, User>().ReverseMap();
     cfg.CreateMap<User, SimplifiedUserResponseDTO>();
 
-    // Message 
+    // Message
     cfg.CreateMap<Message, ResponseMessageResponseDTO>()
         .IncludeMembers(src => src);
 
@@ -67,7 +70,7 @@ builder.Services.AddAutoMapper(cfg => {
     cfg.CreateMap<MessagePostDTO, Message>().ReverseMap();
     cfg.CreateMap<ResponseMessagePostDTO, ResponseMessage>().ReverseMap();
 
-    // Location 
+    // Location
     cfg.CreateMap<Location, LocationResponseDTO>()
         .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.Comments))
         .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
@@ -139,7 +142,7 @@ builder.Services.AddScoped<ILocationClassifier>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<CompositeLocationClassifier>>();
     var statsService = sp.GetRequiredService<IAIStatisticsService>();
-    
+
     var classifiers = new List<ILocationClassifier>();
 
     if (hasOpenAiKey)
@@ -154,7 +157,7 @@ builder.Services.AddScoped<ILocationClassifier>(sp =>
         {
             logger.LogWarning(ex, "Failed to initialize EmbeddingLocationClassifier");
         }
-        
+
         // Add GPT as fallback (more expensive but more accurate)
         try
         {
@@ -165,14 +168,14 @@ builder.Services.AddScoped<ILocationClassifier>(sp =>
         {
             logger.LogWarning(ex, "Failed to initialize OpenAI classifier");
         }
-        
+
         logger.LogInformation("CompositeLocationClassifier initialized: Embeddings (cheap) → GPT (expensive) → Keyword (free)");
     }
     else
     {
         logger.LogWarning("No AI classifiers available - using keyword fallback only");
     }
-    
+
     return new CompositeLocationClassifier(classifiers, logger, statsService);
 });
 
@@ -284,6 +287,9 @@ app.UseHttpsRedirection();
 app.UseCors(AppAllowSpecificOrigins);
 
 app.UseAuthorization();
+
+// Health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow, environment = app.Environment.EnvironmentName }));
 
 app.MapControllers();
 
