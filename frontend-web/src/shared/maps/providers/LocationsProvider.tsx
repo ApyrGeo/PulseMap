@@ -32,6 +32,7 @@ import {
 import { addComment, addResponse } from '../services/MessagesApiService';
 import { LocationWsService, PayloadEntityType } from '../services/WsService';
 import { useAuth } from '../../../auth/AuthProvider';
+import { WS_URL } from '../../../core';
 
 interface LocationsContextType {
   locations: Location[];
@@ -60,9 +61,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [, setIsLoading] = useState(false);
-  const [wsService] = useState(
-    () => new LocationWsService('wss://localhost:7215/ws')
-  );
+  const [wsService] = useState(() => new LocationWsService(WS_URL));
 
   const handleLocationCreated = useCallback((location: Location) => {
     setLocations((prev) => {
@@ -120,7 +119,10 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         // Skip if this is actually a ResponseMessage (has parentMessageId)
         // ResponseMessages should only be handled by handleResponseCreated
         const msgData = message as any;
-        if (msgData.parentMessageId !== undefined && msgData.parentMessageId !== null) {
+        if (
+          msgData.parentMessageId !== undefined &&
+          msgData.parentMessageId !== null
+        ) {
           return loc;
         }
 
@@ -163,7 +165,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Clear any existing handlers first to prevent duplicates
     wsService.clearAllHandlers();
-    
+
     wsService.registerEntityHandlers(PayloadEntityType.Location, {
       onCreate: handleLocationCreated,
       onUpdate: handleLocationUpdated,
@@ -193,17 +195,20 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     handleResponseCreated,
   ]);
 
-  const refreshLocations = useCallback(async (activeOnly = true) => {
-    setIsLoading(true);
-    try {
-      const data = await fetchLocations(activeOnly, user?.id);
-      setLocations(data);
-    } catch (error) {
-      console.error('Failed to fetch locations:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id]);
+  const refreshLocations = useCallback(
+    async (activeOnly = true) => {
+      setIsLoading(true);
+      try {
+        const data = await fetchLocations(activeOnly, user?.id);
+        setLocations(data);
+      } catch (error) {
+        console.error('Failed to fetch locations:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user?.id]
+  );
 
   const addLocation = useCallback(async (location: LocationPostDTO) => {
     setIsLoading(true);
@@ -332,20 +337,17 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     []
   );
 
-  const rejectLocationEventHandler = useCallback(
-    async (locationId: number) => {
-      try {
-        const updatedLocation = await rejectLocationEvent(locationId);
-        setLocations((prev) =>
-          prev.map((loc) => (loc.id === locationId ? updatedLocation : loc))
-        );
-      } catch (error) {
-        console.error('Failed to reject location event:', error);
-        throw error;
-      }
-    },
-    []
-  );
+  const rejectLocationEventHandler = useCallback(async (locationId: number) => {
+    try {
+      const updatedLocation = await rejectLocationEvent(locationId);
+      setLocations((prev) =>
+        prev.map((loc) => (loc.id === locationId ? updatedLocation : loc))
+      );
+    } catch (error) {
+      console.error('Failed to reject location event:', error);
+      throw error;
+    }
+  }, []);
 
   const activeLocations = useMemo(
     () => locations.filter((loc) => !loc.isExpired),
