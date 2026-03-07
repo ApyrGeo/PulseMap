@@ -1,7 +1,13 @@
 .navigation-bar {
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: linear-gradient(
+    var(--gradient-angle),
+    rgba(224, 231, 255, 0.9) 0%,
+    rgba(252, 231, 243, 0.9) 50%,
+    rgba(224, 242, 254, 0.9) 100%
+  );
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .navigation-container {

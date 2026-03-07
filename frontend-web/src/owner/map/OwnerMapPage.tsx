@@ -5,9 +5,9 @@ import '../../shared/maps/LocationsPage.css';
 
 const OwnerMapPage = () => {
   const { user } = useAuth();
-  const { 
-    allLocations, 
-    updateLocationById, 
+  const {
+    allLocations,
+    updateLocationById,
     deleteLocationById,
     confirmLocationEvent,
     rejectLocationEvent,
@@ -17,12 +17,6 @@ const OwnerMapPage = () => {
 
   return (
     <div className="locations-page">
-      <header className="locations-header">
-        <h1 className="locations-title">My Locations</h1>
-        <p className="locations-subtitle">
-          Manage your owned location and all locations you've created
-        </p>
-      </header>
       <LocationsListView
         locations={allLocations}
         currentUserId={user.id}

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PulseMap.Domain.DTOs;
@@ -14,7 +15,10 @@ namespace PulseMap.Controllers
         private readonly IMapper _mapper = mapper;
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "SameUserOrAdmin")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<UserResponseDTO>> GetUserById(int id)
         {
@@ -22,7 +26,8 @@ namespace PulseMap.Controllers
             return Ok(user);
         }
 
-        [HttpPost]
+        [HttpPost("register")]
+        [AllowAnonymous]
         [ProducesResponseType(201)]
         [ProducesResponseType(422)]
         public async Task<ActionResult<UserResponseDTO>> CreateUser([FromBody] UserPostDTO userPostDTO)
@@ -31,11 +36,15 @@ namespace PulseMap.Controllers
             return CreatedAtAction(nameof(GetUserById), new { id = addedUser.Id }, addedUser);
         }
 
-        [HttpGet("login")]
-        public async Task<ActionResult<UserResponseDTO>> Login([FromQuery] string email, [FromQuery] string password)
+        [HttpPost("login")]
+        [AllowAnonymous]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<LoginResponseDTO>> Login([FromBody] LoginRequestDTO loginRequest)
         {
-            var user = await _userService.LoginUser(email, password);
-            return Ok(user);
+            var loginResponse = await _userService.LoginUser(loginRequest.Email, loginRequest.Password);
+            return Ok(loginResponse);
         }
     }
 }

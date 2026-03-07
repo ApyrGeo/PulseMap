@@ -128,11 +128,11 @@ const AdminMapComponent = () => {
       try {
         // Fetch locations for zoom >= CITY
         await fetchLocationsByBounds(bounds, false, undefined, user?.id); // Admin sees all
-        
+
         // Fetch events for zoom >= CITY (always fetch to show count in footer)
         const events = await fetchEventsByBounds(bounds, true);
         setVisibleEvents(events);
-        
+
         // Don't set visibleLocations here - let the useEffect handle it
       } catch (error) {
         console.error('Failed to fetch locations/events by bounds:', error);
@@ -192,13 +192,6 @@ const AdminMapComponent = () => {
 
   return (
     <div className="locations-page">
-      <header className="locations-header">
-        <h1 className="locations-title">Admin Panel</h1>
-        <p className="locations-subtitle">
-          Right-click on a marker to manage locations
-        </p>
-      </header>
-
       <div className="locations-map-container">
         <LeafletMap
           locations={visibleLocations}

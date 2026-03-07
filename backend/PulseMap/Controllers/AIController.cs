@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PulseMap.Domain.DTOs;
@@ -26,6 +27,7 @@ namespace PulseMap.Controllers
             _statisticsService = statisticsService;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("statistics")]
         public async Task<IActionResult> GetStatistics()
         {
@@ -63,7 +65,12 @@ namespace PulseMap.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("classify-location")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
         public async Task<IActionResult> ClassifyLocation(
             [FromBody] ClassifyRequest request,
             CancellationToken ct)
@@ -76,6 +83,7 @@ namespace PulseMap.Controllers
             return Ok(new { categories });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("match-locations")]
         public async Task<IActionResult> MatchLocations(
             [FromBody] MatchLocationsRequest request,
@@ -96,6 +104,7 @@ namespace PulseMap.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("check-and-merge-duplicates")]
         public async Task<IActionResult> CheckAndMergeDuplicates(
             [FromQuery] double maxDistanceMeters = 20,
@@ -159,7 +168,13 @@ namespace PulseMap.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("force-merge")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(500)]
         public async Task<IActionResult> ForceMergeLocations(
             [FromBody] ForceMergeRequest request,
             CancellationToken ct = default)

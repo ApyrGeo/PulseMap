@@ -1,8 +1,12 @@
 using FluentValidation;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using PulseMap.Authorization;
 using PulseMap.Context;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
@@ -17,14 +21,45 @@ using PulseMap.Service.AI.EventClustering;
 using PulseMap.Service.BackgroundServices;
 using PulseMap.Service.Validators;
 using PulseMap.Service.WS;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Enable dynamic JSON for Npgsql globally (must be called before any Npgsql connections)
+// Required for List<string> in JSONB columns and Hangfire
+Npgsql.NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
 
 // Add services to the container.
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter your JWT token in the format: Bearer {your token}"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var AppAllowSpecificOrigins = "AllowFrontend";
 
@@ -47,8 +82,48 @@ builder.Services.AddDbContext<PulseMapContext>((sp, options) =>
 {
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
-        );
+    );
 });
+
+builder.Services.AddHttpContextAccessor();
+
+//JWT Authentication & Authorization
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("JWT Key is not configured. Add it to appsettings.json or Azure App Configuration.");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserOrAdmin", policy => policy.RequireRole("User", "Admin"));
+    options.AddPolicy("SameUserOrAdmin", policy =>
+        policy.Requirements.Add(new SameUserOrAdminRequirement()));
+    options.AddPolicy("LocationOwnerOrAdmin", policy =>
+        policy.Requirements.Add(new LocationOwnerOrAdminRequirement()));
+});
+
+builder.Services.AddSingleton<IAuthorizationHandler, SameUserOrAdminHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, LocationOwnerOrAdminHandler>();
 
 //automapper
 builder.Services.AddAutoMapper(cfg => {
@@ -77,9 +152,11 @@ builder.Services.AddAutoMapper(cfg => {
         .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.Likes.Count))
         .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore())
         .ForMember(dest => dest.Event, opt => opt.MapFrom(src => src.Event))
-        .ForMember(dest => dest.EventAssignmentConfidence, opt => opt.MapFrom(src => src.EventAssignmentConfidence));
+        .ForMember(dest => dest.EventAssignmentConfidence, opt => opt.MapFrom(src => src.EventAssignmentConfidence))
+        .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.OrderBy(i => i.Order).Select(i => i.Url).ToList()));
 
-    cfg.CreateMap<LocationPostDTO, Location>().ReverseMap();
+    cfg.CreateMap<LocationPostDTO, Location>()
+        .ForMember(dest => dest.Images, opt => opt.Ignore()); // Handled manually in LocationService
 
     // Event
     cfg.CreateMap<Event, SimplifiedEventResponseDTO>();
@@ -109,6 +186,12 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEventService, EventService>();
+
+// JWT Token Service
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// Image Service
+builder.Services.AddScoped<IImageService, ImageService>();
 
 // AI Services
 builder.Services.AddScoped<IAIStatisticsService, AIStatisticsService>();
@@ -286,6 +369,7 @@ app.UseHttpsRedirection();
 // CORS must be before Authorization and MapControllers
 app.UseCors(AppAllowSpecificOrigins);
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Health check endpoint

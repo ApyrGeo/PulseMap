@@ -10,4 +10,5 @@ public class LocationPostDTO
     public required string Category { get; set; }
     public required TimeSpan Duration { get; set; }
     public int? OwnerId { get; set; }
+    public List<string>? ImageUrls { get; set; }
 }

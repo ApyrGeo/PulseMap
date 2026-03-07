@@ -6,7 +6,11 @@ import LeafletMap, {
 import { ZOOM_THRESHOLDS } from '../../../shared/maps/mapConstants';
 import { useLocations } from '../../../shared/maps/providers/LocationsProvider';
 import { useAuth } from '../../../auth/AuthProvider';
-import { Location, LocationPutDTO, LocationPostDTO } from '../../../shared/maps/Interfaces';
+import {
+  Location,
+  LocationPutDTO,
+  LocationPostDTO,
+} from '../../../shared/maps/Interfaces';
 import OwnerContextMenu from './OwnerContextMenu';
 import EditLocationModal from '../../../shared/maps/components/EditLocationModal';
 import AddLocationModal from '../../../shared/maps/components/AddLocationModal';
@@ -136,11 +140,11 @@ const OwnerMapComponent = () => {
 
       try {
         await fetchLocationsByBounds(bounds, true, undefined, user?.id);
-        
+
         // Fetch events for zoom >= CITY
         const events = await fetchEventsByBounds(bounds, true);
         setVisibleEvents(events);
-        
+
         // Don't set visibleLocations here - let the useEffect handle it
       } catch (error) {
         console.error('Failed to fetch locations by bounds:', error);
@@ -239,15 +243,6 @@ const OwnerMapComponent = () => {
 
   return (
     <div className="locations-page">
-      <header className="locations-header">
-        <h1 className="locations-title">My Location</h1>
-        <p className="locations-subtitle">
-          {canAddLocation
-            ? 'Click to add your location (other locations shown in gray)'
-            : 'Right-click your marker to edit or delete'}
-        </p>
-      </header>
-
       <div className="locations-map-container">
         <LeafletMap
           locations={visibleLocations}
@@ -271,7 +266,7 @@ const OwnerMapComponent = () => {
             setClickedCoords(null);
           }}
           onSubmit={handleAddSubmit}
-          isOwner={true}
+          hasOwnedLocation={!canAddLocation}
         />
       )}
 

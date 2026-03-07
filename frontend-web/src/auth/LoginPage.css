@@ -3,7 +3,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f9fafb;
+  background: linear-gradient(
+    var(--gradient-angle),
+    var(--gradient-start) 0%,
+    var(--gradient-middle) 50%,
+    var(--gradient-end) 100%
+  );
+  background-attachment: fixed;
   padding: 0 1rem;
 }
 

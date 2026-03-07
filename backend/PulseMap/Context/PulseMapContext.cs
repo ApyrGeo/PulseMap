@@ -7,6 +7,7 @@ namespace PulseMap.Context;
 public class PulseMapContext(DbContextOptions<PulseMapContext> options) : DbContext(options)
 {
     public DbSet<Location> Locations => Set<Location>();
+    public DbSet<LocationImage> LocationImages => Set<LocationImage>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<LikeStatus> LikeStatuses => Set<LikeStatus>();

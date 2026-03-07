@@ -25,6 +25,8 @@ public class Location
 
     public LikeStatus? LikeStatus { get; set; } = null;
 
+    public List<LocationImage> Images { get; set; } = [];
+
     // Event clustering
     public int? EventId { get; set; } = null;
     public Event? Event { get; set; } = null;

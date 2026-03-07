@@ -11,11 +11,11 @@ using System.Text.Json;
 namespace PulseMap.Service;
 
 public class LocationService(
-    ILocationRepository locationRepository, 
-    IUserRepository userRepository, 
+    ILocationRepository locationRepository,
+    IUserRepository userRepository,
     IMessageRepository messageRepository,
-    IMapper mapper, 
-    IValidatorFactory validatorFactory, 
+    IMapper mapper,
+    IValidatorFactory validatorFactory,
     IWebSocketNotificationService webSocketNotificationService) : ILocationService
 {
     private readonly ILocationRepository _locationRepository = locationRepository;
@@ -65,6 +65,17 @@ public class LocationService(
         var location = _mapper.Map<Location>(locationPostDTO);
         location.ExpiresAt = DateTime.UtcNow.Add(locationPostDTO.Duration);
         location.IsExpired = false;
+
+        // Convert image URLs to LocationImage entities
+        if (locationPostDTO.ImageUrls != null && locationPostDTO.ImageUrls.Any())
+        {
+            location.Images = locationPostDTO.ImageUrls.Select((url, index) => new LocationImage
+            {
+                Url = url,
+                CreatedAt = DateTime.UtcNow,
+                Order = index
+            }).ToList();
+        }
 
         var addedlocation = await _locationRepository.AddLocationAsync(location);
         await _locationRepository.SaveChangesAsync();
@@ -357,7 +368,7 @@ public class LocationService(
         if (removeHasOwner && !keepHasOwner)
         {
             // Remove location is owned but keep is not - swap them
-            _logger.InfoFormat("Swapping: location {0} is owned by user {1}, prioritizing it over non-owned location {2}", 
+            _logger.InfoFormat("Swapping: location {0} is owned by user {1}, prioritizing it over non-owned location {2}",
                 removeLocationId, removeLocation.OwnerId, keepLocationId);
             (keepLocation, removeLocation) = (removeLocation, keepLocation);
             (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
@@ -367,7 +378,7 @@ public class LocationService(
             // PRIORITY 2: Neither is owned - keep the one with longer/better description
             if (removeLocation.Description.Length > keepLocation.Description.Length)
             {
-                _logger.InfoFormat("Swapping: both locations are non-owned, keeping location {0} with longer description", 
+                _logger.InfoFormat("Swapping: both locations are non-owned, keeping location {0} with longer description",
                     removeLocationId);
                 (keepLocation, removeLocation) = (removeLocation, keepLocation);
                 (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
@@ -376,14 +387,14 @@ public class LocationService(
         // else: keep is owned, or both are owned - keep the original keepLocationId
 
         // Add the removed location's description as a comment to the kept location
-        if (!string.IsNullOrWhiteSpace(removeLocation.Description) && 
+        if (!string.IsNullOrWhiteSpace(removeLocation.Description) &&
             removeLocation.Description != keepLocation.Description)
         {
             _logger.InfoFormat("Adding removed location's description as a comment");
-            
+
             // Get the creator (or fallback to first user)
             var creatorId = keepLocation.CreatorId ?? removeLocation.CreatorId ?? 1;
-            
+
             var mergeComment = new Message
             {
                 Id = 0, // Will be set by DB
@@ -394,7 +405,7 @@ public class LocationService(
             };
 
             await _messageRepository.AddMessageAsync(mergeComment);
-            
+
             _logger.InfoFormat("Added merge comment with removed description");
         }
 
@@ -402,7 +413,7 @@ public class LocationService(
         if (removeLocation.Comments != null && removeLocation.Comments.Any())
         {
             _logger.InfoFormat("Transferring {0} comments from location {1} to {2}", removeLocation.Comments.Count, removeLocationId, keepLocationId);
-            
+
             foreach (var comment in removeLocation.Comments.Where(c => c is not ResponseMessage))
             {
                 comment.LocationId = keepLocationId;
@@ -413,7 +424,7 @@ public class LocationService(
         if (removeLocation.Likes != null && removeLocation.Likes.Any())
         {
             _logger.InfoFormat("Transferring {0} likes from location {1} to {2}", removeLocation.Likes.Count, removeLocationId, keepLocationId);
-            
+
             foreach (var user in removeLocation.Likes)
             {
                 if (!keepLocation.Likes.Any(u => u.Id == user.Id))

@@ -5,6 +5,7 @@ import {
   ResponseMessage,
   ResponseMessagePostDTO,
 } from '../Interfaces';
+import { TokenService } from '../../../auth/TokenService';
 
 const MESSAGES_URL = `${BASE_API_URL}/Message`;
 
@@ -15,6 +16,7 @@ export async function addComment(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
     body: JSON.stringify(messagePostDTO),
   });
@@ -35,6 +37,7 @@ export async function addResponse(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...TokenService.getAuthHeader(),
       },
       body: JSON.stringify({
         content: message.content,

@@ -4,9 +4,6 @@ import '../../shared/maps/LocationsPage.css';
 const UserLocationsPage = () => {
   return (
     <div className="locations-page">
-      <header className="locations-header">
-        <h1 className="locations-title">PulseMap Locations</h1>
-      </header>
       <UserMapComponent />
     </div>
   );

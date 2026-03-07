@@ -1,5 +1,6 @@
 import { BASE_API_URL } from '../../../core/index';
 import { Location } from '../../../shared/maps/Interfaces';
+import { TokenService } from '../../../auth/TokenService';
 
 const EVENTS_URL = BASE_API_URL + '/Event';
 
@@ -48,7 +49,9 @@ export const fetchEventById = async (
   const url = `${EVENTS_URL}/${id}${
     params.toString() ? '?' + params.toString() : ''
   }`;
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
 
   if (!response.ok) {
     throw new Error('Failed to fetch event');
@@ -65,7 +68,9 @@ export const fetchEvents = async (
   active = true
 ): Promise<EventResponseDTO[]> => {
   const params = new URLSearchParams({ active: active.toString() });
-  const response = await fetch(`${EVENTS_URL}?${params}`);
+  const response = await fetch(`${EVENTS_URL}?${params}`, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
 
   if (!response.ok) {
     throw new Error('Failed to fetch events');
@@ -95,7 +100,9 @@ export const fetchEventsByBounds = async (
     params.append('includeLocations', 'true');
   }
 
-  const response = await fetch(`${EVENTS_URL}/bounds?${params}`);
+  const response = await fetch(`${EVENTS_URL}/bounds?${params}`, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
 
   if (!response.ok) {
     throw new Error('Failed to fetch events by bounds');
@@ -116,6 +123,7 @@ export const analyzeAndClusterEvents = async (
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
   });
 
@@ -135,6 +143,7 @@ export const confirmEvent = async (id: number): Promise<EventResponseDTO> => {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
   });
 
@@ -152,6 +161,7 @@ export const confirmEvent = async (id: number): Promise<EventResponseDTO> => {
 export const deleteEvent = async (id: number): Promise<void> => {
   const response = await fetch(`${EVENTS_URL}/${id}`, {
     method: 'DELETE',
+    headers: { ...TokenService.getAuthHeader() },
   });
 
   if (!response.ok) {

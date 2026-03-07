@@ -33,6 +33,7 @@ const UserMapComponent = () => {
     unlikeLocation,
     activeLocations,
     refreshLocations,
+    ownedLocations,
   } = useLocations();
   const { user } = useAuth();
 
@@ -100,10 +101,15 @@ const UserMapComponent = () => {
         const typeForApi = selectedType
           ? selectedType.replace(/\s+/g, '')
           : null;
-        const data = await fetchLocationsByBounds(bounds, true, typeForApi, user?.id);
+        const data = await fetchLocationsByBounds(
+          bounds,
+          true,
+          typeForApi,
+          user?.id
+        );
         // Use server response immediately to populate visible locations
         setVisibleLocations(data);
-        
+
         // Fetch events for zoom >= CITY
         const events = await fetchEventsByBounds(bounds, true);
         setVisibleEvents(events);
@@ -124,7 +130,12 @@ const UserMapComponent = () => {
         const typeForApi = selectedType
           ? selectedType.replace(/\s+/g, '')
           : null;
-        const data = await fetchLocationsByBounds(lastBounds, true, typeForApi, user?.id);
+        const data = await fetchLocationsByBounds(
+          lastBounds,
+          true,
+          typeForApi,
+          user?.id
+        );
         setVisibleLocations(data);
       } catch (err) {
         console.error(
@@ -188,16 +199,8 @@ const UserMapComponent = () => {
 
   return (
     <div className="locations-page">
-      <header className="locations-header">
-        <h1 className="locations-title">Locations Map</h1>
-        <p className="locations-subtitle">
-          {currentZoom < ZOOM_THRESHOLDS.CITY
-            ? 'Zoom in to see locations'
-            : currentZoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD
-            ? 'Click on the map to add a location (1 day duration by default)'
-            : `${visibleLocations.length} locations in this area - zoom in to see details`}
-        </p>
-        <div style={{ width: 260, marginTop: 8 }}>
+      <div className="locations-map-container">
+        <div style={{ width: 260, marginBottom: 8 }}>
           <Autocomplete
             size="small"
             options={['None', ...Object.values(LocationCategory)]}
@@ -210,9 +213,7 @@ const UserMapComponent = () => {
             )}
           />
         </div>
-      </header>
 
-      <div className="locations-map-container">
         <LeafletMap
           locations={visibleLocations}
           events={visibleEvents}
@@ -236,7 +237,7 @@ const UserMapComponent = () => {
             setClickedCoords(null);
           }}
           onSubmit={handleAddSubmit}
-          isOwner={false}
+          hasOwnedLocation={!!ownedLocations.find((loc) => !loc.isExpired)}
         />
       )}
     </div>

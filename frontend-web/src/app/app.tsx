@@ -5,6 +5,7 @@ import OwnerMapPage from '../owner/map/OwnerMapPage';
 import AdminMapPage from '../admin/map/AdminMapPage';
 import UserMapPage from '../user/map/UserMapPage';
 import LoginPage from '../auth/LoginPage';
+import RegisterPage from '../auth/RegisterPage';
 import { Toaster } from 'react-hot-toast';
 import { Role } from '../auth/Interfaces';
 import { AdminRoutes } from '../auth/routes/AdminRoutes';
@@ -68,6 +69,17 @@ function AppRoutes() {
             <Navigate to={defaultPath} replace />
           ) : (
             <LoginPage />
+          )
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          isAuthenticated ? (
+            <Navigate to={defaultPath} replace />
+          ) : (
+            <RegisterPage />
           )
         }
       />

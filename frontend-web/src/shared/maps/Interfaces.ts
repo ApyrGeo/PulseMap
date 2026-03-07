@@ -15,6 +15,7 @@ export interface Location {
   owner?: SimplifiedUser;
   event?: SimplifiedEvent;
   eventAssignmentConfidence?: number;
+  imageUrls?: string[];
 }
 
 export enum LocationCategory {
@@ -77,6 +78,7 @@ export interface LocationPostDTO {
   category: LocationCategory;
   duration: string;
   ownerId?: number;
+  imageUrls?: string[]; // Azure Blob Storage URLs
 }
 
 export interface LocationPutDTO {
