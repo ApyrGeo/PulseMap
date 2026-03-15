@@ -8,29 +8,17 @@ public class EmbeddingLocationClassifier : ILocationClassifier
     private readonly EmbeddingClient _embeddingClient;
     private readonly ILogger<EmbeddingLocationClassifier> _logger;
     private readonly IAIStatisticsService _statisticsService;
-    
-    
-    private static readonly Dictionary<string, string> CategoryDescriptions = new()
-    {
-        { "Music", "music concert festival live performance band singer" },
-        { "Sport", "sport football tennis gym fitness exercise athletic game" },
-        { "Food", "restaurant food cafe coffee pizza meal dining eating" },
-        { "Entertainment", "entertainment movie cinema theater show performance fun" },
-        { "Education", "education school university course learning teaching student" },
-        { "Health", "health hospital medical doctor clinic medicine healthcare" },
-        { "Technology", "technology computer software IT programming tech innovation" },
-        { "Travel", "travel vacation tourism trip hotel journey adventure" },
-        { "Art", "art museum gallery painting sculpture exhibition culture" },
-        { "Business", "business conference meeting office work corporate professional" }
-    };
+    private readonly ICategoryRepository _categoryRepository;
 
     public EmbeddingLocationClassifier(
         IConfiguration config, 
         ILogger<EmbeddingLocationClassifier> logger,
-        IAIStatisticsService statisticsService)
+        IAIStatisticsService statisticsService,
+        ICategoryRepository categoryRepository)
     {
         _logger = logger;
         _statisticsService = statisticsService;
+        _categoryRepository = categoryRepository;
 
         var apiKey = config["OpenAI:ApiKey"];
         var model = config["OpenAI:EmbeddingModel"] ?? "text-embedding-3-large";
@@ -53,6 +41,20 @@ public class EmbeddingLocationClassifier : ILocationClassifier
 
         try
         {
+            var categories = await _categoryRepository.GetCategoriesAsync(true);
+            var categoryDescriptions = categories
+                .Where(c => !string.Equals(c.Name, "Not Set", StringComparison.OrdinalIgnoreCase))
+                .Select(c => c.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    name => name,
+                    name => BuildCategoryDescription(name));
+
+            if (categoryDescriptions.Count == 0)
+            {
+                throw new InvalidOperationException("No active categories configured in DB for classification");
+            }
+
             // Get embedding for the description
             var descriptionEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(description, cancellationToken: ct);
             var descriptionEmbedding = descriptionEmbeddingResponse.Value.ToFloats();
@@ -60,7 +62,7 @@ public class EmbeddingLocationClassifier : ILocationClassifier
             // Get embeddings for all category descriptions and calculate similarities
             var categoryScores = new Dictionary<string, double>();
             
-            foreach (var (category, categoryDesc) in CategoryDescriptions)
+            foreach (var (category, categoryDesc) in categoryDescriptions)
             {
                 var categoryEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(categoryDesc, cancellationToken: ct);
                 var categoryEmbedding = categoryEmbeddingResponse.Value.ToFloats();
@@ -113,5 +115,11 @@ public class EmbeddingLocationClassifier : ILocationClassifier
         }
 
         return dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
+    }
+
+    private static string BuildCategoryDescription(string categoryName)
+    {
+        var lower = categoryName.ToLowerInvariant();
+        return $"{categoryName} {lower} places events activities points of interest map location";
     }
 }

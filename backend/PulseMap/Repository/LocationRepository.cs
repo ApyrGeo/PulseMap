@@ -13,7 +13,9 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         var location = await _context.Locations
             .Include(l => l.Creator)
             .Include(l => l.Likes)
+            .Include(l => l.Category)
             .Include(l => l.Event)
+            .Include(l => l.Images)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (location == null) return null;
@@ -21,7 +23,7 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         var allMessages = await _context.Messages
             .Where(m => m.LocationId == id)
             .Include(m => m.Sender)
-            .OfType<Message>() 
+            .OfType<Message>()
             .ToListAsync();
 
         location.Comments = allMessages;
@@ -47,8 +49,10 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
     {
         return await _context.Locations
             .Include(l => l.Likes)
+            .Include(l => l.Category)
             .Include(l => l.Creator)
             .Include(l => l.Event)
+            .Include(l => l.Images)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
             .Include(l => l.Comments!)
@@ -61,8 +65,10 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         return _context.Locations
             .Where(l => !l.IsExpired)
             .Include(l => l.Likes)
+            .Include(l => l.Category)
             .Include(l => l.Creator)
             .Include(l => l.Event)
+            .Include(l => l.Images)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
             .Include(l => l.Comments!)
@@ -76,7 +82,9 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
             .Include(l => l.Owner)
             .Include(l => l.Creator)
             .Include(l => l.Likes)
+            .Include(l => l.Category)
             .Include(l => l.Event)
+            .Include(l => l.Images)
             .FirstOrDefaultAsync(l => l.OwnerId == ownerId && !l.IsExpired);
     }
 
@@ -97,8 +105,10 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
                 l.Latitude >= minLat && l.Latitude <= maxLat &&
                 l.Longitude >= minLng && l.Longitude <= maxLng)
             .Include(l => l.Likes)
+            .Include(l => l.Category)
             .Include(l => l.Creator)
             .Include(l => l.Event)
+            .Include(l => l.Images)
             .Include(l => l.Comments!)
                 .ThenInclude(c => c.Sender)
             .Include(l => l.Comments!)
@@ -120,6 +130,24 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         return await query
             .Include(l => l.Creator)
             .Include(l => l.Likes)
+            .Include(l => l.Category)
+            .Include(l => l.Images)
+            .ToListAsync();
+    }
+
+    public async Task<List<Location>> GetLikedLocationsByUserIdAsync(int userId)
+    {
+        return await _context.Locations
+            .Where(l => l.Likes.Any(u => u.Id == userId))
+            .Include(l => l.Category)
+            .ToListAsync();
+    }
+
+    public async Task<List<Location>> GetPlacedLocationsByUserIdAsync(int userId)
+    {
+        return await _context.Locations
+            .Where(l => l.CreatorId == userId)
+            .Include(l => l.Category)
             .ToListAsync();
     }
 

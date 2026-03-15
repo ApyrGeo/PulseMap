@@ -40,7 +40,7 @@ interface LocationsContextType {
   activeLocations: Location[];
   allLocations: Location[];
   refreshLocations: (activeOnly?: boolean) => Promise<void>;
-  addLocation: (location: LocationPostDTO) => Promise<void>;
+  addLocation: (location: LocationPostDTO) => Promise<Location>;
   addCommentToLocation: (message: MessagePostDTO) => Promise<void>;
   addResponseToMessage: (message: ResponseMessagePostDTO) => Promise<void>;
   updateLocationById: (id: number, data: LocationPutDTO) => Promise<void>;
@@ -213,9 +213,10 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const addLocation = useCallback(async (location: LocationPostDTO) => {
     setIsLoading(true);
     try {
-      await createLocation(location);
+      return await createLocation(location);
     } catch (error) {
       console.error('Failed to create location:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -232,12 +233,27 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const addResponseToMessage = useCallback(
     async (message: ResponseMessagePostDTO) => {
       try {
-        await addResponse(message);
+        const createdResponse = await addResponse(message);
+
+        if (!createdResponse.sender && user) {
+          handleResponseCreated({
+            ...createdResponse,
+            sender: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              username: user.username,
+            },
+          });
+          return;
+        }
+
+        handleResponseCreated(createdResponse);
       } catch (error) {
         console.error('Failed to add response:', error);
       }
     },
-    []
+    [handleResponseCreated, user]
   );
 
   const updateLocationById = useCallback(

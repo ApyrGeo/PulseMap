@@ -1,4 +1,5 @@
 import { BASE_API_URL } from '../../../core';
+import { TokenService } from '../../../auth/TokenService';
 
 const AI_URL = BASE_API_URL + '/AI';
 
@@ -28,7 +29,10 @@ export async function checkAndMergeDuplicates(
     `${AI_URL}/check-and-merge-duplicates?maxDistanceMeters=${maxDistanceMeters}`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...TokenService.getAuthHeader(),
+      },
     }
   );
 
@@ -46,7 +50,10 @@ export async function forceMergeLocations(
 ): Promise<void> {
   const response = await fetch(`${AI_URL}/force-merge`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
+    },
     body: JSON.stringify(request),
   });
 

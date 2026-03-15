@@ -1,6 +1,12 @@
 .statistics-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(
+    var(--gradient-angle),
+    var(--gradient-start) 0%,
+    var(--gradient-middle) 50%,
+    var(--gradient-end) 100%
+  );
+  background-attachment: fixed;
   padding: 2rem;
 }
 

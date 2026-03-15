@@ -1,5 +1,3 @@
-using PulseMap.Domain.Enums;
-
 namespace PulseMap.Domain;
 
 public class Location
@@ -13,7 +11,8 @@ public class Location
     public required int? CreatorId { get; set; } = null;
     public User? Creator { get; set; } = null;
 
-    public required Category Category { get; set; } = Category.NotSet;
+    public required int CategoryId { get; set; }
+    public Category? Category { get; set; } = null;
     public List<Message>? Comments { get; set; } = [];
 
     public required DateTime ExpiresAt { get; set; }
@@ -24,6 +23,8 @@ public class Location
     public User? Owner { get; set; } = null;
 
     public LikeStatus? LikeStatus { get; set; } = null;
+
+    public List<LocationImage> Images { get; set; } = [];
 
     // Event clustering
     public int? EventId { get; set; } = null;

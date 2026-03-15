@@ -12,6 +12,7 @@ public interface ILocationService
     Task<List<LocationResponseDTO>> GetActiveLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng, string? type, int userId = 1);
     Task<List<LocationResponseDTO>> GetAllLocationsAsync(int userId = 1);
     Task<LocationResponseDTO?> GetLocationByIdAsync(int id, int userId = 1);
+    Task<List<LocationRecommendationResponseDTO>> GetRecommendedLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng, int userId, int count = 10);
     Task<LocationResponseDTO> LikeLocationAsync(int id, int userId);
     Task<LocationResponseDTO?> UpdateLocationAsync(LocationPutDTO locationResponseDTO, int id);
     Task<List<(int Location1Id, int Location2Id, double Distance)>> GetNearbyLocationPairsAsync(double maxDistanceMeters = 20);

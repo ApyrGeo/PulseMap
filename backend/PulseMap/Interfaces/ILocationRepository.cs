@@ -9,8 +9,10 @@ public interface ILocationRepository
     Task<List<Location>> GetActiveLocationsAsync();
     Task<List<Location>> GetActiveLocationsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng);
     Task<List<Location>> GetAllLocationsAsync();
+    Task<List<Location>> GetLikedLocationsByUserIdAsync(int userId);
     Task<Location?> GetLocationByIdAsync(int id);
     Task<Location?> GetLocationByOwnerIdAsync(int ownerId);
+    Task<List<Location>> GetPlacedLocationsByUserIdAsync(int userId);
     Task<List<Location>> GetLocationsByEventIdAsync(int eventId, bool activeOnly = true);
     Task<Location> UpdateLocationAsync(Location location);
     Task SaveChangesAsync();

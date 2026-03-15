@@ -2,6 +2,32 @@
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
 
+/* Global Theme Colors */
+:root {
+  /* Gradient Colors - Change these to customize the entire app theme */
+  --gradient-start: #e0e7ff; /* Soft indigo */
+  --gradient-middle: #daf1dc; /* Soft green */
+  --gradient-end: #e0f2fe; /* Soft light blue */
+  --gradient-angle: 135deg;
+
+  /* Navbar Settings */
+  --navbar-opacity: 0.9; /* Navbar transparency (0-1) */
+  /* Note: Navbar uses the gradient colors above with --navbar-opacity applied */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(
+    var(--gradient-angle),
+    var(--gradient-start) 0%,
+    var(--gradient-middle) 50%,
+    var(--gradient-end) 100%
+  );
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
 /* Override Leaflet popup styles for MUI components */
 .leaflet-popup-content-wrapper {
   padding: 0 !important;
@@ -21,17 +47,25 @@
 }
 
 .leaflet-popup-close-button {
-  font-size: 24px !important;
-  padding: 4px 8px !important;
+  font-size: 28px !important;
+  padding: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   color: #666 !important;
   z-index: 1000 !important;
   position: absolute !important;
-  top: 4px !important;
-  right: 4px !important;
+  top: 8px !important;
+  right: 8px !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+  line-height: 1 !important;
 }
 
 .leaflet-popup-close-button:hover {
-  color: #333 !important;
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  border-radius: 4px;
+  color: #fff !important;
+  background-color: rgba(239, 68, 68, 0.9) !important;
+  transform: scale(1.1) !important;
 }

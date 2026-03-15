@@ -8,11 +8,12 @@ using System.Text.Json;
 
 namespace PulseMap.Service;
 
-public class UserService(IUserRepository userRepository, IMapper mapper, IValidatorFactory validatorFactory) : IUserService
+public class UserService(IUserRepository userRepository, IMapper mapper, IValidatorFactory validatorFactory, IJwtTokenService jwtTokenService) : IUserService
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IMapper _mapper = mapper;
     private readonly IValidatorFactory _validatorFactory = validatorFactory;
+    private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
     private readonly ILog _logger = LogManager.GetLogger(typeof(UserService));
 
     public async Task<UserResponseDTO> GetUserByIdAsync(int id)
@@ -40,12 +41,20 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IValida
         return _mapper.Map<UserResponseDTO>(addedUser);
     }
 
-    public async Task<UserResponseDTO> LoginUser(string email, string password)
+    public async Task<LoginResponseDTO> LoginUser(string email, string password)
     {
         _logger.InfoFormat("Logging in user with email: {0}", email);
         var user = await _userRepository.LoginUser(email, password)
             ?? throw new NotFoundException("Invalid email or password");
 
-        return _mapper.Map<UserResponseDTO>(user);
+        var token = _jwtTokenService.GenerateToken(user);
+        var userDto = _mapper.Map<UserResponseDTO>(user);
+
+        return new LoginResponseDTO
+        {
+            Token = token,
+            User = userDto,
+            ExpiresIn = "24h"
+        };
     }
 }

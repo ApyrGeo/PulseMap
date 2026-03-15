@@ -10,30 +10,19 @@ public class OpenAiLocationClassifier : ILocationClassifier
     private readonly ILogger<OpenAiLocationClassifier> _logger;
     private readonly IAIStatisticsService _statisticsService;
     private readonly ITranslationService _translationService;
-
-    private static readonly string[] Categories =
-    {
-        "Music",
-        "Sport",
-        "Food",
-        "Entertainment",
-        "Education",
-        "Health",
-        "Technology",
-        "Travel",
-        "Art",
-        "Business"
-    };
+    private readonly ICategoryRepository _categoryRepository;
 
     public OpenAiLocationClassifier(
         IConfiguration config, 
         ILogger<OpenAiLocationClassifier> logger,
         IAIStatisticsService statisticsService,
-        ITranslationService translationService)
+        ITranslationService translationService,
+        ICategoryRepository categoryRepository)
     {
         _logger = logger;
         _statisticsService = statisticsService;
         _translationService = translationService;
+        _categoryRepository = categoryRepository;
 
         var apiKey = config["OpenAI:ApiKey"];
         var model = config["OpenAI:Model"] ?? "gpt-3.5-turbo";
@@ -54,6 +43,12 @@ public class OpenAiLocationClassifier : ILocationClassifier
     {
         _logger.LogInformation("Classifying location with description: {Description}", description);
 
+        var categories = await GetAllowedCategoriesAsync();
+        if (categories.Count == 0)
+        {
+            throw new InvalidOperationException("No active categories configured in DB for classification");
+        }
+
         var englishDescription = await _translationService.TranslateToEnglishIfNeededAsync(description, ct);
 
         var systemPrompt = $"""
@@ -61,7 +56,7 @@ You are a classification system.
 Your task is to classify a location description into the TOP 3 most relevant categories.
 
 Allowed categories:
-{string.Join(", ", Categories)}
+{string.Join(", ", categories)}
 
 Rules:
 - Return EXACTLY 3 category names separated by commas
@@ -101,8 +96,8 @@ Rules:
 
         // Validate and filter categories
         var validCategories = returnedCategories
-            .Where(cat => Categories.Contains(cat, StringComparer.OrdinalIgnoreCase))
-            .Select(cat => Categories.First(c => c.Equals(cat, StringComparison.OrdinalIgnoreCase)))
+            .Where(cat => categories.Contains(cat, StringComparer.OrdinalIgnoreCase))
+            .Select(cat => categories.First(c => c.Equals(cat, StringComparison.OrdinalIgnoreCase)))
             .Distinct()
             .Take(3)
             .ToList();
@@ -114,9 +109,9 @@ Rules:
         }
 
         // If we have less than 3, fill with the most common ones
-        while (validCategories.Count < 3 && validCategories.Count < Categories.Length)
+        while (validCategories.Count < 3 && validCategories.Count < categories.Count)
         {
-            var nextCategory = Categories.FirstOrDefault(c => !validCategories.Contains(c));
+            var nextCategory = categories.FirstOrDefault(c => !validCategories.Contains(c));
             if (nextCategory != null)
             {
                 validCategories.Add(nextCategory);
@@ -133,5 +128,15 @@ Rules:
         await _statisticsService.IncrementOpenAIClassifierAsync();
         
         return validCategories;
+    }
+
+    private async Task<List<string>> GetAllowedCategoriesAsync()
+    {
+        var dbCategories = await _categoryRepository.GetCategoriesAsync(true);
+        return dbCategories
+            .Where(c => !string.Equals(c.Name, "Not Set", StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 }

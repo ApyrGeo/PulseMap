@@ -3,7 +3,6 @@ using Backend.Exceptions.Custom;
 using log4net;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
-using PulseMap.Domain.Enums;
 using PulseMap.Interfaces;
 using PulseMap.Service.WS;
 using System.Text.Json;
@@ -11,14 +10,18 @@ using System.Text.Json;
 namespace PulseMap.Service;
 
 public class LocationService(
-    ILocationRepository locationRepository, 
-    IUserRepository userRepository, 
+    ILocationRepository locationRepository,
+    ICategoryRepository categoryRepository,
+    IRecommendationAiScorer recommendationAiScorer,
+    IUserRepository userRepository,
     IMessageRepository messageRepository,
-    IMapper mapper, 
-    IValidatorFactory validatorFactory, 
+    IMapper mapper,
+    IValidatorFactory validatorFactory,
     IWebSocketNotificationService webSocketNotificationService) : ILocationService
 {
     private readonly ILocationRepository _locationRepository = locationRepository;
+    private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly IRecommendationAiScorer _recommendationAiScorer = recommendationAiScorer;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IMessageRepository _messageRepository = messageRepository;
     private readonly IMapper _mapper = mapper;
@@ -63,8 +66,24 @@ public class LocationService(
 
         _logger.InfoFormat("Adding new location: {0}", JsonSerializer.Serialize(locationPostDTO));
         var location = _mapper.Map<Location>(locationPostDTO);
+        var category = await _categoryRepository.GetByNameAsync(locationPostDTO.Category)
+            ?? throw new EntityValidationException($"Invalid category value: {locationPostDTO.Category}");
+
+        location.CategoryId = category.Id;
+        location.Category = category;
         location.ExpiresAt = DateTime.UtcNow.Add(locationPostDTO.Duration);
         location.IsExpired = false;
+
+        // Convert image URLs to LocationImage entities
+        if (locationPostDTO.ImageUrls != null && locationPostDTO.ImageUrls.Any())
+        {
+            location.Images = locationPostDTO.ImageUrls.Select((url, index) => new LocationImage
+            {
+                Url = url,
+                CreatedAt = DateTime.UtcNow,
+                Order = index
+            }).ToList();
+        }
 
         var addedlocation = await _locationRepository.AddLocationAsync(location);
         await _locationRepository.SaveChangesAsync();
@@ -129,10 +148,10 @@ public class LocationService(
         }
 
         _logger.InfoFormat("Updating data for location with ID: {0}", id);
-        if (!Enum.TryParse<Category>(locationPutDto.Category, out var category))
-        {
-            throw new EntityValidationException($"Invalid category value: {locationPutDto.Category}");
-        }
+        var category = await _categoryRepository.GetByNameAsync(locationPutDto.Category)
+            ?? throw new EntityValidationException($"Invalid category value: {locationPutDto.Category}");
+
+        existingLocation.CategoryId = category.Id;
         existingLocation.Category = category;
         existingLocation.Name = locationPutDto.Name;
         existingLocation.Description = locationPutDto.Description;
@@ -294,7 +313,7 @@ public class LocationService(
         if (type != null)
         {
             _logger.InfoFormat("Filtering locations by type: {0}", type);
-            locations = [.. locations.Where(loc => loc.Category.ToString().Equals(type, StringComparison.OrdinalIgnoreCase))];
+            locations = [.. locations.Where(loc => string.Equals(loc.Category?.Name, type, StringComparison.OrdinalIgnoreCase))];
         }
 
         foreach (var loc in locations)
@@ -310,6 +329,113 @@ public class LocationService(
                 IsLikedByCurrentUser = loc.Likes.Any(u => u.Id == userId),
             }
         )];
+    }
+
+    public async Task<List<LocationRecommendationResponseDTO>> GetRecommendedLocationsInBoundsAsync(
+        double minLat,
+        double maxLat,
+        double minLng,
+        double maxLng,
+        int userId,
+        int count = 10)
+    {
+        if (minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180 || minLat > maxLat || minLng > maxLng)
+        {
+            throw new EntityValidationException("Invalid geographical bounds provided.");
+        }
+
+        if (count < 1)
+        {
+            count = 1;
+        }
+
+        if (count > 50)
+        {
+            count = 50;
+        }
+
+        var inBoundsLocations = await _locationRepository.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng);
+        var likedLocations = await _locationRepository.GetLikedLocationsByUserIdAsync(userId);
+        var likedLocationIds = likedLocations.Select(l => l.Id).ToHashSet();
+
+        var preferenceScores = new Dictionary<int, double>();
+
+        foreach (var liked in likedLocations.Where(l => l.CategoryId > 0))
+        {
+            if (!preferenceScores.ContainsKey(liked.CategoryId))
+            {
+                preferenceScores[liked.CategoryId] = 0;
+            }
+
+            preferenceScores[liked.CategoryId] += 1.0;
+        }
+
+        var centerLat = (minLat + maxLat) / 2;
+        var centerLng = (minLng + maxLng) / 2;
+        var now = DateTime.UtcNow;
+
+        var recommendationCandidates = inBoundsLocations
+            .Where(l => !likedLocationIds.Contains(l.Id) && l.CreatorId != userId)
+            .ToList();
+
+        var likedDescriptions = likedLocations
+            .Where(l => !string.IsNullOrWhiteSpace(l.Description))
+            .Select(l => l.Description!)
+            .ToList();
+
+        var aiSimilarityScores = await _recommendationAiScorer.ScoreCandidatesByProfileAsync(
+            likedDescriptions,
+            recommendationCandidates.Select(c => (c.Id, c.Description ?? string.Empty)).ToList());
+
+        var recommendations = recommendationCandidates
+            .Select(location =>
+            {
+                var affinity = preferenceScores.TryGetValue(location.CategoryId, out var affinityScore)
+                    ? affinityScore
+                    : 0;
+
+                var aiSimilarity = aiSimilarityScores.TryGetValue(location.Id, out var semanticScore)
+                    ? semanticScore
+                    : 0;
+
+                var popularity = Math.Log(1 + location.Likes.Count);
+                var distanceMeters = CalculateDistance(centerLat, centerLng, location.Latitude, location.Longitude);
+                var distanceScore = 1.0 / (1.0 + (distanceMeters / 1000.0));
+                var freshnessHours = Math.Max((location.ExpiresAt - now).TotalHours, 0);
+                var freshnessScore = Math.Min(freshnessHours / 72.0, 1.0);
+
+                var totalScore =
+                    (2.4 * affinity) +
+                    (2.0 * aiSimilarity) +
+                    popularity +
+                    (1.2 * distanceScore) +
+                    (0.5 * freshnessScore);
+
+                var reason = aiSimilarity >= 0.65
+                    ? "AI matched this location to your liked-location profile"
+                    : affinity > 0
+                        ? $"Matches your interest in {location.Category?.Name ?? "this category"}"
+                        : "Popular and nearby in your current map area";
+
+                return new LocationRecommendationResponseDTO
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    Description = location.Description,
+                    Category = location.Category?.Name ?? "Not Set",
+                    Latitude = location.Latitude,
+                    Longitude = location.Longitude,
+                    LikesCount = location.Likes.Count,
+                    Score = Math.Round(totalScore, 4),
+                    Reason = reason
+                };
+            })
+            .OrderByDescending(r => r.Score)
+            .ThenByDescending(r => r.LikesCount)
+            .Take(count)
+            .ToList();
+
+        return recommendations;
     }
 
     public async Task<List<(int Location1Id, int Location2Id, double Distance)>> GetNearbyLocationPairsAsync(double maxDistanceMeters = 20)
@@ -357,7 +483,7 @@ public class LocationService(
         if (removeHasOwner && !keepHasOwner)
         {
             // Remove location is owned but keep is not - swap them
-            _logger.InfoFormat("Swapping: location {0} is owned by user {1}, prioritizing it over non-owned location {2}", 
+            _logger.InfoFormat("Swapping: location {0} is owned by user {1}, prioritizing it over non-owned location {2}",
                 removeLocationId, removeLocation.OwnerId, keepLocationId);
             (keepLocation, removeLocation) = (removeLocation, keepLocation);
             (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
@@ -367,7 +493,7 @@ public class LocationService(
             // PRIORITY 2: Neither is owned - keep the one with longer/better description
             if (removeLocation.Description.Length > keepLocation.Description.Length)
             {
-                _logger.InfoFormat("Swapping: both locations are non-owned, keeping location {0} with longer description", 
+                _logger.InfoFormat("Swapping: both locations are non-owned, keeping location {0} with longer description",
                     removeLocationId);
                 (keepLocation, removeLocation) = (removeLocation, keepLocation);
                 (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
@@ -376,14 +502,14 @@ public class LocationService(
         // else: keep is owned, or both are owned - keep the original keepLocationId
 
         // Add the removed location's description as a comment to the kept location
-        if (!string.IsNullOrWhiteSpace(removeLocation.Description) && 
+        if (!string.IsNullOrWhiteSpace(removeLocation.Description) &&
             removeLocation.Description != keepLocation.Description)
         {
             _logger.InfoFormat("Adding removed location's description as a comment");
-            
+
             // Get the creator (or fallback to first user)
             var creatorId = keepLocation.CreatorId ?? removeLocation.CreatorId ?? 1;
-            
+
             var mergeComment = new Message
             {
                 Id = 0, // Will be set by DB
@@ -394,7 +520,7 @@ public class LocationService(
             };
 
             await _messageRepository.AddMessageAsync(mergeComment);
-            
+
             _logger.InfoFormat("Added merge comment with removed description");
         }
 
@@ -402,7 +528,7 @@ public class LocationService(
         if (removeLocation.Comments != null && removeLocation.Comments.Any())
         {
             _logger.InfoFormat("Transferring {0} comments from location {1} to {2}", removeLocation.Comments.Count, removeLocationId, keepLocationId);
-            
+
             foreach (var comment in removeLocation.Comments.Where(c => c is not ResponseMessage))
             {
                 comment.LocationId = keepLocationId;
@@ -413,7 +539,7 @@ public class LocationService(
         if (removeLocation.Likes != null && removeLocation.Likes.Any())
         {
             _logger.InfoFormat("Transferring {0} likes from location {1} to {2}", removeLocation.Likes.Count, removeLocationId, keepLocationId);
-            
+
             foreach (var user in removeLocation.Likes)
             {
                 if (!keepLocation.Likes.Any(u => u.Id == user.Id))

@@ -1,12 +1,12 @@
 using FluentValidation;
 using PulseMap.Domain.DTOs;
-using PulseMap.Domain.Enums;
+using PulseMap.Interfaces;
 
 namespace PulseMap.Service.Validators;
 
 public class LocationPutDTOValidator : AbstractValidator<LocationPutDTO>
 {
-    public LocationPutDTOValidator()
+    public LocationPutDTOValidator(ICategoryRepository categoryRepository)
     {
         RuleFor(location => location.Name)
             .NotEmpty()
@@ -21,7 +21,11 @@ public class LocationPutDTOValidator : AbstractValidator<LocationPutDTO>
         RuleFor(location => location.Category)
             .NotEmpty()
             .WithMessage("Category is required.")
-            .Must(category => Enum.TryParse<Category>(category, true, out _))
-            .WithMessage($"Category must be one of: {string.Join(", ", Enum.GetNames<Category>())}");
+            .MustAsync(async (category, cancellation) =>
+            {
+                var existingCategory = await categoryRepository.GetByNameAsync(category);
+                return existingCategory != null && existingCategory.IsActive;
+            })
+            .WithMessage("Category must be an existing active category.");
     }
 }

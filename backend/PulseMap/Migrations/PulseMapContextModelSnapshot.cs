@@ -128,6 +128,135 @@ namespace PulseMap.Migrations
                         });
                 });
 
+            modelBuilder.Entity("PulseMap.Domain.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("SortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            Name = "Not Set",
+                            Slug = "not-set",
+                            SortOrder = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsActive = true,
+                            Name = "Music",
+                            Slug = "music",
+                            SortOrder = 10
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsActive = true,
+                            Name = "Sport",
+                            Slug = "sport",
+                            SortOrder = 20
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsActive = true,
+                            Name = "Food",
+                            Slug = "food",
+                            SortOrder = 30
+                        },
+                        new
+                        {
+                            Id = 5,
+                            IsActive = true,
+                            Name = "Entertainment",
+                            Slug = "entertainment",
+                            SortOrder = 40
+                        },
+                        new
+                        {
+                            Id = 6,
+                            IsActive = true,
+                            Name = "Education",
+                            Slug = "education",
+                            SortOrder = 50
+                        },
+                        new
+                        {
+                            Id = 7,
+                            IsActive = true,
+                            Name = "Health",
+                            Slug = "health",
+                            SortOrder = 60
+                        },
+                        new
+                        {
+                            Id = 8,
+                            IsActive = true,
+                            Name = "Technology",
+                            Slug = "technology",
+                            SortOrder = 70
+                        },
+                        new
+                        {
+                            Id = 9,
+                            IsActive = true,
+                            Name = "Travel",
+                            Slug = "travel",
+                            SortOrder = 80
+                        },
+                        new
+                        {
+                            Id = 10,
+                            IsActive = true,
+                            Name = "Art",
+                            Slug = "art",
+                            SortOrder = 90
+                        },
+                        new
+                        {
+                            Id = 11,
+                            IsActive = true,
+                            Name = "Business",
+                            Slug = "business",
+                            SortOrder = 100
+                        });
+                });
+
             modelBuilder.Entity("PulseMap.Domain.Event", b =>
                 {
                     b.Property<int>("Id")
@@ -217,11 +346,10 @@ namespace PulseMap.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Category")
-                        .IsRequired()
+                    b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("NotSet");
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<int?>("CreatorId")
                         .HasColumnType("integer");
@@ -263,6 +391,8 @@ namespace PulseMap.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("CreatorId");
 
                     b.HasIndex("EventId");
@@ -270,6 +400,37 @@ namespace PulseMap.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Locations");
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.LocationImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Order")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("LocationImages");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.Message", b =>
@@ -394,6 +555,12 @@ namespace PulseMap.Migrations
 
             modelBuilder.Entity("PulseMap.Domain.Location", b =>
                 {
+                    b.HasOne("PulseMap.Domain.Category", "Category")
+                        .WithMany("Locations")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("PulseMap.Domain.User", "Creator")
                         .WithMany("PlacedLocations")
                         .HasForeignKey("CreatorId");
@@ -407,11 +574,24 @@ namespace PulseMap.Migrations
                         .WithMany("OwnedLocations")
                         .HasForeignKey("OwnerId");
 
+                    b.Navigation("Category");
+
                     b.Navigation("Creator");
 
                     b.Navigation("Event");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.LocationImage", b =>
+                {
+                    b.HasOne("PulseMap.Domain.Location", "Location")
+                        .WithMany("Images")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.Message", b =>
@@ -444,6 +624,11 @@ namespace PulseMap.Migrations
                     b.Navigation("ParentMessage");
                 });
 
+            modelBuilder.Entity("PulseMap.Domain.Category", b =>
+                {
+                    b.Navigation("Locations");
+                });
+
             modelBuilder.Entity("PulseMap.Domain.Event", b =>
                 {
                     b.Navigation("Locations");
@@ -452,6 +637,8 @@ namespace PulseMap.Migrations
             modelBuilder.Entity("PulseMap.Domain.Location", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Images");
 
                     b.Navigation("LikeStatus");
                 });

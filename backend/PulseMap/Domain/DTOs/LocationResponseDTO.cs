@@ -16,6 +16,8 @@ public record LocationResponseDTO
     public required bool IsLikedByCurrentUser { get; set; }
     public SimplifiedUserResponseDTO? Owner { get; set; }
 
+    public List<string>? ImageUrls { get; set; }
+
     // Event clustering
     public SimplifiedEventResponseDTO? Event { get; set; }
     public float? EventAssignmentConfidence { get; set; }

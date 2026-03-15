@@ -48,3 +48,50 @@
 .marker-cluster span {
   line-height: 30px;
 }
+
+.leaflet-popup-close-button {
+  color: #0f172a !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 28px !important;
+  text-align: center !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25) !important;
+  top: 8px !important;
+  right: 8px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #1d4ed8 !important;
+  background: #ffffff !important;
+}
+
+.leaflet-popup.popup-open-animate {
+  animation: popup-open-fade 0.35s ease-out;
+}
+
+.leaflet-popup-content-wrapper.popup-open-animate-inner {
+  animation: popup-open-scale 0.35s ease-out;
+  transform-origin: bottom center;
+}
+
+@keyframes popup-open-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes popup-open-scale {
+  0% {
+    transform: translateY(8px) scale(0.92);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}

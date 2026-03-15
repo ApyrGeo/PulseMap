@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { fetchAIStatistics, AIStatistics } from './services/StatisticsApiService';
+import {
+  fetchAIStatistics,
+  AIStatistics,
+} from './services/StatisticsApiService';
 import {
   BarChart,
   Bar,
@@ -58,9 +61,15 @@ const StatisticsPage = () => {
 
   // Prepare data for classification chart
   const classificationData = [
-    { name: 'Embedding Verifier', value: statistics.classification.huggingFaceSuccess },
+    {
+      name: 'Embedding Verifier',
+      value: statistics.classification.huggingFaceSuccess,
+    },
     { name: 'GPT Verifier', value: statistics.classification.openAISuccess },
-    { name: 'Keyword Fallback', value: statistics.classification.keywordFallback },
+    {
+      name: 'Keyword Fallback',
+      value: statistics.classification.keywordFallback,
+    },
   ];
 
   // Prepare data for matching chart
@@ -72,8 +81,14 @@ const StatisticsPage = () => {
 
   // Prepare data for events chart
   const eventsData = [
-    { name: 'GPT Event Extractor', value: statistics.events.gptEventExtractorSuccess },
-    { name: 'Embedding Event Extractor', value: statistics.events.embeddingEventExtractorSuccess },
+    {
+      name: 'GPT Event Extractor',
+      value: statistics.events.gptEventExtractorSuccess,
+    },
+    {
+      name: 'Embedding Event Extractor',
+      value: statistics.events.embeddingEventExtractorSuccess,
+    },
   ];
 
   // Prepare comparison data
@@ -107,20 +122,15 @@ const StatisticsPage = () => {
 
   return (
     <div className="statistics-page">
-      <header className="statistics-header">
-        <h1 className="statistics-title">AI Statistics Dashboard</h1>
-        <p className="statistics-subtitle">
-          Last updated: {formatDate(statistics.lastUpdated)}
-        </p>
-      </header>
-
       <div className="statistics-grid">
         {/* Classification Statistics */}
         <div className="statistics-card">
           <h2 className="card-title">Classification Methods</h2>
           <div className="card-stat">
             <span className="stat-label">Total Calls:</span>
-            <span className="stat-value">{statistics.classification.totalCalls}</span>
+            <span className="stat-value">
+              {statistics.classification.totalCalls}
+            </span>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -129,13 +139,18 @@ const StatisticsPage = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, value }) => (value > 0 ? `${name}: ${value}` : '')}
+                label={({ name, value }) =>
+                  value > 0 ? `${name}: ${value}` : ''
+                }
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
                 {classificationData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -144,15 +159,22 @@ const StatisticsPage = () => {
           <div className="card-details">
             <div className="detail-row">
               <span style={{ color: COLORS[0] }}>●</span>
-              <span>Embedding Matcher: {statistics.classification.huggingFaceSuccess}</span>
+              <span>
+                Embedding Matcher:{' '}
+                {statistics.classification.huggingFaceSuccess}
+              </span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[1] }}>●</span>
-              <span>GPT Verifier: {statistics.classification.openAISuccess}</span>
+              <span>
+                GPT Verifier: {statistics.classification.openAISuccess}
+              </span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[2] }}>●</span>
-              <span>Keyword Fallback: {statistics.classification.keywordFallback}</span>
+              <span>
+                Keyword Fallback: {statistics.classification.keywordFallback}
+              </span>
             </div>
           </div>
         </div>
@@ -171,13 +193,18 @@ const StatisticsPage = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, value }) => (value > 0 ? `${name}: ${value}` : '')}
+                label={({ name, value }) =>
+                  value > 0 ? `${name}: ${value}` : ''
+                }
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
                 {matchingData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -194,7 +221,9 @@ const StatisticsPage = () => {
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[2] }}>●</span>
-              <span>Keyword Fallback: {statistics.matching.keywordFallback}</span>
+              <span>
+                Keyword Fallback: {statistics.matching.keywordFallback}
+              </span>
             </div>
           </div>
         </div>
@@ -204,7 +233,9 @@ const StatisticsPage = () => {
           <h2 className="card-title">Event Extraction Methods</h2>
           <div className="card-stat">
             <span className="stat-label">Clustering Runs:</span>
-            <span className="stat-value">{statistics.events.eventClusteringRuns}</span>
+            <span className="stat-value">
+              {statistics.events.eventClusteringRuns}
+            </span>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -213,13 +244,18 @@ const StatisticsPage = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, value }) => (value > 0 ? `${name}: ${value}` : '')}
+                label={({ name, value }) =>
+                  value > 0 ? `${name}: ${value}` : ''
+                }
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
                 {eventsData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -228,11 +264,16 @@ const StatisticsPage = () => {
           <div className="card-details">
             <div className="detail-row">
               <span style={{ color: COLORS[0] }}>●</span>
-              <span>GPT Extractor: {statistics.events.gptEventExtractorSuccess}</span>
+              <span>
+                GPT Extractor: {statistics.events.gptEventExtractorSuccess}
+              </span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[1] }}>●</span>
-              <span>Embedding Extractor: {statistics.events.embeddingEventExtractorSuccess}</span>
+              <span>
+                Embedding Extractor:{' '}
+                {statistics.events.embeddingEventExtractorSuccess}
+              </span>
             </div>
           </div>
         </div>

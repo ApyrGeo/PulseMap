@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PulseMap.Domain.DTOs;
 using PulseMap.Interfaces;
@@ -17,6 +18,7 @@ public class EventController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
@@ -26,6 +28,7 @@ public class EventController : ControllerBase
         return Ok(eventDto);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet]
     [ProducesResponseType(200)]
     public async Task<ActionResult<List<EventResponseDTO>>> GetAllEvents([FromQuery] bool active = true)
@@ -34,6 +37,7 @@ public class EventController : ControllerBase
         return Ok(events);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("bounds")]
     [ProducesResponseType(200)]
     public async Task<ActionResult<List<EventResponseDTO>>> GetEventsInBounds(
@@ -48,6 +52,7 @@ public class EventController : ControllerBase
         return Ok(events);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("analyze")]
     [ProducesResponseType(200)]
     public async Task<ActionResult<EventClusteringResultDTO>> AnalyzeAndClusterLocations(
@@ -59,6 +64,7 @@ public class EventController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPatch("{id}/confirm")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
@@ -68,6 +74,7 @@ public class EventController : ControllerBase
         return Ok(eventDto);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]

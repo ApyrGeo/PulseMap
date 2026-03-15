@@ -1,10 +1,12 @@
 import { BASE_API_URL } from '../../../core';
 import {
+  LocationRecommendationDTO,
   LocationLikesSummaryDTO,
   LocationPostDTO,
   LocationPutDTO,
 } from '../Interfaces';
 import { Location } from '../Interfaces';
+import { TokenService } from '../../../auth/TokenService';
 
 const LOCATIONS_URL = BASE_API_URL + '/Location';
 
@@ -15,12 +17,17 @@ export interface MapBounds {
   maxLng: number;
 }
 
-export async function fetchLocations(active: boolean, userId?: number): Promise<Location[]> {
+export async function fetchLocations(
+  active: boolean,
+  userId?: number
+): Promise<Location[]> {
   const params = new URLSearchParams({ active: active.toString() });
   if (userId) {
     params.append('userId', userId.toString());
   }
-  const response = await fetch(`${LOCATIONS_URL}?${params}`);
+  const response = await fetch(`${LOCATIONS_URL}?${params}`, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch locations');
   }
@@ -44,15 +51,45 @@ export async function fetchLocationsByBounds(
   if (type) {
     params.append('type', type);
   }
-  
+
   if (userId) {
     params.append('userId', userId.toString());
   }
 
-  const response = await fetch(`${LOCATIONS_URL}/bounds?${params}`);
+  const response = await fetch(`${LOCATIONS_URL}/bounds?${params}`, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch locations by bounds');
   }
+  return response.json();
+}
+
+export async function fetchRecommendedLocationsByBounds(
+  bounds: MapBounds,
+  userId: number,
+  count = 8
+): Promise<LocationRecommendationDTO[]> {
+  const params = new URLSearchParams({
+    minLat: bounds.minLat.toString(),
+    maxLat: bounds.maxLat.toString(),
+    minLng: bounds.minLng.toString(),
+    maxLng: bounds.maxLng.toString(),
+    userId: userId.toString(),
+    count: count.toString(),
+  });
+
+  const response = await fetch(
+    `${LOCATIONS_URL}/recommendations/bounds?${params}`,
+    {
+      headers: { ...TokenService.getAuthHeader() },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch recommended locations by bounds');
+  }
+
   return response.json();
 }
 
@@ -61,6 +98,7 @@ export async function createLocation(dto: LocationPostDTO): Promise<Location> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
     body: JSON.stringify(dto),
   });
@@ -83,6 +121,7 @@ export async function updateLocation(
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
     body: JSON.stringify(data),
   });
@@ -99,6 +138,7 @@ export async function updateLocation(
 export async function deleteLocation(id: number): Promise<void> {
   const response = await fetch(`${LOCATIONS_URL}/${id}`, {
     method: 'DELETE',
+    headers: { ...TokenService.getAuthHeader() },
   });
 
   if (!response.ok) {
@@ -113,6 +153,7 @@ export async function expireLocation(id: number): Promise<Location> {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
   });
 
@@ -130,6 +171,7 @@ export async function extendLocation(id: number): Promise<Location> {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
   });
 
@@ -150,7 +192,10 @@ export async function likeLocationAPI(
     `${LOCATIONS_URL}/${locationId}/like?userId=${userId}`,
     {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...TokenService.getAuthHeader(),
+      },
     }
   );
   if (!response.ok) {
@@ -175,7 +220,10 @@ export async function unlikeLocationAPI(
     `${LOCATIONS_URL}/${locationId}/like?userId=${userId}`,
     {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...TokenService.getAuthHeader(),
+      },
     }
   );
   if (!response.ok) {
@@ -196,7 +244,10 @@ export async function classifyLocation(description: string): Promise<string[]> {
   try {
     const response = await fetch(`${BASE_API_URL}/AI/classify-location`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...TokenService.getAuthHeader(),
+      },
       body: JSON.stringify({ description }),
     });
 
@@ -215,11 +266,14 @@ export async function classifyLocation(description: string): Promise<string[]> {
   }
 }
 
-export async function confirmLocationEvent(locationId: number): Promise<Location> {
+export async function confirmLocationEvent(
+  locationId: number
+): Promise<Location> {
   const response = await fetch(`${LOCATIONS_URL}/${locationId}/confirm-event`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
   });
 
@@ -232,11 +286,14 @@ export async function confirmLocationEvent(locationId: number): Promise<Location
   return response.json();
 }
 
-export async function rejectLocationEvent(locationId: number): Promise<Location> {
+export async function rejectLocationEvent(
+  locationId: number
+): Promise<Location> {
   const response = await fetch(`${LOCATIONS_URL}/${locationId}/reject-event`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
     },
   });
 

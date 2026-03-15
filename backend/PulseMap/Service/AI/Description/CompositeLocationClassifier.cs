@@ -7,29 +7,18 @@ public class CompositeLocationClassifier : ILocationClassifier
     private readonly List<ILocationClassifier> _classifiers;
     private readonly ILogger<CompositeLocationClassifier> _logger;
     private readonly IAIStatisticsService _statisticsService;
-
-    private static readonly string[] Categories =
-    {
-        "Music",
-        "Sport",
-        "Food",
-        "Entertainment",
-        "Education",
-        "Health",
-        "Technology",
-        "Travel",
-        "Art",
-        "Business"
-    };
+    private readonly ICategoryRepository _categoryRepository;
 
     public CompositeLocationClassifier(
         IEnumerable<ILocationClassifier> classifiers,
         ILogger<CompositeLocationClassifier> logger,
-        IAIStatisticsService statisticsService)
+        IAIStatisticsService statisticsService,
+        ICategoryRepository categoryRepository)
     {
         _classifiers = classifiers.ToList();
         _logger = logger;
         _statisticsService = statisticsService;
+        _categoryRepository = categoryRepository;
         
         _logger.LogInformation("Initialized Composite Classifier with {Count} classifiers", _classifiers.Count);
     }
@@ -71,7 +60,7 @@ public class CompositeLocationClassifier : ILocationClassifier
 
         // All classifiers failed, use keyword fallback
         _logger.LogWarning("All AI classifiers failed, using keyword-based fallback");
-        var fallbackResult = FallbackClassification(description);
+        var fallbackResult = await FallbackClassificationAsync(description);
         
         // Track fallback usage
         await _statisticsService.IncrementKeywordClassifierFallbackAsync();
@@ -79,30 +68,51 @@ public class CompositeLocationClassifier : ILocationClassifier
         return fallbackResult;
     }
 
-    private List<string> FallbackClassification(string description)
+    private async Task<List<string>> FallbackClassificationAsync(string description)
     {
+        var allowedCategories = (await _categoryRepository.GetCategoriesAsync(true))
+            .Where(c => !string.Equals(c.Name, "Not Set", StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (allowedCategories.Count == 0)
+        {
+            return ["Uncategorized"];
+        }
+
+        var allowedCategorySet = new HashSet<string>(allowedCategories, StringComparer.OrdinalIgnoreCase);
         var lower = description.ToLowerInvariant();
         var matches = new List<string>();
 
-        if (lower.Contains("muzic") || lower.Contains("concert") || lower.Contains("festival") || lower.Contains("music"))
+        foreach (var category in allowedCategories)
+        {
+            var normalizedCategory = category.ToLowerInvariant();
+            if (lower.Contains(normalizedCategory))
+            {
+                matches.Add(category);
+            }
+        }
+
+        if (allowedCategorySet.Contains("Music") && (lower.Contains("muzic") || lower.Contains("concert") || lower.Contains("festival") || lower.Contains("music")))
             matches.Add("Music");
-        if (lower.Contains("sport") || lower.Contains("fotbal") || lower.Contains("tenis") || lower.Contains("alergare"))
+        if (allowedCategorySet.Contains("Sport") && (lower.Contains("sport") || lower.Contains("fotbal") || lower.Contains("tenis") || lower.Contains("alergare")))
             matches.Add("Sport");
-        if (lower.Contains("mancare") || lower.Contains("restaurant") || lower.Contains("cafenea") || lower.Contains("pizza") || lower.Contains("food"))
+        if (allowedCategorySet.Contains("Food") && (lower.Contains("mancare") || lower.Contains("restaurant") || lower.Contains("cafenea") || lower.Contains("pizza") || lower.Contains("food")))
             matches.Add("Food");
-        if (lower.Contains("film") || lower.Contains("teatru") || lower.Contains("entertainment") || lower.Contains("spectacol"))
+        if (allowedCategorySet.Contains("Entertainment") && (lower.Contains("film") || lower.Contains("teatru") || lower.Contains("entertainment") || lower.Contains("spectacol")))
             matches.Add("Entertainment");
-        if (lower.Contains("scoala") || lower.Contains("universitate") || lower.Contains("curs") || lower.Contains("carte") || lower.Contains("student") || lower.Contains("education"))
+        if (allowedCategorySet.Contains("Education") && (lower.Contains("scoala") || lower.Contains("universitate") || lower.Contains("curs") || lower.Contains("carte") || lower.Contains("student") || lower.Contains("education")))
             matches.Add("Education");
-        if (lower.Contains("spital") || lower.Contains("sanatate") || lower.Contains("medical") || lower.Contains("doctor") || lower.Contains("health"))
+        if (allowedCategorySet.Contains("Health") && (lower.Contains("spital") || lower.Contains("sanatate") || lower.Contains("medical") || lower.Contains("doctor") || lower.Contains("health")))
             matches.Add("Health");
-        if (lower.Contains("tech") || lower.Contains("it") || lower.Contains("software") || lower.Contains("calculator"))
+        if (allowedCategorySet.Contains("Technology") && (lower.Contains("tech") || lower.Contains("it") || lower.Contains("software") || lower.Contains("calculator")))
             matches.Add("Technology");
-        if (lower.Contains("calatorie") || lower.Contains("vacanta") || lower.Contains("turism") || lower.Contains("excursie") || lower.Contains("travel"))
+        if (allowedCategorySet.Contains("Travel") && (lower.Contains("calatorie") || lower.Contains("vacanta") || lower.Contains("turism") || lower.Contains("excursie") || lower.Contains("travel")))
             matches.Add("Travel");
-        if (lower.Contains("arta") || lower.Contains("pictura") || lower.Contains("sculptura") || lower.Contains("muzeu") || lower.Contains("art"))
+        if (allowedCategorySet.Contains("Art") && (lower.Contains("arta") || lower.Contains("pictura") || lower.Contains("sculptura") || lower.Contains("muzeu") || lower.Contains("art")))
             matches.Add("Art");
-        if (lower.Contains("business") || lower.Contains("afaceri") || lower.Contains("conferinta") || lower.Contains("seminar"))
+        if (allowedCategorySet.Contains("Business") && (lower.Contains("business") || lower.Contains("afaceri") || lower.Contains("conferinta") || lower.Contains("seminar")))
             matches.Add("Business");
 
         if (matches.Count == 0)

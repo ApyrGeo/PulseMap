@@ -4,7 +4,7 @@ export interface Location {
   longitude: number;
   name: string;
   creator: SimplifiedUser;
-  category: LocationCategory;
+  category: string;
   description?: string;
   messages: Message[];
   expiresAt: Date;
@@ -15,6 +15,7 @@ export interface Location {
   owner?: SimplifiedUser;
   event?: SimplifiedEvent;
   eventAssignmentConfidence?: number;
+  imageUrls?: string[];
 }
 
 export enum LocationCategory {
@@ -74,15 +75,43 @@ export interface LocationPostDTO {
   name: string;
   description?: string;
   creatorId: number;
-  category: LocationCategory;
+  category: string;
   duration: string;
   ownerId?: number;
+  imageUrls?: string[]; // Azure Blob Storage URLs
 }
 
 export interface LocationPutDTO {
   name: string;
   description?: string;
-  category: LocationCategory;
+  category: string;
+}
+
+export interface CategoryDTO {
+  id: number;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface CategoryPostDTO {
+  name: string;
+  slug?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface LocationRecommendationDTO {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  latitude: number;
+  longitude: number;
+  likesCount: number;
+  score: number;
+  reason: string;
 }
 
 export interface SimplifiedUser {

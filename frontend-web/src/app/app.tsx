@@ -5,6 +5,7 @@ import OwnerMapPage from '../owner/map/OwnerMapPage';
 import AdminMapPage from '../admin/map/AdminMapPage';
 import UserMapPage from '../user/map/UserMapPage';
 import LoginPage from '../auth/LoginPage';
+import RegisterPage from '../auth/RegisterPage';
 import { Toaster } from 'react-hot-toast';
 import { Role } from '../auth/Interfaces';
 import { AdminRoutes } from '../auth/routes/AdminRoutes';
@@ -12,6 +13,7 @@ import { UserRoutes } from '../auth/routes/UserRoutes';
 import NavigationBar from '../shared/navigation/NavigationBar';
 import AdminEventsPage from '../admin/events/AdminEventsPage';
 import StatisticsPage from '../admin/statistics/StatisticsPage';
+import AdminSettingsPage from '../admin/settings/AdminSettingsPage';
 
 export function App() {
   return (
@@ -51,6 +53,7 @@ function AppRoutes() {
         <Route path="/admin/map" element={<AdminMapPage />} />
         <Route path="/admin/statistics" element={<StatisticsPage />} />
         <Route path="/admin/events" element={<AdminEventsPage />} />
+        <Route path="/admin/settings" element={<AdminSettingsPage />} />
       </Route>
 
       <Route element={<UserRoutes />}>
@@ -68,6 +71,17 @@ function AppRoutes() {
             <Navigate to={defaultPath} replace />
           ) : (
             <LoginPage />
+          )
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          isAuthenticated ? (
+            <Navigate to={defaultPath} replace />
+          ) : (
+            <RegisterPage />
           )
         }
       />

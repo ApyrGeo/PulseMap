@@ -4,11 +4,11 @@ import { Role } from '../../auth/Interfaces';
 import './NavigationBar.css';
 
 const UserNavigationBar = () => {
-  const { isAuthenticated, user, setUser } = useAuth();
+  const { isAuthenticated, user, logoutUser } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    setUser(null);
+    logoutUser();
     navigate('/login', { replace: true });
   };
 
@@ -37,6 +37,9 @@ const UserNavigationBar = () => {
               </Link>
               <Link to="/admin/events" className="navigation-link">
                 Events
+              </Link>
+              <Link to="/admin/settings" className="navigation-link">
+                Settings
               </Link>
             </>
           )}
