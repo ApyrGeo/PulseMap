@@ -8,14 +8,13 @@ import {
   useMapEvents,
   useMap,
 } from 'react-leaflet';
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useCallback } from 'react';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import './MarkerCluster.css';
 import './MarkerAnimations.css';
 import {
   Location,
-  LocationCategory,
   MessagePostDTO,
   ResponseMessagePostDTO,
 } from '../Interfaces';
@@ -38,31 +37,62 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const categoryColors: { [key: string]: string } = {
-  [LocationCategory.NotSet]: '#6B7280', // Gray
-  [LocationCategory.Music]: '#8B5CF6', // Purple
-  [LocationCategory.Sport]: '#10B981', // Green
-  [LocationCategory.Food]: '#F59E0B', // Orange
-  [LocationCategory.Entertainment]: '#EF4444', // Red
-  [LocationCategory.Education]: '#3B82F6', // Blue
-  [LocationCategory.Health]: '#EC4899', // Pink
-  [LocationCategory.Technology]: '#14B8A6', // Teal
-  [LocationCategory.Travel]: '#F97316', // Orange-Red
-  [LocationCategory.Art]: '#A855F7', // Purple-Pink
-  [LocationCategory.Business]: '#06B6D4', // Cyan
+const fallbackPalette = [
+  '#8B5CF6',
+  '#10B981',
+  '#F59E0B',
+  '#EF4444',
+  '#3B82F6',
+  '#EC4899',
+  '#14B8A6',
+  '#F97316',
+  '#A855F7',
+  '#06B6D4',
+];
+
+const knownCategoryColors: { [key: string]: string } = {
+  'Not Set': '#6B7280',
+  Music: '#8B5CF6',
+  Sport: '#10B981',
+  Food: '#F59E0B',
+  Entertainment: '#EF4444',
+  Education: '#3B82F6',
+  Health: '#EC4899',
+  Technology: '#14B8A6',
+  Travel: '#F97316',
+  Art: '#A855F7',
+  Business: '#06B6D4',
+};
+
+const getCategoryColor = (category: string) => {
+  const exact = knownCategoryColors[category];
+  if (exact) {
+    return exact;
+  }
+
+  const key = (category || '').toLowerCase();
+  if (!key) {
+    return '#6B7280';
+  }
+
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash << 5) - hash + key.charCodeAt(i);
+    hash |= 0;
+  }
+
+  return fallbackPalette[Math.abs(hash) % fallbackPalette.length];
 };
 
 // Create a colored marker icon using divIcon (HTML-based, better for animations)
 const getMarkerIcon = (
-  category: LocationCategory,
+  category: string,
   isExpired: boolean,
   shouldBeColored: boolean,
   hasOwner: boolean
 ) => {
   const color =
-    isExpired || !shouldBeColored
-      ? '#6B7280'
-      : categoryColors[category] || categoryColors[LocationCategory.NotSet];
+    isExpired || !shouldBeColored ? '#6B7280' : getCategoryColor(category);
 
   const borderColor = hasOwner ? '#000' : '#fff';
 
@@ -107,8 +137,8 @@ const calculateEventRadius = (
   if (locations.length === 0) return 100;
 
   const toRad = (deg: number) => (deg * Math.PI) / 180;
-  
-  const distances = locations.map(loc => {
+
+  const distances = locations.map((loc) => {
     const R = 6371000; // Earth radius in meters
     const dLat = toRad(loc.latitude - centerLat);
     const dLng = toRad(loc.longitude - centerLng);
@@ -165,7 +195,13 @@ const getEventIcon = (category: string, locationsCount: number) => {
 };
 
 export interface LocationAnimationState {
-  [locationId: number]: 'new' | 'updated' | 'liked' | null;
+  [locationId: number]:
+    | 'new'
+    | 'updated'
+    | 'liked'
+    | 'expired'
+    | 'deleted'
+    | null;
 }
 
 interface LeafletMapProps {
@@ -182,6 +218,8 @@ interface LeafletMapProps {
   onBoundsChange?: (bounds: MapBounds, zoom: number) => void;
   currentZoom?: number;
   animationStates?: LocationAnimationState;
+  focusLocationId?: number | null;
+  focusRequestKey?: number;
 }
 
 const MapClickHandler = ({
@@ -248,13 +286,17 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
   }
 
   // Calculate radius from locations if available (approximate)
-  const radius = event.locations && event.locations.length > 0
-    ? calculateEventRadius(event.latitude, event.longitude, event.locations)
-    : 100; // Default 100m if no locations
+  const radius =
+    event.locations && event.locations.length > 0
+      ? calculateEventRadius(event.latitude, event.longitude, event.locations)
+      : 100; // Default 100m if no locations
 
   const handleClick = () => {
     // Zoom into the event area
-    map.setView([event.latitude, event.longitude], ZOOM_THRESHOLDS.NEIGHBORHOOD);
+    map.setView(
+      [event.latitude, event.longitude],
+      ZOOM_THRESHOLDS.NEIGHBORHOOD
+    );
     onClick(event);
   };
 
@@ -280,7 +322,13 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
       >
         <Tooltip direction="top" offset={[0, -20]} opacity={0.9}>
           <div style={{ minWidth: '180px' }}>
-            <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', color: '#1f2937' }}>
+            <h3
+              style={{
+                margin: '0 0 6px 0',
+                fontSize: '16px',
+                color: '#1f2937',
+              }}
+            >
               {event.name}
             </h3>
             <p style={{ margin: '3px 0', fontSize: '13px' }}>
@@ -290,14 +338,24 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
               <strong>Radius:</strong> {radius.toFixed(0)}m
             </p>
             <p style={{ margin: '3px 0', fontSize: '13px' }}>
-              <strong>Confidence:</strong> {(event.confidenceScore * 100).toFixed(0)}%
+              <strong>Confidence:</strong>{' '}
+              {(event.confidenceScore * 100).toFixed(0)}%
             </p>
             {event.requiresReview && (
-              <p style={{ margin: '3px 0', fontSize: '13px', color: '#f59e0b' }}>
+              <p
+                style={{ margin: '3px 0', fontSize: '13px', color: '#f59e0b' }}
+              >
                 ⚠️ Needs Review
               </p>
             )}
-            <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#6b7280', fontStyle: 'italic' }}>
+            <p
+              style={{
+                margin: '6px 0 0 0',
+                fontSize: '11px',
+                color: '#6b7280',
+                fontStyle: 'italic',
+              }}
+            >
               Click to zoom in
             </p>
           </div>
@@ -311,141 +369,301 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
 interface AnimatedMarkerProps {
   location: Location;
   icon: L.Icon | L.DivIcon;
-  animationState?: 'new' | 'updated' | 'liked' | null;
+  animationState?: 'new' | 'updated' | 'liked' | 'expired' | 'deleted' | null;
   onContextMenu?: (e: React.MouseEvent, location: Location) => void;
   isAdmin?: boolean;
   onAddComment?: (message: MessagePostDTO) => Promise<void>;
   onAddResponse?: (message: ResponseMessagePostDTO) => Promise<void>;
   onLike?: (locationId: number) => void;
   onUnlike?: (locationId: number) => void;
+  onMarkerReady?: (locationId: number, marker: L.Marker | null) => void;
 }
 
-const AnimatedMarker = memo(({
-  location,
-  icon,
-  animationState,
-  onContextMenu,
-  isAdmin,
-  onAddComment,
-  onAddResponse,
-  onLike,
-  onUnlike,
-}: AnimatedMarkerProps) => {
-  const markerRef = useRef<L.Marker>(null);
+const AnimatedMarker = memo(
+  ({
+    location,
+    icon,
+    animationState,
+    onContextMenu,
+    isAdmin,
+    onAddComment,
+    onAddResponse,
+    onLike,
+    onUnlike,
+    onMarkerReady,
+  }: AnimatedMarkerProps) => {
+    const markerRef = useRef<L.Marker>(null);
 
-  useEffect(() => {
-    if (!markerRef.current) {
+    const animatePopupOpen = useCallback((marker: L.Marker | null) => {
+      if (!marker) {
+        return;
+      }
+
+      const popup = marker.getPopup();
+      const popupElement =
+        popup?.getElement() || ((popup as any)?._container as HTMLElement);
+      if (!popupElement) {
+        return;
+      }
+
+      popupElement.classList.remove('popup-open-animate');
+      void popupElement.offsetWidth;
+      popupElement.classList.add('popup-open-animate');
+
+      const contentWrapper = popupElement.querySelector(
+        '.leaflet-popup-content-wrapper'
+      ) as HTMLElement | null;
+
+      if (contentWrapper) {
+        contentWrapper.classList.remove('popup-open-animate-inner');
+        void contentWrapper.offsetWidth;
+        contentWrapper.classList.add('popup-open-animate-inner');
+      }
+
+      setTimeout(() => {
+        popupElement.classList.remove('popup-open-animate');
+        contentWrapper?.classList.remove('popup-open-animate-inner');
+      }, 420);
+    }, []);
+
+    useEffect(() => {
+      onMarkerReady?.(location.id, markerRef.current);
+
+      return () => {
+        onMarkerReady?.(location.id, null);
+      };
+    }, [location.id, onMarkerReady]);
+
+    useEffect(() => {
+      if (!markerRef.current) {
+        return;
+      }
+
+      if (animationState) {
+        // Apply animation immediately without delay
+        if (!markerRef.current) return;
+
+        const iconElement = markerRef.current.getElement();
+        if (iconElement) {
+          // Find the inner div (the actual teardrop shape) to animate
+          const innerDiv = iconElement.querySelector('div');
+
+          if (!innerDiv) {
+            return;
+          }
+
+          // Set transform origin
+          innerDiv.style.transformOrigin = 'center center';
+
+          // Ensure the base rotation is set (needed for the teardrop orientation)
+          // Then reset animation to allow retriggering
+          innerDiv.style.transform = 'rotate(-45deg)';
+          innerDiv.style.animation = 'none';
+          void innerDiv.offsetWidth; // Force reflow to restart animation
+
+          const animationName =
+            animationState === 'new'
+              ? 'marker-new 0.8s ease-out'
+              : animationState === 'updated'
+              ? 'marker-update 0.6s ease-in-out'
+              : animationState === 'liked'
+              ? 'marker-pulse 0.5s ease-in-out'
+              : animationState === 'expired'
+              ? 'marker-expire 0.7s ease-out'
+              : 'marker-delete 0.45s ease-in';
+
+          innerDiv.style.animation = animationName;
+
+          // Remove the animation after completion
+          const duration =
+            animationState === 'new'
+              ? 800
+              : animationState === 'updated'
+              ? 600
+              : animationState === 'liked'
+              ? 500
+              : animationState === 'expired'
+              ? 700
+              : 450;
+          const cleanupTimeout = setTimeout(() => {
+            innerDiv.style.animation = '';
+            innerDiv.style.transformOrigin = '';
+          }, duration);
+
+          return () => clearTimeout(cleanupTimeout);
+        }
+      }
+      return;
+    }, [animationState, location.id]);
+
+    return (
+      <Marker
+        ref={markerRef}
+        position={[location.latitude, location.longitude]}
+        icon={icon}
+        eventHandlers={{
+          popupopen: () => animatePopupOpen(markerRef.current),
+          ...(onContextMenu
+            ? {
+                contextmenu: (e: L.LeafletMouseEvent) => {
+                  const mouseEvent =
+                    e.originalEvent as unknown as React.MouseEvent;
+                  onContextMenu(mouseEvent, location);
+                },
+              }
+            : {}),
+        }}
+      >
+        {isAdmin ? (
+          <Popup>
+            <AdminLocationPopup location={location} />
+          </Popup>
+        ) : (
+          onAddComment &&
+          onAddResponse &&
+          onLike &&
+          onUnlike && (
+            <Popup key={`popup-${location.id}`}>
+              <LocationPopup
+                location={location}
+                onAddComment={onAddComment}
+                onAddResponse={onAddResponse}
+                onLike={onLike}
+                onUnlike={onUnlike}
+              />
+            </Popup>
+          )
+        )}
+      </Marker>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison to prevent re-render on like changes
+    // Only re-render if important properties change
+    const prevLoc = prevProps.location;
+    const nextLoc = nextProps.location;
+
+    return (
+      prevLoc.id === nextLoc.id &&
+      prevLoc.name === nextLoc.name &&
+      prevLoc.latitude === nextLoc.latitude &&
+      prevLoc.longitude === nextLoc.longitude &&
+      prevLoc.category === nextLoc.category &&
+      prevLoc.isExpired === nextLoc.isExpired &&
+      prevProps.animationState === nextProps.animationState &&
+      prevLoc.messages?.length === nextLoc.messages?.length
+      // Deliberately excluding likesCount and isLikedByCurrentUser for stability
+    );
+  }
+);
+
+AnimatedMarker.displayName = 'AnimatedMarker';
+
+const MapFocusHandler = ({
+  focusLocationId,
+  focusRequestKey,
+  locations,
+  getMarker,
+  getClusterGroup,
+}: {
+  focusLocationId?: number | null;
+  focusRequestKey?: number;
+  locations: Location[];
+  getMarker: (locationId: number) => L.Marker | undefined;
+  getClusterGroup: () => any;
+}) => {
+  const map = useMap();
+  const lastHandledFocusRequestRef = useRef<number>(-1);
+
+  const animateMarkerPulse = useCallback((marker: L.Marker) => {
+    const iconElement = marker.getElement();
+    if (!iconElement) {
       return;
     }
 
-    if (animationState) {
-      // Apply animation immediately without delay
-      if (!markerRef.current) return;
-
-      const iconElement = markerRef.current.getElement();
-      if (iconElement) {
-        // Find the inner div (the actual teardrop shape) to animate
-        const innerDiv = iconElement.querySelector('div');
-
-        if (!innerDiv) {
-          return;
-        }
-
-        // Set transform origin
-        innerDiv.style.transformOrigin = 'center center';
-
-        // Ensure the base rotation is set (needed for the teardrop orientation)
-        // Then reset animation to allow retriggering
-        innerDiv.style.transform = 'rotate(-45deg)';
-        innerDiv.style.animation = 'none';
-        void innerDiv.offsetWidth; // Force reflow to restart animation
-
-        const animationName =
-          animationState === 'new'
-            ? 'marker-new 0.8s ease-out'
-            : animationState === 'updated'
-            ? 'marker-update 0.6s ease-in-out'
-            : 'marker-pulse 0.5s ease-in-out';
-
-        innerDiv.style.animation = animationName;
-
-        // Remove the animation after completion
-        const duration =
-          animationState === 'new'
-            ? 800
-            : animationState === 'updated'
-            ? 600
-            : 500;
-        const cleanupTimeout = setTimeout(() => {
-          innerDiv.style.animation = '';
-          innerDiv.style.transformOrigin = '';
-        }, duration);
-
-        return () => clearTimeout(cleanupTimeout);
-      }
+    const innerDiv = iconElement.querySelector('div');
+    if (!innerDiv) {
+      return;
     }
-    return;
-  }, [animationState, location.id]);
 
-  return (
-    <Marker
-      ref={markerRef}
-      position={[location.latitude, location.longitude]}
-      icon={icon}
-      eventHandlers={
-        onContextMenu
-          ? {
-              contextmenu: (e) => {
-                const mouseEvent =
-                  e.originalEvent as unknown as React.MouseEvent;
-                onContextMenu(mouseEvent, location);
-              },
-            }
-          : undefined
+    innerDiv.style.transformOrigin = 'center center';
+    innerDiv.style.transform = 'rotate(-45deg)';
+    innerDiv.style.animation = 'none';
+    void innerDiv.offsetWidth;
+    innerDiv.style.animation = 'marker-pulse 0.6s ease-in-out';
+
+    setTimeout(() => {
+      innerDiv.style.animation = '';
+      innerDiv.style.transformOrigin = '';
+    }, 650);
+  }, []);
+
+  useEffect(() => {
+    if (!focusLocationId) return;
+
+    const requestKey = focusRequestKey ?? 0;
+    if (lastHandledFocusRequestRef.current === requestKey) {
+      return;
+    }
+
+    const target = locations.find(
+      (location) => location.id === focusLocationId
+    );
+    if (!target) {
+      return;
+    }
+
+    lastHandledFocusRequestRef.current = requestKey;
+
+    const targetZoom = Math.max(map.getZoom(), ZOOM_THRESHOLDS.NEIGHBORHOOD);
+    map.flyTo([target.latitude, target.longitude], targetZoom, {
+      duration: 0.6,
+    });
+
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const intervalId = setInterval(() => {
+      const marker = getMarker(focusLocationId);
+      if (!marker) {
+        attempts += 1;
+        if (attempts >= maxAttempts) {
+          clearInterval(intervalId);
+        }
+        return;
       }
-    >
-      {isAdmin ? (
-        <Popup>
-          <AdminLocationPopup location={location} />
-        </Popup>
-      ) : (
-        onAddComment &&
-        onAddResponse &&
-        onLike &&
-        onUnlike && (
-          <Popup key={`popup-${location.id}`}>
-            <LocationPopup
-              location={location}
-              onAddComment={onAddComment}
-              onAddResponse={onAddResponse}
-              onLike={onLike}
-              onUnlike={onUnlike}
-            />
-          </Popup>
-        )
-      )}
-    </Marker>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison to prevent re-render on like changes
-  // Only re-render if important properties change
-  const prevLoc = prevProps.location;
-  const nextLoc = nextProps.location;
-  
-  return (
-    prevLoc.id === nextLoc.id &&
-    prevLoc.name === nextLoc.name &&
-    prevLoc.latitude === nextLoc.latitude &&
-    prevLoc.longitude === nextLoc.longitude &&
-    prevLoc.category === nextLoc.category &&
-    prevLoc.isExpired === nextLoc.isExpired &&
-    prevProps.animationState === nextProps.animationState &&
-    prevLoc.messages?.length === nextLoc.messages?.length
-    // Deliberately excluding likesCount and isLikedByCurrentUser for stability
-  );
-});
 
-AnimatedMarker.displayName = 'AnimatedMarker';
+      const animate = () => {
+        animateMarkerPulse(marker);
+        clearInterval(intervalId);
+      };
+
+      const clusterGroup = getClusterGroup();
+      if (clusterGroup?.zoomToShowLayer) {
+        clusterGroup.zoomToShowLayer(marker, animate);
+      } else {
+        animate();
+      }
+
+      attempts += 1;
+      if (attempts >= maxAttempts) {
+        clearInterval(intervalId);
+      }
+    }, 120);
+
+    return () => clearInterval(intervalId);
+  }, [
+    focusLocationId,
+    focusRequestKey,
+    locations,
+    map,
+    getMarker,
+    getClusterGroup,
+    animateMarkerPulse,
+  ]);
+
+  return null;
+};
 
 const LeafletMap = ({
   locations,
@@ -461,7 +679,18 @@ const LeafletMap = ({
   onBoundsChange,
   currentZoom = 15,
   animationStates = {},
+  focusLocationId,
+  focusRequestKey,
 }: LeafletMapProps) => {
+  const markerRefs = useRef<Map<number, L.Marker>>(new Map());
+  const clusterGroupRef = useRef<any>(null);
+
+  const getMarkerById = useCallback(
+    (locationId: number) => markerRefs.current.get(locationId),
+    []
+  );
+  const getClusterGroup = useCallback(() => clusterGroupRef.current, []);
+
   const center: [number, number] =
     locations.length > 0
       ? [locations[0].latitude, locations[0].longitude]
@@ -507,6 +736,7 @@ const LeafletMap = ({
 
       {shouldShowMarkers && (
         <MarkerClusterGroup
+          ref={clusterGroupRef}
           chunkedLoading
           maxClusterRadius={50}
           spiderfyOnMaxZoom={true}
@@ -530,20 +760,29 @@ const LeafletMap = ({
               onAddResponse={onAddResponse}
               onLike={onLike}
               onUnlike={onUnlike}
+              onMarkerReady={(locationId, marker) => {
+                if (marker) {
+                  markerRefs.current.set(locationId, marker);
+                } else {
+                  markerRefs.current.delete(locationId);
+                }
+              }}
             />
           ))}
         </MarkerClusterGroup>
       )}
 
-      {shouldShowEvents && events.length > 0 && events.map((event) => (
-        <EventMarker
-          key={event.id}
-          event={event}
-          onClick={(evt) => {
-            console.log('Event clicked:', evt);
-          }}
-        />
-      ))}
+      {shouldShowEvents &&
+        events.length > 0 &&
+        events.map((event) => (
+          <EventMarker
+            key={event.id}
+            event={event}
+            onClick={(evt) => {
+              console.log('Event clicked:', evt);
+            }}
+          />
+        ))}
 
       {/* Footer showing location and event counts */}
       <div
@@ -583,8 +822,12 @@ const LeafletMap = ({
             >
               {events.length}
             </div>
-            <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}>
-              {shouldShowEvents ? 'events visible' : 'events in area (zoom in to 7+ to see)'}
+            <div
+              style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}
+            >
+              {shouldShowEvents
+                ? 'events visible'
+                : 'events in area (zoom in to 7+ to see)'}
             </div>
           </>
         )}
@@ -597,6 +840,13 @@ const LeafletMap = ({
 
       {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
       {onBoundsChange && <MapBoundsHandler onBoundsChange={onBoundsChange} />}
+      <MapFocusHandler
+        focusLocationId={focusLocationId}
+        focusRequestKey={focusRequestKey}
+        locations={locations}
+        getMarker={getMarkerById}
+        getClusterGroup={getClusterGroup}
+      />
     </MapContainer>
   );
 };

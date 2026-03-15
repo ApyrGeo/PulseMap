@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { LocationCategory, LocationPostDTO } from '../Interfaces';
+import { useEffect, useState } from 'react';
+import { CategoryDTO, LocationPostDTO } from '../Interfaces';
 import { classifyLocation } from '../services/LocationsApiService';
 import { useAuth } from '../../../auth/AuthProvider';
 import { uploadMultipleImagesToAzure } from '../../services/AzureBlobService';
+import { fetchCategories } from '../services/CategoriesApiService';
 import './LocationModal.css';
 
 interface AddLocationModalProps {
@@ -25,8 +26,9 @@ const AddLocationModal = ({
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<LocationCategory>(
-    LocationCategory.NotSet
+  const [category, setCategory] = useState<string>('');
+  const [availableCategories, setAvailableCategories] = useState<CategoryDTO[]>(
+    []
   );
   const [isClassifying, setIsClassifying] = useState(false);
   const [suggestedCategories, setSuggestedCategories] = useState<string[]>([]);
@@ -39,16 +41,24 @@ const AddLocationModal = ({
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
-  const categories = Object.keys(LocationCategory)
-    .filter(
-      (key) =>
-        LocationCategory[key as keyof typeof LocationCategory] !==
-        LocationCategory.NotSet
-    )
-    .map((key) => ({
-      value: LocationCategory[key as keyof typeof LocationCategory],
-      label: key,
-    }));
+  useEffect(() => {
+    if (!isOpen) return;
+
+    (async () => {
+      try {
+        const categories = await fetchCategories(true);
+        setAvailableCategories(categories);
+        setCategory((current) => current || categories[0]?.name || '');
+      } catch (err) {
+        console.error('Failed to load categories', err);
+      }
+    })();
+  }, [isOpen]);
+
+  const categories = availableCategories.map((cat) => ({
+    value: cat.name,
+    label: cat.name,
+  }));
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const dayOptions = Array.from({ length: 30 }, (_, i) => i);
@@ -229,7 +239,7 @@ const AddLocationModal = ({
                 setShowUncategorizedWarning(false);
                 setSuggestedCategories([]);
                 setShowManualSelect(false);
-                setCategory(LocationCategory.NotSet);
+                setCategory(availableCategories[0]?.name ?? '');
               }}
               onBlur={async () => {
                 // Only classify if there's some description text
@@ -239,14 +249,16 @@ const AddLocationModal = ({
                 setSuggestedCategories([]);
                 setShowManualSelect(false);
                 try {
-                  const categories = await classifyLocation(description);
+                  const aiCategories = await classifyLocation(description);
                   // Check if we got valid suggestions
-                  const validCategories = categories.filter(
+                  const validCategories = aiCategories.filter(
                     (cat) =>
                       cat &&
                       cat !== 'Uncategorized' &&
-                      cat !== LocationCategory.NotSet &&
-                      cat !== 'Not Set'
+                      availableCategories.some(
+                        (availableCat) =>
+                          availableCat.name.toLowerCase() === cat.toLowerCase()
+                      )
                   );
                   if (validCategories.length > 0) {
                     setSuggestedCategories(validCategories);
@@ -290,7 +302,7 @@ const AddLocationModal = ({
                         key={cat}
                         type="button"
                         onClick={() => {
-                          setCategory(cat as LocationCategory);
+                          setCategory(cat);
                           setShowUncategorizedWarning(false);
                         }}
                         className="form-input"
@@ -334,7 +346,7 @@ const AddLocationModal = ({
                   className="form-select"
                   value={category}
                   onChange={(e) => {
-                    setCategory(String(e.target.value) as LocationCategory);
+                    setCategory(String(e.target.value));
                     setShowUncategorizedWarning(false);
                   }}
                   required

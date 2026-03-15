@@ -1,5 +1,3 @@
-using PulseMap.Domain.Enums;
-
 namespace PulseMap.Domain.DTOs;
 
 public class LocationPutDTO

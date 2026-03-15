@@ -1,5 +1,6 @@
 import { BASE_API_URL } from '../../../core';
 import {
+  LocationRecommendationDTO,
   LocationLikesSummaryDTO,
   LocationPostDTO,
   LocationPutDTO,
@@ -61,6 +62,34 @@ export async function fetchLocationsByBounds(
   if (!response.ok) {
     throw new Error('Failed to fetch locations by bounds');
   }
+  return response.json();
+}
+
+export async function fetchRecommendedLocationsByBounds(
+  bounds: MapBounds,
+  userId: number,
+  count = 8
+): Promise<LocationRecommendationDTO[]> {
+  const params = new URLSearchParams({
+    minLat: bounds.minLat.toString(),
+    maxLat: bounds.maxLat.toString(),
+    minLng: bounds.minLng.toString(),
+    maxLng: bounds.maxLng.toString(),
+    userId: userId.toString(),
+    count: count.toString(),
+  });
+
+  const response = await fetch(
+    `${LOCATIONS_URL}/recommendations/bounds?${params}`,
+    {
+      headers: { ...TokenService.getAuthHeader() },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch recommended locations by bounds');
+  }
+
   return response.json();
 }
 

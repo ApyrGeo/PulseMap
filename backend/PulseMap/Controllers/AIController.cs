@@ -16,7 +16,7 @@ namespace PulseMap.Controllers
         private readonly IAIStatisticsService _statisticsService;
 
         public AIController(
-            ILocationClassifier locationClassifier, 
+            ILocationClassifier locationClassifier,
             ILocationMatcher locationMatcher,
             ILocationService locationService,
             IAIStatisticsService statisticsService)
@@ -32,7 +32,7 @@ namespace PulseMap.Controllers
         public async Task<IActionResult> GetStatistics()
         {
             var stats = await _statisticsService.GetStatisticsAsync();
-            
+
             var response = new AIStatisticsResponseDTO
             {
                 Classification = new AIStatisticsResponseDTO.ClassificationStats
@@ -65,7 +65,7 @@ namespace PulseMap.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("classify-location")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -97,8 +97,8 @@ namespace PulseMap.Controllers
 
             var result = await _locationMatcher.MatchLocationsAsync(request.Description1, request.Description2, ct);
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 result = result.ToString(),
                 shouldMerge = result == LocationMatchResult.SameLocation
             });
@@ -129,8 +129,8 @@ namespace PulseMap.Controllers
                     continue;
 
                 var matchResult = await _locationMatcher.MatchLocationsAsync(
-                    location1.Description, 
-                    location2.Description, 
+                    location1.Description,
+                    location2.Description,
                     ct);
 
                 if (matchResult == LocationMatchResult.SameLocation)
@@ -160,8 +160,8 @@ namespace PulseMap.Controllers
                 }
             }
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 message = $"Checked {pairs.Count} pairs, merged {mergedCount} duplicates",
                 mergedCount,
                 results
@@ -189,7 +189,7 @@ namespace PulseMap.Controllers
                 return BadRequest(new { error = "Cannot merge a location with itself" });
 
             var result = await _locationService.MergeLocationsAsync(
-                request.KeepLocationId, 
+                request.KeepLocationId,
                 request.RemoveLocationId);
 
             if (result)

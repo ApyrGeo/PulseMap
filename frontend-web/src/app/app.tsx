@@ -13,6 +13,7 @@ import { UserRoutes } from '../auth/routes/UserRoutes';
 import NavigationBar from '../shared/navigation/NavigationBar';
 import AdminEventsPage from '../admin/events/AdminEventsPage';
 import StatisticsPage from '../admin/statistics/StatisticsPage';
+import AdminSettingsPage from '../admin/settings/AdminSettingsPage';
 
 export function App() {
   return (
@@ -52,6 +53,7 @@ function AppRoutes() {
         <Route path="/admin/map" element={<AdminMapPage />} />
         <Route path="/admin/statistics" element={<StatisticsPage />} />
         <Route path="/admin/events" element={<AdminEventsPage />} />
+        <Route path="/admin/settings" element={<AdminSettingsPage />} />
       </Route>
 
       <Route element={<UserRoutes />}>

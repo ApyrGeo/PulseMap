@@ -44,6 +44,22 @@ public class LocationController(ILocationService locationService, IAuthorization
         return Ok(locations);
     }
 
+    [HttpGet("recommendations/bounds")]
+    [Authorize(Roles = "User,Admin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<List<LocationRecommendationResponseDTO>>> GetRecommendedLocationsInBounds(
+        [FromQuery] double minLat,
+        [FromQuery] double maxLat,
+        [FromQuery] double minLng,
+        [FromQuery] double maxLng,
+        [FromQuery] int userId,
+        [FromQuery] int count = 10)
+    {
+        var recommendations = await _locationService.GetRecommendedLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng, userId, count);
+        return Ok(recommendations);
+    }
+
     [HttpPost]
     [Authorize(Roles = "User,Admin")]
     [ProducesResponseType(201)]

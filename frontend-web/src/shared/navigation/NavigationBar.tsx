@@ -38,6 +38,9 @@ const UserNavigationBar = () => {
               <Link to="/admin/events" className="navigation-link">
                 Events
               </Link>
+              <Link to="/admin/settings" className="navigation-link">
+                Settings
+              </Link>
             </>
           )}
 

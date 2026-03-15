@@ -18,6 +18,7 @@ using PulseMap.Service.AI;
 using PulseMap.Service.AI.Description;
 using PulseMap.Service.AI.LocationMatch;
 using PulseMap.Service.AI.EventClustering;
+using PulseMap.Service.AI.Recommendation;
 using PulseMap.Service.BackgroundServices;
 using PulseMap.Service.Validators;
 using PulseMap.Service.WS;
@@ -148,7 +149,7 @@ builder.Services.AddAutoMapper(cfg => {
     // Location
     cfg.CreateMap<Location, LocationResponseDTO>()
         .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.Comments))
-        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
+        .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Not Set"))
         .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => src.Likes.Count))
         .ForMember(dest => dest.IsLikedByCurrentUser, opt => opt.Ignore())
         .ForMember(dest => dest.Event, opt => opt.MapFrom(src => src.Event))
@@ -156,6 +157,7 @@ builder.Services.AddAutoMapper(cfg => {
         .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.OrderBy(i => i.Order).Select(i => i.Url).ToList()));
 
     cfg.CreateMap<LocationPostDTO, Location>()
+        .ForMember(dest => dest.Category, opt => opt.Ignore())
         .ForMember(dest => dest.Images, opt => opt.Ignore()); // Handled manually in LocationService
 
     // Event
@@ -176,6 +178,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<LocationPostDTOValidator>()
 
 //repositories
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
@@ -183,6 +186,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 //services
 builder.Services.AddSingleton<IWebSocketNotificationService, WebSocketNotificationService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEventService, EventService>();
@@ -196,6 +200,7 @@ builder.Services.AddScoped<IImageService, ImageService>();
 // AI Services
 builder.Services.AddScoped<IAIStatisticsService, AIStatisticsService>();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
+builder.Services.AddScoped<IRecommendationAiScorer, RecommendationEmbeddingScorer>();
 
 // HttpClient for Hugging Face
 builder.Services.AddHttpClient("HuggingFace", client =>
@@ -225,6 +230,7 @@ builder.Services.AddScoped<ILocationClassifier>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<CompositeLocationClassifier>>();
     var statsService = sp.GetRequiredService<IAIStatisticsService>();
+    var categoryRepository = sp.GetRequiredService<ICategoryRepository>();
 
     var classifiers = new List<ILocationClassifier>();
 
@@ -259,7 +265,7 @@ builder.Services.AddScoped<ILocationClassifier>(sp =>
         logger.LogWarning("No AI classifiers available - using keyword fallback only");
     }
 
-    return new CompositeLocationClassifier(classifiers, logger, statsService);
+    return new CompositeLocationClassifier(classifiers, logger, statsService, categoryRepository);
 });
 
 //AI Location Matchers - Register all implementations
@@ -407,12 +413,18 @@ using (var scope = app.Services.CreateScope())
 
     // Run when app starts
     backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
+    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredEvents());
     backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
 
     // Run every minute
     recurringJobManager.AddOrUpdate<LocationBackGroundService>(
         "check-expired-locations",
         x => x.CheckExpiredLocations(),
+        Cron.Minutely
+    );
+    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+        "check-expired-events",
+        x => x.CheckExpiredEvents(),
         Cron.Minutely
     );
     recurringJobManager.AddOrUpdate<LocationBackGroundService>(

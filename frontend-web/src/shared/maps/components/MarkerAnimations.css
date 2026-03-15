@@ -99,6 +99,32 @@
   animation: marker-pulse 0.5s ease-in-out;
 }
 
+@keyframes marker-expire {
+  0% {
+    transform: scale(1) rotate(-45deg);
+    filter: saturate(1);
+  }
+  50% {
+    transform: scale(1.2) rotate(-45deg);
+    filter: saturate(0.15) brightness(1.1);
+  }
+  100% {
+    transform: scale(1) rotate(-45deg);
+    filter: saturate(0.1);
+  }
+}
+
+@keyframes marker-delete {
+  0% {
+    transform: scale(1) rotate(-45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.2) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
 /* Combined animation wrapper for leaflet markers */
 .custom-marker-icon.animate-new,
 .custom-marker-icon.animate-new > div {
@@ -113,6 +139,16 @@
 .custom-marker-icon.animate-liked,
 .custom-marker-icon.animate-liked > div {
   animation: marker-pulse 0.5s ease-in-out !important;
+}
+
+.custom-marker-icon.animate-expired,
+.custom-marker-icon.animate-expired > div {
+  animation: marker-expire 0.7s ease-out !important;
+}
+
+.custom-marker-icon.animate-deleted,
+.custom-marker-icon.animate-deleted > div {
+  animation: marker-delete 0.45s ease-in !important;
 }
 
 /* Event marker styling */

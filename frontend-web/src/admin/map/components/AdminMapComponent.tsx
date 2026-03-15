@@ -154,7 +154,17 @@ const AdminMapComponent = () => {
         )
       ) {
         try {
+          const locationId = contextMenu.location.id;
+          setAnimationStates((states) => ({
+            ...states,
+            [locationId]: 'expired',
+          }));
+          await new Promise((resolve) => setTimeout(resolve, 700));
           await expireLocationById(contextMenu.location.id);
+          setTimeout(() => {
+            setAnimationStates((states) => ({ ...states, [locationId]: null }));
+          }, 250);
+          setContextMenu(null);
         } catch {
           alert('Failed to expire location');
         }
@@ -166,7 +176,14 @@ const AdminMapComponent = () => {
     if (contextMenu) {
       if (window.confirm('Are you sure you want to delete this location?')) {
         try {
+          const locationId = contextMenu.location.id;
+          setAnimationStates((states) => ({
+            ...states,
+            [locationId]: 'deleted',
+          }));
+          await new Promise((resolve) => setTimeout(resolve, 450));
           await deleteLocationById(contextMenu.location.id);
+          setContextMenu(null);
         } catch {
           alert('Failed to delete location');
         }

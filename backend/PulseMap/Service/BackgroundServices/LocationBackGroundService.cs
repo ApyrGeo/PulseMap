@@ -30,6 +30,32 @@ public class LocationBackGroundService(
         await _context.SaveChangesAsync();
     }
 
+    public async Task CheckExpiredEvents()
+    {
+        var now = DateTime.UtcNow;
+
+        var eventsToExpire = await _context.Events
+            .Where(e => !e.IsExpired)
+            .Include(e => e.Locations)
+            .Where(e => e.ExpiresAt <= now || !e.Locations.Any(l => !l.IsExpired))
+            .ToListAsync();
+
+        foreach (var eventEntity in eventsToExpire)
+        {
+            eventEntity.IsExpired = true;
+            if (eventEntity.ExpiresAt > now)
+            {
+                eventEntity.ExpiresAt = now;
+            }
+        }
+
+        if (eventsToExpire.Count > 0)
+        {
+            _logger.LogInformation("Expired {Count} events with no active locations or passed expiry", eventsToExpire.Count);
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task ExtendLocationDurationByLikeCounts()
     {
         const double L = 0.01;

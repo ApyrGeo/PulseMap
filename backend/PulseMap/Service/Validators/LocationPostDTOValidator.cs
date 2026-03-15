@@ -1,6 +1,5 @@
 using FluentValidation;
 using PulseMap.Domain.DTOs;
-using PulseMap.Domain.Enums;
 using PulseMap.Interfaces;
 
 namespace PulseMap.Service.Validators;
@@ -9,10 +8,12 @@ public class LocationPostDTOValidator : AbstractValidator<LocationPostDTO>
 {
     private readonly ILocationRepository _locationRepository;
     private readonly IUserRepository _userRepository;
-    public LocationPostDTOValidator(ILocationRepository locationRepository, IUserRepository userRepository)
+    private readonly ICategoryRepository _categoryRepository;
+    public LocationPostDTOValidator(ILocationRepository locationRepository, IUserRepository userRepository, ICategoryRepository categoryRepository)
     {
         _locationRepository = locationRepository;
         _userRepository = userRepository;
+        _categoryRepository = categoryRepository;
 
         RuleFor(location => location.Latitude)
             .InclusiveBetween(-90, 90)
@@ -43,8 +44,12 @@ public class LocationPostDTOValidator : AbstractValidator<LocationPostDTO>
         RuleFor(location => location.Category)
             .NotEmpty()
             .WithMessage("Category is required.")
-            .Must(category => Enum.TryParse<Category>(category, true, out _))
-            .WithMessage($"Category must be one of: {string.Join(", ", Enum.GetNames<Category>())}");
+            .MustAsync(async (category, cancellation) =>
+            {
+                var existingCategory = await _categoryRepository.GetByNameAsync(category);
+                return existingCategory != null && existingCategory.IsActive;
+            })
+            .WithMessage("Category must be an existing active category.");
 
         RuleFor(location => location.Duration)
             .NotEmpty()

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Location, LocationCategory, LocationPutDTO } from '../Interfaces';
+import { CategoryDTO, Location, LocationPutDTO } from '../Interfaces';
+import { fetchCategories } from '../services/CategoriesApiService';
 import './LocationModal.css';
 
 interface EditLocationModalProps {
@@ -18,6 +19,7 @@ const EditLocationModal = ({
   const [name, setName] = useState(location.name);
   const [description, setDescription] = useState(location.description || '');
   const [category, setCategory] = useState(location.category);
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
 
   useEffect(() => {
     setName(location.name);
@@ -25,10 +27,20 @@ const EditLocationModal = ({
     setCategory(location.category);
   }, [location]);
 
-  const categories = Object.keys(LocationCategory).map((key) => ({
-    value: LocationCategory[key as keyof typeof LocationCategory],
-    label: key,
-  }));
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    (async () => {
+      try {
+        const data = await fetchCategories(true);
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to load categories', error);
+      }
+    })();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -64,14 +76,12 @@ const EditLocationModal = ({
             <select
               className="form-select"
               value={category}
-              onChange={(e) =>
-                setCategory(String(e.target.value) as LocationCategory)
-              }
+              onChange={(e) => setCategory(String(e.target.value))}
               required
             >
               {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
                 </option>
               ))}
             </select>

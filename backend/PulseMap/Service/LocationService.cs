@@ -3,7 +3,6 @@ using Backend.Exceptions.Custom;
 using log4net;
 using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
-using PulseMap.Domain.Enums;
 using PulseMap.Interfaces;
 using PulseMap.Service.WS;
 using System.Text.Json;
@@ -12,6 +11,8 @@ namespace PulseMap.Service;
 
 public class LocationService(
     ILocationRepository locationRepository,
+    ICategoryRepository categoryRepository,
+    IRecommendationAiScorer recommendationAiScorer,
     IUserRepository userRepository,
     IMessageRepository messageRepository,
     IMapper mapper,
@@ -19,6 +20,8 @@ public class LocationService(
     IWebSocketNotificationService webSocketNotificationService) : ILocationService
 {
     private readonly ILocationRepository _locationRepository = locationRepository;
+    private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly IRecommendationAiScorer _recommendationAiScorer = recommendationAiScorer;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IMessageRepository _messageRepository = messageRepository;
     private readonly IMapper _mapper = mapper;
@@ -63,6 +66,11 @@ public class LocationService(
 
         _logger.InfoFormat("Adding new location: {0}", JsonSerializer.Serialize(locationPostDTO));
         var location = _mapper.Map<Location>(locationPostDTO);
+        var category = await _categoryRepository.GetByNameAsync(locationPostDTO.Category)
+            ?? throw new EntityValidationException($"Invalid category value: {locationPostDTO.Category}");
+
+        location.CategoryId = category.Id;
+        location.Category = category;
         location.ExpiresAt = DateTime.UtcNow.Add(locationPostDTO.Duration);
         location.IsExpired = false;
 
@@ -140,10 +148,10 @@ public class LocationService(
         }
 
         _logger.InfoFormat("Updating data for location with ID: {0}", id);
-        if (!Enum.TryParse<Category>(locationPutDto.Category, out var category))
-        {
-            throw new EntityValidationException($"Invalid category value: {locationPutDto.Category}");
-        }
+        var category = await _categoryRepository.GetByNameAsync(locationPutDto.Category)
+            ?? throw new EntityValidationException($"Invalid category value: {locationPutDto.Category}");
+
+        existingLocation.CategoryId = category.Id;
         existingLocation.Category = category;
         existingLocation.Name = locationPutDto.Name;
         existingLocation.Description = locationPutDto.Description;
@@ -305,7 +313,7 @@ public class LocationService(
         if (type != null)
         {
             _logger.InfoFormat("Filtering locations by type: {0}", type);
-            locations = [.. locations.Where(loc => loc.Category.ToString().Equals(type, StringComparison.OrdinalIgnoreCase))];
+            locations = [.. locations.Where(loc => string.Equals(loc.Category?.Name, type, StringComparison.OrdinalIgnoreCase))];
         }
 
         foreach (var loc in locations)
@@ -321,6 +329,113 @@ public class LocationService(
                 IsLikedByCurrentUser = loc.Likes.Any(u => u.Id == userId),
             }
         )];
+    }
+
+    public async Task<List<LocationRecommendationResponseDTO>> GetRecommendedLocationsInBoundsAsync(
+        double minLat,
+        double maxLat,
+        double minLng,
+        double maxLng,
+        int userId,
+        int count = 10)
+    {
+        if (minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180 || minLat > maxLat || minLng > maxLng)
+        {
+            throw new EntityValidationException("Invalid geographical bounds provided.");
+        }
+
+        if (count < 1)
+        {
+            count = 1;
+        }
+
+        if (count > 50)
+        {
+            count = 50;
+        }
+
+        var inBoundsLocations = await _locationRepository.GetActiveLocationsInBoundsAsync(minLat, maxLat, minLng, maxLng);
+        var likedLocations = await _locationRepository.GetLikedLocationsByUserIdAsync(userId);
+        var likedLocationIds = likedLocations.Select(l => l.Id).ToHashSet();
+
+        var preferenceScores = new Dictionary<int, double>();
+
+        foreach (var liked in likedLocations.Where(l => l.CategoryId > 0))
+        {
+            if (!preferenceScores.ContainsKey(liked.CategoryId))
+            {
+                preferenceScores[liked.CategoryId] = 0;
+            }
+
+            preferenceScores[liked.CategoryId] += 1.0;
+        }
+
+        var centerLat = (minLat + maxLat) / 2;
+        var centerLng = (minLng + maxLng) / 2;
+        var now = DateTime.UtcNow;
+
+        var recommendationCandidates = inBoundsLocations
+            .Where(l => !likedLocationIds.Contains(l.Id) && l.CreatorId != userId)
+            .ToList();
+
+        var likedDescriptions = likedLocations
+            .Where(l => !string.IsNullOrWhiteSpace(l.Description))
+            .Select(l => l.Description!)
+            .ToList();
+
+        var aiSimilarityScores = await _recommendationAiScorer.ScoreCandidatesByProfileAsync(
+            likedDescriptions,
+            recommendationCandidates.Select(c => (c.Id, c.Description ?? string.Empty)).ToList());
+
+        var recommendations = recommendationCandidates
+            .Select(location =>
+            {
+                var affinity = preferenceScores.TryGetValue(location.CategoryId, out var affinityScore)
+                    ? affinityScore
+                    : 0;
+
+                var aiSimilarity = aiSimilarityScores.TryGetValue(location.Id, out var semanticScore)
+                    ? semanticScore
+                    : 0;
+
+                var popularity = Math.Log(1 + location.Likes.Count);
+                var distanceMeters = CalculateDistance(centerLat, centerLng, location.Latitude, location.Longitude);
+                var distanceScore = 1.0 / (1.0 + (distanceMeters / 1000.0));
+                var freshnessHours = Math.Max((location.ExpiresAt - now).TotalHours, 0);
+                var freshnessScore = Math.Min(freshnessHours / 72.0, 1.0);
+
+                var totalScore =
+                    (2.4 * affinity) +
+                    (2.0 * aiSimilarity) +
+                    popularity +
+                    (1.2 * distanceScore) +
+                    (0.5 * freshnessScore);
+
+                var reason = aiSimilarity >= 0.65
+                    ? "AI matched this location to your liked-location profile"
+                    : affinity > 0
+                        ? $"Matches your interest in {location.Category?.Name ?? "this category"}"
+                        : "Popular and nearby in your current map area";
+
+                return new LocationRecommendationResponseDTO
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    Description = location.Description,
+                    Category = location.Category?.Name ?? "Not Set",
+                    Latitude = location.Latitude,
+                    Longitude = location.Longitude,
+                    LikesCount = location.Likes.Count,
+                    Score = Math.Round(totalScore, 4),
+                    Reason = reason
+                };
+            })
+            .OrderByDescending(r => r.Score)
+            .ThenByDescending(r => r.LikesCount)
+            .Take(count)
+            .ToList();
+
+        return recommendations;
     }
 
     public async Task<List<(int Location1Id, int Location2Id, double Distance)>> GetNearbyLocationPairsAsync(double maxDistanceMeters = 20)
