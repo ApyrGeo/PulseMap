@@ -1,5 +1,5 @@
 // Environment configuration
-const isDevelopment = import.meta.env.DEV;
+//const isDevelopment = import.meta.env.DEV;
 const isProduction = import.meta.env.PROD;
 
 // API URLs configuration

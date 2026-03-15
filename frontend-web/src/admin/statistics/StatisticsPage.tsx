@@ -111,15 +111,6 @@ const StatisticsPage = () => {
     },
   ];
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   return (
     <div className="statistics-page">
       <div className="statistics-grid">
