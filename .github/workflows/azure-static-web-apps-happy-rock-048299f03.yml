@@ -58,3 +58,6 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: 'close'
+
+env:
+  VITE_API_URL: https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api

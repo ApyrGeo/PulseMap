@@ -1,17 +1,10 @@
 // Environment configuration
-//const isDevelopment = import.meta.env.DEV;
-const isProduction = import.meta.env.PROD;
-
-// API URLs configuration
-const API_URLS = {
-  development: 'https://localhost:7215/api',
-  production:
-    'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api',
-};
-
-export const BASE_API_URL = isProduction
-  ? API_URLS.production
-  : API_URLS.development;
+// Get API URL from environment variable or fall back to hardcoded values
+export const BASE_API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api'
+    : 'https://localhost:7215/api');
 
 // Generate WebSocket URL from API URL
 // https://localhost:7215/api -> wss://localhost:7215/ws
