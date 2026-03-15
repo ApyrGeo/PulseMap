@@ -18,4 +18,5 @@ public class User
     public List<Location> OwnedLocations { get; set; } = [];
 
     public required UserRole Role { get; set; }
+
 }
