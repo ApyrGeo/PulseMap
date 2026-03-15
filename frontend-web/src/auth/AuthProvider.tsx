@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const registerUser = async (registerRequest: RegisterRequest) => {
-    const newUser = await registerUserAPI(registerRequest);
+    await registerUserAPI(registerRequest);
     // After registration, user needs to login
     // We don't automatically log them in
     return;
