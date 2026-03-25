@@ -221,11 +221,11 @@ var hasOpenAiKey = !string.IsNullOrEmpty(openAiKey);
 if (hasOpenAiKey)
 {
     builder.Services.AddScoped<OpenAiLocationClassifier>();
-    Console.WriteLine("✅ OpenAI classifier registered");
+    Console.WriteLine("OpenAI classifier registered");
 }
 else
 {
-    Console.WriteLine("⚠️ OpenAI API key not configured - classification will not work");
+    Console.WriteLine("OpenAI API key not configured - classification will not work");
 }
 
 // Composite Classifier - Try embedding-based first (cheap), then GPT (expensive)
@@ -278,11 +278,11 @@ if (hasOpenAiKey)
 {
     builder.Services.AddScoped<EmbeddingLocationMatcher>();
     builder.Services.AddScoped<GptLocationMatcher>();
-    Console.WriteLine("✅ OpenAI matchers registered (GPT + Embeddings available)");
+    Console.WriteLine("OpenAI matchers registered (GPT + Embeddings available)");
 }
 else
 {
-    Console.WriteLine("⚠️ OpenAI matchers not configured - using keyword matching only (free)");
+    Console.WriteLine("OpenAI matchers not configured - using keyword matching only (free)");
 }
 
 // Composite Location Matcher - Uses available matchers with keyword fallback
@@ -320,7 +320,7 @@ if (hasOpenAiKey)
 {
     builder.Services.AddScoped<GptEventExtractor>();
     builder.Services.AddScoped<EmbeddingEventExtractor>();
-    Console.WriteLine("✅ Event extractors registered (GPT + Embeddings)");
+    Console.WriteLine("Event extractors registered (GPT + Embeddings)");
 }
 
 builder.Services.AddScoped<IEventExtractorService>(sp =>
@@ -408,38 +408,42 @@ app.Map("/ws", async context =>
 // Hangfire Dashboard
 app.MapHangfireDashboard();
 
-// Jobs
-using (var scope = app.Services.CreateScope())
+if (builder.Configuration["HangFire:Running"] == "True")
 {
-    var backgroundJobClient = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
-    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    // Jobs
+    Console.WriteLine("AAAAA");
+    using (var scope = app.Services.CreateScope())
+    {
+        var backgroundJobClient = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
+        var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
-    // Run when app starts
-    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
-    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredEvents());
-    backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
+        // Run when app starts
+        backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
+        backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredEvents());
+        backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
 
-    // Run every minute
-    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
-        "check-expired-locations",
-        x => x.CheckExpiredLocations(),
-        Cron.Minutely
-    );
-    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
-        "check-expired-events",
-        x => x.CheckExpiredEvents(),
-        Cron.Minutely
-    );
-    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
-        "extend-duration-by-likes",
-        x => x.ExtendLocationDurationByLikeCounts(),
-        Cron.Daily);
+        // Run every minute
+        recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+            "check-expired-locations",
+            x => x.CheckExpiredLocations(),
+            Cron.Minutely
+        );
+        recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+            "check-expired-events",
+            x => x.CheckExpiredEvents(),
+            Cron.Minutely
+        );
+        recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+            "extend-duration-by-likes",
+            x => x.ExtendLocationDurationByLikeCounts(),
+            Cron.Daily);
 
-    // Check and merge duplicate locations every 24 hours
-    recurringJobManager.AddOrUpdate<LocationBackGroundService>(
-        "check-merge-duplicate-locations",
-        x => x.CheckAndMergeDuplicateLocations(),
-        Cron.Daily);
+        // Check and merge duplicate locations every 24 hours
+        recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+            "check-merge-duplicate-locations",
+            x => x.CheckAndMergeDuplicateLocations(),
+            Cron.Daily);
+    }
 }
 
 app.Run();

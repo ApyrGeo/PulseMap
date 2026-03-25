@@ -119,8 +119,9 @@ yarn-error.log
 #VS
 .vs/
 
-# Environment files
+# Environment files - ignore all .env files
 .env
+.env.*
 
 # Build outputs
 bin/
@@ -139,6 +140,5 @@ appsettings.Development.json
 *.tmp
 *.cache
 *.nupkg
-*.env.*
 
 /backend/PulseMap/Logs/*

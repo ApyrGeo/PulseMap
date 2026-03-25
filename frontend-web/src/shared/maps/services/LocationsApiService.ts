@@ -7,6 +7,7 @@ import {
 } from '../Interfaces';
 import { Location } from '../Interfaces';
 import { TokenService } from '../../../auth/TokenService';
+import { normalizeLocationsImageUrls, normalizeLocationImageUrls } from '../utils/normalizeImageUrls';
 
 const LOCATIONS_URL = BASE_API_URL + '/Location';
 
@@ -31,7 +32,8 @@ export async function fetchLocations(
   if (!response.ok) {
     throw new Error('Failed to fetch locations');
   }
-  return response.json();
+  const locations = await response.json();
+  return normalizeLocationsImageUrls(locations);
 }
 
 export async function fetchLocationsByBounds(
@@ -62,7 +64,8 @@ export async function fetchLocationsByBounds(
   if (!response.ok) {
     throw new Error('Failed to fetch locations by bounds');
   }
-  return response.json();
+  const locations = await response.json();
+  return normalizeLocationsImageUrls(locations);
 }
 
 export async function fetchRecommendedLocationsByBounds(
@@ -110,7 +113,7 @@ export async function createLocation(dto: LocationPostDTO): Promise<Location> {
   }
 
   const newLocation = await response.json();
-  return newLocation;
+  return normalizeLocationImageUrls(newLocation);
 }
 
 export async function updateLocation(
@@ -132,7 +135,8 @@ export async function updateLocation(
     throw new Error('Failed to update location');
   }
 
-  return response.json();
+  const updatedLocation = await response.json();
+  return normalizeLocationImageUrls(updatedLocation);
 }
 
 export async function deleteLocation(id: number): Promise<void> {
@@ -163,7 +167,8 @@ export async function expireLocation(id: number): Promise<Location> {
     throw new Error('Failed to expire location');
   }
 
-  return response.json();
+  const expiredLocation = await response.json();
+  return normalizeLocationImageUrls(expiredLocation);
 }
 
 export async function extendLocation(id: number): Promise<Location> {
@@ -181,7 +186,8 @@ export async function extendLocation(id: number): Promise<Location> {
     throw new Error('Failed to extend location');
   }
 
-  return response.json();
+  const extendedLocation = await response.json();
+  return normalizeLocationImageUrls(extendedLocation);
 }
 
 export async function likeLocationAPI(
@@ -283,7 +289,8 @@ export async function confirmLocationEvent(
     throw new Error('Failed to confirm location event');
   }
 
-  return response.json();
+  const confirmedLocation = await response.json();
+  return normalizeLocationImageUrls(confirmedLocation);
 }
 
 export async function rejectLocationEvent(
@@ -303,5 +310,6 @@ export async function rejectLocationEvent(
     throw new Error('Failed to reject location event');
   }
 
-  return response.json();
+  const rejectedLocation = await response.json();
+  return normalizeLocationImageUrls(rejectedLocation);
 }

@@ -33,6 +33,10 @@ import { addComment, addResponse } from '../services/MessagesApiService';
 import { LocationWsService, PayloadEntityType } from '../services/WsService';
 import { useAuth } from '../../../auth/AuthProvider';
 import { WS_URL } from '../../../core';
+import {
+  normalizeLocationImageUrls,
+  normalizeLocationsImageUrls,
+} from '../utils/normalizeImageUrls';
 
 interface LocationsContextType {
   locations: Location[];
@@ -64,43 +68,45 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const [wsService] = useState(() => new LocationWsService(WS_URL));
 
   const handleLocationCreated = useCallback((location: Location) => {
+    const normalizedLocation = normalizeLocationImageUrls(location);
     setLocations((prev) => {
-      if (prev.find((loc) => loc.id === location.id)) {
+      if (prev.find((loc) => loc.id === normalizedLocation.id)) {
         return prev;
       }
-      return [...prev, location];
+      return [...prev, normalizedLocation];
     });
   }, []);
 
   const handleLocationUpdated = useCallback((updated: Location) => {
+    const normalizedUpdated = normalizeLocationImageUrls(updated);
     setLocations((prev) => {
-      const exists = prev.some((loc) => loc.id === updated.id);
+      const exists = prev.some((loc) => loc.id === normalizedUpdated.id);
 
       const mergeFromExisting = (loc: Location): Location => {
         return {
           ...loc,
-          ...updated,
-          messages: updated.messages ?? loc.messages ?? [],
+          ...normalizedUpdated,
+          messages: normalizedUpdated.messages ?? loc.messages ?? [],
           likesCount:
-            updated.likesCount !== undefined
-              ? updated.likesCount
+            normalizedUpdated.likesCount !== undefined
+              ? normalizedUpdated.likesCount
               : (loc as any).likeCount ?? (loc as any).likesCount ?? 0,
         };
       };
 
       if (exists) {
         return prev.map((loc) =>
-          loc.id === updated.id ? mergeFromExisting(loc) : loc
+          loc.id === normalizedUpdated.id ? mergeFromExisting(loc) : loc
         );
       }
 
-      if (updated.isExpired) return prev;
+      if (normalizedUpdated.isExpired) return prev;
 
       const newLoc: Location = {
-        ...(updated as Partial<Location>),
-        messages: updated.messages ?? [],
-        likesCount: updated.likesCount ?? (updated as any).likesCount ?? 0,
-        isLikedByCurrentUser: updated.isLikedByCurrentUser ?? false,
+        ...(normalizedUpdated as Partial<Location>),
+        messages: normalizedUpdated.messages ?? [],
+        likesCount: normalizedUpdated.likesCount ?? (normalizedUpdated as any).likesCount ?? 0,
+        isLikedByCurrentUser: normalizedUpdated.isLikedByCurrentUser ?? false,
       } as Location;
 
       return [...prev, newLoc];
@@ -200,7 +206,8 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       try {
         const data = await fetchLocations(activeOnly, user?.id);
-        setLocations(data);
+        const normalizedData = normalizeLocationsImageUrls(data);
+        setLocations(normalizedData);
       } catch (error) {
         console.error('Failed to fetch locations:', error);
       } finally {
