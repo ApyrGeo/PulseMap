@@ -13,6 +13,7 @@ using PulseMap.Domain.DTOs;
 using PulseMap.Interfaces;
 using PulseMap.Middlewares;
 using PulseMap.Repository;
+using PulseMap.Domain;
 using PulseMap.Service;
 using PulseMap.Service.AI;
 using PulseMap.Service.AI.Description;
@@ -182,10 +183,12 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IInteractionRepository, InteractionRepository>();
 
 //services
 builder.Services.AddSingleton<IWebSocketNotificationService, WebSocketNotificationService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IInteractionService, InteractionService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();

@@ -1,0 +1,30 @@
+{
+  "name": "frontend-mobile",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "frontend-mobile/src",
+  "projectType": "application",
+  "targets": {
+    "start": {
+      "executor": "@nx/react-native:start",
+      "options": {
+        "port": 8081
+      }
+    },
+    "run-android": {
+      "executor": "@nx/react-native:run-android",
+      "options": {}
+    },
+    "run-ios": {
+      "executor": "@nx/react-native:run-ios",
+      "options": {}
+    },
+    "bundle-android": {
+      "executor": "@nx/react-native:bundle",
+      "options": {
+        "entryFile": "src/main.tsx",
+        "platform": "android",
+        "bundleOutput": "dist/frontend-mobile/android/main.jsbundle"
+      }
+    }
+  }
+}

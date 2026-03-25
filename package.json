@@ -76,6 +76,7 @@
   "workspaces": [
     "apps/*",
     "frontend-web",
+    "frontend-web-e2e",
     "frontend-mobile",
     "shared"
   ]

@@ -33,15 +33,33 @@ export default defineConfig({
   cacheDir: '../node_modules/.vite/frontend-mobile',
   define: {
     global: 'window',
+    __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
   resolve: {
     extensions,
-    alias: {
-      'react-native': 'react-native-web',
-      'react-native-svg': 'react-native-svg-web',
-      '@react-native/assets-registry/registry':
-        'react-native-web/dist/modules/AssetRegistry/index',
-    },
+    conditions: ['@pulse-map/source', 'browser', 'module', 'import', 'default'],
+    alias: [
+      // Specific packages must come before the generic react-native alias
+      {
+        find: 'react-native-maps',
+        replacement: `${__dirname}/src/shims/react-native-maps.web.tsx`,
+      },
+      {
+        find: 'react-native-geolocation-service',
+        replacement: `${__dirname}/src/shims/react-native-geolocation-service.web.ts`,
+      },
+      { find: 'react-native-svg', replacement: 'react-native-svg-web' },
+      {
+        find: '@react-native-async-storage/async-storage',
+        replacement: `${__dirname}/src/shims/async-storage.web.ts`,
+      },
+      {
+        find: '@react-native/assets-registry/registry',
+        replacement: 'react-native-web/dist/modules/AssetRegistry/index',
+      },
+      // Generic react-native → react-native-web (must be last to not clobber specific packages)
+      { find: /^react-native$/, replacement: 'react-native-web' },
+    ],
   },
   build: {
     reportCompressedSize: true,
