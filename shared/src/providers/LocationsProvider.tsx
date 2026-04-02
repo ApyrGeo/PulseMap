@@ -16,6 +16,8 @@ import {
   expireLocation,
   extendLocation,
   likeLocationAPI,
+  confirmLocationEvent,
+  rejectLocationEvent,
 } from '../services/LocationsApiService';
 import {
   Location,
@@ -49,6 +51,8 @@ interface LocationsContextType {
   extendLocationById: (id: number) => Promise<void>;
   likeLocation: (locationId: number) => Promise<void>;
   markAsInteracted: (locationId: number) => void;
+  confirmLocationEvent: (locationId: number) => Promise<void>;
+  rejectLocationEvent: (locationId: number) => Promise<void>;
 }
 
 const LocationsContext = createContext<LocationsContextType | undefined>(undefined);
@@ -266,6 +270,20 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     [tokenService, applyLikesSummary, user]
   );
 
+  const confirmLocationEventById = useCallback(
+    async (locationId: number) => {
+      await confirmLocationEvent(tokenService, locationId);
+    },
+    [tokenService]
+  );
+
+  const rejectLocationEventById = useCallback(
+    async (locationId: number) => {
+      await rejectLocationEvent(tokenService, locationId);
+    },
+    [tokenService]
+  );
+
   const markAsInteracted = useCallback((locationId: number) => {
     setInteractedLocationIds((prev) => {
       if (prev.has(locationId)) return prev;
@@ -305,6 +323,8 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         extendLocationById,
         likeLocation,
         markAsInteracted,
+        confirmLocationEvent: confirmLocationEventById,
+        rejectLocationEvent: rejectLocationEventById,
       }}
     >
       {children}

@@ -7,18 +7,26 @@ import {
   TouchableOpacity,
   RefreshControl,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useLocations, useAuth, Location } from '@pulse-map/shared';
 import { Icons } from '../utils/icons';
+import EditLocationModal from '../components/EditLocationModal';
 
 type FilterType = 'all' | 'active' | 'expired' | 'review';
 
 function LocationItem({
   location,
   isOwned,
+  onEdit,
+  onConfirm,
+  onReject,
 }: {
   location: Location;
   isOwned: boolean;
+  onEdit: (loc: Location) => void;
+  onConfirm: (loc: Location) => void;
+  onReject: (loc: Location) => void;
 }) {
   const expired = location.isExpired;
 
@@ -43,8 +51,13 @@ function LocationItem({
             )}
           </View>
         </View>
-        <View style={[styles.statusBadge, expired ? styles.statusExpired : styles.statusActive]}>
-          <Text style={styles.statusText}>{expired ? 'Expired' : 'Active'}</Text>
+        <View style={styles.cardTopRight}>
+          <View style={[styles.statusBadge, expired ? styles.statusExpired : styles.statusActive]}>
+            <Text style={styles.statusText}>{expired ? 'Expired' : 'Active'}</Text>
+          </View>
+          <TouchableOpacity style={styles.editBtn} onPress={() => onEdit(location)}>
+            <Text style={styles.editBtnText}>✏</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -59,6 +72,14 @@ function LocationItem({
               Confidence: {((location as any).eventAssignmentConfidence * 100).toFixed(1)}%
             </Text>
           )}
+          <View style={styles.reviewActions}>
+            <TouchableOpacity style={styles.approveBtn} onPress={() => onConfirm(location)}>
+              <Text style={styles.approveBtnText}>✓  Approve</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.rejectBtn} onPress={() => onReject(location)}>
+              <Text style={styles.rejectBtnText}>✕  Reject</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -83,10 +104,11 @@ function LocationItem({
 }
 
 export default function MyLocationsScreen() {
-  const { allLocations, refreshLocations } = useLocations();
+  const { allLocations, refreshLocations, confirmLocationEvent, rejectLocationEvent } = useLocations();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterType>('all');
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
   useEffect(() => {
     refreshLocations(false);
@@ -96,6 +118,49 @@ export default function MyLocationsScreen() {
     setRefreshing(true);
     await refreshLocations(false);
     setRefreshing(false);
+  };
+
+  const handleConfirm = (location: Location) => {
+    Alert.alert(
+      'Approve Event Assignment',
+      `Assign "${location.name}" to event "${(location as any).event?.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Approve',
+          onPress: async () => {
+            try {
+              await confirmLocationEvent(location.id);
+              await refreshLocations(false);
+            } catch {
+              Alert.alert('Error', 'Failed to confirm event assignment');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleReject = (location: Location) => {
+    Alert.alert(
+      'Reject Event Assignment',
+      `Remove "${location.name}" from event "${(location as any).event?.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await rejectLocationEvent(location.id);
+              await refreshLocations(false);
+            } catch {
+              Alert.alert('Error', 'Failed to reject event assignment');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const myLocations = allLocations.filter(
@@ -175,10 +240,21 @@ export default function MyLocationsScreen() {
               key={location.id}
               location={location}
               isOwned={location.owner?.id === user?.id}
+              onEdit={setEditingLocation}
+              onConfirm={handleConfirm}
+              onReject={handleReject}
             />
           ))
         )}
       </ScrollView>
+
+      {editingLocation && (
+        <EditLocationModal
+          visible={!!editingLocation}
+          location={editingLocation}
+          onClose={() => setEditingLocation(null)}
+        />
+      )}
     </View>
   );
 }
@@ -234,7 +310,17 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardExpired: { opacity: 0.6 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, alignItems: 'flex-start' },
+  cardTopRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  editBtn: {
+    backgroundColor: '#2D2D44',
+    borderRadius: 8,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editBtnText: { fontSize: 15 },
   cardInfo: { flex: 1 },
   cardCategory: { color: '#FF6B35', fontSize: 11, fontWeight: '600', marginBottom: 3 },
   nameRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
@@ -263,6 +349,25 @@ const styles = StyleSheet.create({
   },
   reviewAlertTitle: { color: '#F59E0B', fontSize: 12, fontWeight: '600', marginBottom: 2 },
   reviewAlertText: { color: '#ccc', fontSize: 12 },
+  reviewActions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  approveBtn: {
+    flex: 1,
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  approveBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  rejectBtn: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
+  rejectBtnText: { color: '#EF4444', fontSize: 13, fontWeight: '600' },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,

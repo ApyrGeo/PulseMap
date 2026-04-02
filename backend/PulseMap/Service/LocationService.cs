@@ -158,6 +158,20 @@ public class LocationService(
         existingLocation.Name = locationPutDto.Name;
         existingLocation.Description = locationPutDto.Description;
 
+        if (locationPutDto.ImageUrls != null)
+        {
+            existingLocation.Images.Clear();
+            for (var i = 0; i < locationPutDto.ImageUrls.Count; i++)
+            {
+                existingLocation.Images.Add(new LocationImage
+                {
+                    Url = locationPutDto.ImageUrls[i],
+                    CreatedAt = DateTime.UtcNow,
+                    Order = i,
+                });
+            }
+        }
+
         await _locationRepository.SaveChangesAsync();
 
         // Filter out ResponseMessage from Comments

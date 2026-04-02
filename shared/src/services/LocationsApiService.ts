@@ -166,6 +166,30 @@ export async function uploadImages(
   return filenames.map((f) => `${getApiUrl()}/image/${f}`);
 }
 
+export async function confirmLocationEvent(tokenService: TokenService, id: number): Promise<Location> {
+  const response = await fetch(`${getApiUrl()}/Location/${id}/confirm-event`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(await getAuthHeaders(tokenService)),
+    },
+  });
+  if (!response.ok) throw new Error('Failed to confirm event');
+  return response.json();
+}
+
+export async function rejectLocationEvent(tokenService: TokenService, id: number): Promise<Location> {
+  const response = await fetch(`${getApiUrl()}/Location/${id}/reject-event`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(await getAuthHeaders(tokenService)),
+    },
+  });
+  if (!response.ok) throw new Error('Failed to reject event');
+  return response.json();
+}
+
 export async function classifyLocation(
   tokenService: TokenService,
   description: string
