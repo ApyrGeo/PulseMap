@@ -25,9 +25,14 @@ const UserNavigationBar = () => {
           </Link>
 
           {isAuthenticated && user?.role === Role.User && (
-            <Link to="/owner/map" className="navigation-link">
-              My Location
-            </Link>
+            <>
+              <Link to="/owner/map" className="navigation-link">
+                My Locations
+              </Link>
+              <Link to="/user/statistics" className="navigation-link">
+                Statistics
+              </Link>
+            </>
           )}
 
           {isAuthenticated && user?.role === Role.Admin && (

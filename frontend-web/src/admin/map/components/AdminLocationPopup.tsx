@@ -49,11 +49,14 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
         {location.event && (
           <div className={`admin-popup-event-box ${location.event.requiresReview ? 'requires-review' : ''}`}>
             <div className="admin-popup-event-title">
-              🎯 Part of Event
+              <img src="/icons/target.png" style={{ width: 14, height: 14, marginRight: 4, verticalAlign: 'middle' }} alt="" />
+              Part of Event
             </div>
             <div className="admin-popup-event-name">
               {location.event.name}
-              {location.event.requiresReview && ' ⚠️'}
+              {location.event.requiresReview && (
+                <img src="/icons/warning.png" style={{ width: 12, height: 12, marginLeft: 4, verticalAlign: 'middle' }} alt="" />
+              )}
             </div>
             {location.eventAssignmentConfidence && (
               <div className="admin-popup-event-confidence">

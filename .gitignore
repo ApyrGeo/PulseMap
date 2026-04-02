@@ -142,3 +142,5 @@ appsettings.Development.json
 *.nupkg
 
 /backend/PulseMap/Logs/*
+
+CLAUDE.md

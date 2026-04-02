@@ -137,6 +137,56 @@ export async function extendLocation(tokenService: TokenService, id: number): Pr
   return response.json();
 }
 
+export interface ImageUploadInput {
+  uri: string;
+  name: string;
+  type: string;
+  webFile?: unknown; // web-only: the actual File object
+}
+
+export async function uploadImages(
+  tokenService: TokenService,
+  images: ImageUploadInput[]
+): Promise<string[]> {
+  const formData = new FormData();
+  images.forEach((img) => {
+    if (img.webFile) {
+      formData.append('images', img.webFile as Blob);
+    } else {
+      formData.append('images', { uri: img.uri, name: img.name, type: img.type } as unknown as Blob);
+    }
+  });
+  const response = await fetch(`${getApiUrl()}/image/upload`, {
+    method: 'POST',
+    headers: await tokenService.getAuthHeader(),
+    body: formData,
+  });
+  if (!response.ok) throw new Error('Failed to upload images');
+  const filenames: string[] = await response.json();
+  return filenames.map((f) => `${getApiUrl()}/image/${f}`);
+}
+
+export async function classifyLocation(
+  tokenService: TokenService,
+  description: string
+): Promise<string[]> {
+  try {
+    const response = await fetch(`${getApiUrl()}/AI/classify-location`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(await tokenService.getAuthHeader()),
+      },
+      body: JSON.stringify({ description }),
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data) ? data : (data?.categories ?? []);
+  } catch {
+    return [];
+  }
+}
+
 export async function likeLocationAPI(
   tokenService: TokenService,
   locationId: number,

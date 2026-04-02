@@ -84,8 +84,8 @@ public class LocationController(ILocationService locationService, IAuthorization
         if (existingLocation == null)
             return NotFound();
 
-        // Only owner or admin can update
-        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id))
+        // Creator or owner (or admin) can update
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
         var updatedLocation = await _locationService.UpdateLocationAsync(locationResponseDTO, id);
@@ -115,8 +115,8 @@ public class LocationController(ILocationService locationService, IAuthorization
         if (existingLocation == null)
             return NotFound();
 
-        // Only owner or admin can expire
-        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id))
+        // Creator or owner (or admin) can expire
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
         var updatedLocation = await _locationService.ExpireLocationAsync(id);
@@ -135,8 +135,8 @@ public class LocationController(ILocationService locationService, IAuthorization
         if (existingLocation == null)
             return NotFound();
 
-        // Only owner or admin can extend
-        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id))
+        // Creator or owner (or admin) can extend
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
         var updatedLocation = await _locationService.ExtendLocationExpirationAsync(id);

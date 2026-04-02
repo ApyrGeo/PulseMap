@@ -2,12 +2,14 @@ import React, { useRef } from 'react';
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   StyleSheet,
   Animated,
   Dimensions,
 } from 'react-native';
 import { Location } from '@pulse-map/shared';
+import { Icons } from '../utils/icons';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
@@ -56,7 +58,10 @@ function ProximityCard({
       pointerEvents={index === 0 ? 'auto' : 'none'}
     >
       <View style={styles.cardContent}>
-        <Text style={styles.nearbyLabel}>📍 You're nearby</Text>
+        <View style={styles.nearbyLabelRow}>
+          <Image source={Icons.location} style={styles.nearbyIcon} />
+          <Text style={styles.nearbyLabel}>You're nearby</Text>
+        </View>
         <Text style={styles.locationName}>{location.name}</Text>
         {location.category ? (
           <Text style={styles.category}>{location.category}</Text>
@@ -133,11 +138,17 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 16,
   },
+  nearbyLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  nearbyIcon: { width: 14, height: 14, tintColor: '#FF6B35' },
   nearbyLabel: {
     fontSize: 12,
     color: '#FF6B35',
     fontWeight: '600',
-    marginBottom: 4,
   },
   locationName: {
     fontSize: 18,

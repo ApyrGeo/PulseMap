@@ -14,7 +14,7 @@ export async function recordInteraction(
     },
     body: JSON.stringify(dto),
   });
-  if (!response.ok) throw new Error('Failed to record interaction');
+  if (!response.ok) throw new Error(`Failed to record interaction: ${response.status}`);
   return response.json();
 }
 
@@ -26,5 +26,17 @@ export async function getUserInteractions(
     headers: await tokenService.getAuthHeader(),
   });
   if (!response.ok) throw new Error('Failed to fetch interactions');
+  return response.json();
+}
+
+export async function getInteractedLocationIds(
+  tokenService: TokenService,
+  userId: number
+): Promise<number[]> {
+  const response = await fetch(`${getApiUrl()}/Interaction/user/${userId}/interacted-location-ids`, {
+    headers: await tokenService.getAuthHeader(),
+  });
+  if (response.status === 404) return [];
+  if (!response.ok) throw new Error('Failed to fetch interacted location ids');
   return response.json();
 }

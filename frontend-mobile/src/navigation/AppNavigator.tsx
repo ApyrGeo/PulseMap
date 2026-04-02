@@ -2,48 +2,55 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text } from 'react-native';
+import { Image, Text } from 'react-native';
 import { useAuth } from '@pulse-map/shared';
+import { Icons } from '../utils/icons';
 
 import MapScreen from '../screens/MapScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
 import MyLocationsScreen from '../screens/MyLocationsScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    Map: '🗺',
-    Recommendations: '⭐',
-    'My Locations': '📍',
-    Statistics: '📊',
-  };
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>
-      {icons[name] ?? '●'}
-    </Text>
-  );
-}
+const TAB_ICONS: Record<string, any> = {
+  Map: Icons.map,
+  Recommendations: Icons.star,
+  'My Locations': Icons.pin,
+  Statistics: Icons.chart,
+};
 
 function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused }) => (
-          <TabIcon name={route.name} focused={focused} />
-        ),
+        tabBarIcon: ({ color }) => {
+          if (route.name === 'Settings') {
+            return (
+              <Text style={{ fontSize: 20, color, lineHeight: 24 }}>⚙</Text>
+            );
+          }
+          return (
+            <Image
+              source={TAB_ICONS[route.name]}
+              style={{ width: 22, height: 22, tintColor: color }}
+            />
+          );
+        },
         tabBarActiveTintColor: '#FF6B35',
         tabBarInactiveTintColor: '#8E8E8E',
         tabBarStyle: {
           backgroundColor: '#1A1A2E',
           borderTopColor: '#2D2D44',
-          paddingBottom: 4,
+          height: 72,
+          paddingBottom: 12,
+          paddingTop: 8,
         },
-        tabBarLabelStyle: { fontSize: 11 },
+        tabBarLabelStyle: { fontSize: 10, marginTop: 2 },
         headerShown: false,
       })}
     >
@@ -51,6 +58,7 @@ function MainTabs() {
       <Tab.Screen name="Recommendations" component={RecommendationsScreen} />
       <Tab.Screen name="My Locations" component={MyLocationsScreen} />
       <Tab.Screen name="Statistics" component={StatisticsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }

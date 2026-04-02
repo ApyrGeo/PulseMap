@@ -1,72 +1,126 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   TouchableOpacity,
   Text,
+  Image,
   StyleSheet,
   Animated,
-  Alert,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import { useLocations, useAuth, recordInteraction, InteractionType } from '@pulse-map/shared';
+import MapView, { Marker, Region } from 'react-native-maps';
+import {
+  useLocations,
+  useAuth,
+  recordInteraction,
+  InteractionType,
+  fetchLocationsByBounds,
+  fetchEventsByBounds,
+  EventResponseDTO,
+  Location,
+  MapBounds,
+} from '@pulse-map/shared';
 import { useProximityDetection } from '../hooks/useProximityDetection';
+import { useDeviceLocation } from '../contexts/LocationContext';
+import { Icons } from '../utils/icons';
 import ProximityCardStack from '../components/ProximityCardStack';
 import AddLocationModal from '../components/AddLocationModal';
 import LocationDetailModal from '../components/LocationDetailModal';
-import { Location } from '@pulse-map/shared';
+
+const ZOOM_NEIGHBORHOOD = 15;
+const ZOOM_EVENT = 12;   // 3 niveluri de zoom pentru events: 12, 13, 14
+const ZOOM_CITY = 6;
+
+function latDeltaToZoom(latitudeDelta: number): number {
+  return Math.round(Math.log2(360 / latitudeDelta));
+}
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Music: '#9B59B6',
-  Sport: '#27AE60',
-  Food: '#E74C3C',
-  Entertainment: '#F39C12',
-  Education: '#3498DB',
-  Health: '#1ABC9C',
-  Technology: '#2980B9',
-  Travel: '#E67E22',
-  Art: '#E91E63',
-  Business: '#607D8B',
-  'Not Set': '#8E8E8E',
+  Music: '#8B5CF6',
+  Sport: '#10B981',
+  Food: '#F59E0B',
+  Entertainment: '#EF4444',
+  Education: '#3B82F6',
+  Health: '#EC4899',
+  Technology: '#14B8A6',
+  Travel: '#F97316',
+  Art: '#A855F7',
+  Business: '#06B6D4',
+  'Not Set': '#6B7280',
 };
 
 export default function MapScreen() {
-  const { activeLocations, refreshLocations } = useLocations();
+  const { activeLocations, refreshLocations, interactedLocationIds, markAsInteracted } = useLocations();
   const { user, tokenService } = useAuth();
+  const { userCoords } = useDeviceLocation();
   const mapRef = useRef<MapView>(null);
+
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [newLocationCoords, setNewLocationCoords] = useState({ latitude: 0, longitude: 0 });
   const [hasInitialLocation, setHasInitialLocation] = useState(false);
+
+  const [lastBounds, setLastBounds] = useState<MapBounds | null>(null);
+  const [currentZoom, setCurrentZoom] = useState(ZOOM_NEIGHBORHOOD);
+  const [visibleLocations, setVisibleLocations] = useState<Location[] | null>(null);
+  const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
+
   const pulseAnims = useRef<Record<number, Animated.Value>>({});
 
-  const { userCoords, nearbyLocations, markInteracted } = useProximityDetection(activeLocations);
+  // Exclude own locations from proximity detection — "Ai fost aici" nu apare pt creatorul locatiei
+  // useMemo previne array nou la fiecare render (ar cauza infinite loop in useProximityDetection)
+  const locationsForProximity = useMemo(
+    () => activeLocations.filter((loc) => loc.creator?.id !== user?.id),
+    [activeLocations, user?.id]
+  );
 
-  // Initial data load
+  const interactedIdsArray = useMemo(
+    () => Array.from(interactedLocationIds),
+    [interactedLocationIds]
+  );
+
+  const { nearbyLocations, markInteracted } = useProximityDetection(
+    locationsForProximity,
+    userCoords,
+    interactedIdsArray
+  );
+
+  // Initial full load — keeps activeLocations populated for proximity detection
   useEffect(() => {
     refreshLocations(true);
   }, [refreshLocations]);
 
-  // Center map on user location once we get it
+  // Center map once on first GPS fix
   useEffect(() => {
     if (userCoords && !hasInitialLocation) {
       setHasInitialLocation(true);
-      mapRef.current?.animateToRegion({
-        latitude: userCoords.latitude,
-        longitude: userCoords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 800);
-    } else if (userCoords && hasInitialLocation) {
-      mapRef.current?.animateToRegion({
-        latitude: userCoords.latitude,
-        longitude: userCoords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 400);
+      mapRef.current?.animateToRegion(
+        {
+          latitude: userCoords.latitude,
+          longitude: userCoords.longitude,
+          latitudeDelta: 0.0025,
+          longitudeDelta: 0.0025,
+        },
+        800
+      );
     }
-  }, [userCoords]);
+  }, [userCoords, hasInitialLocation]);
 
-  // Manage pulse animations for nearby markers
+  // WS sync: re-filter activeLocations by bounds on WS push, only at neighborhood zoom
+  useEffect(() => {
+    if (!lastBounds || currentZoom < ZOOM_NEIGHBORHOOD) return;
+    const b = lastBounds;
+    setVisibleLocations(
+      activeLocations.filter(
+        (loc) =>
+          loc.latitude >= b.minLat &&
+          loc.latitude <= b.maxLat &&
+          loc.longitude >= b.minLng &&
+          loc.longitude <= b.maxLng
+      )
+    );
+  }, [activeLocations, lastBounds, currentZoom]);
+
+  // Pulse animations for nearby markers
   useEffect(() => {
     nearbyLocations.forEach((loc) => {
       if (!pulseAnims.current[loc.id]) {
@@ -98,12 +152,14 @@ export default function MapScreen() {
           locationId: location.id,
           type: InteractionType.Confirmed,
         });
+      } catch {
+        // 409 = already interacted — still dismiss the card
+      } finally {
         markInteracted(location.id);
-      } catch (e) {
-        console.error('Failed to record interaction', e);
+        markAsInteracted(location.id);
       }
     },
-    [user, tokenService, markInteracted]
+    [user, tokenService, markInteracted, markAsInteracted]
   );
 
   const handleDismissCard = useCallback(
@@ -123,35 +179,87 @@ export default function MapScreen() {
             locationId: location.id,
             type: InteractionType.ProximityTap,
           });
+        } catch {
+          // 409 = already interacted
+        } finally {
           markInteracted(location.id);
-        } catch (e) {
-          console.error('Failed to record proximity tap', e);
+          markAsInteracted(location.id);
         }
       }
       setSelectedLocation(location);
     },
-    [nearbyLocations, user, tokenService, markInteracted]
+    [nearbyLocations, user, tokenService, markInteracted, markAsInteracted]
+  );
+
+  const handleRegionChangeComplete = useCallback(
+    async (region: Region) => {
+      const zoom = latDeltaToZoom(region.latitudeDelta);
+      setCurrentZoom(zoom);
+
+      // Below city level: hide everything
+      if (zoom < ZOOM_CITY) {
+        setVisibleLocations([]);
+        setVisibleEvents([]);
+        setLastBounds(null);
+        return;
+      }
+
+      const bounds: MapBounds = {
+        minLat: region.latitude - region.latitudeDelta / 2,
+        maxLat: region.latitude + region.latitudeDelta / 2,
+        minLng: region.longitude - region.longitudeDelta / 2,
+        maxLng: region.longitude + region.longitudeDelta / 2,
+      };
+      setLastBounds(bounds);
+
+      if (zoom >= ZOOM_NEIGHBORHOOD) {
+        // Neighborhood zoom: show individual location markers
+        setVisibleEvents([]);
+        try {
+          const data = await fetchLocationsByBounds(tokenService, bounds, true, user?.id);
+          setVisibleLocations(data);
+        } catch (e) {
+          console.error('Failed to fetch locations by bounds', e);
+        }
+      } else if (zoom >= ZOOM_EVENT) {
+        // Event zoom (12, 13, 14): show event circles only
+        setVisibleLocations([]);
+        try {
+          const events = await fetchEventsByBounds(tokenService, bounds);
+          setVisibleEvents(events);
+        } catch (e) {
+          console.error('Failed to fetch events by bounds', e);
+          setVisibleEvents([]);
+        }
+      } else {
+        // Between CITY and EVENT: show nothing
+        setVisibleLocations([]);
+        setVisibleEvents([]);
+      }
+    },
+    [tokenService, user?.id]
   );
 
   const handleFABPress = () => {
-    if (!userCoords) {
-      Alert.alert('Location unavailable', 'Waiting for your GPS location...');
-      return;
-    }
-    setNewLocationCoords({
-      latitude: userCoords.latitude,
-      longitude: userCoords.longitude,
-    });
+    const lat = userCoords?.latitude ?? 46.76073058700941;
+    const lng = userCoords?.longitude ?? 23.571628332138065;
+    setNewLocationCoords({ latitude: lat, longitude: lng });
     setAddModalVisible(true);
   };
+
+  // Determine which markers to show based on zoom
+  const markersToShow =
+    currentZoom >= ZOOM_NEIGHBORHOOD
+      ? (visibleLocations ?? activeLocations)
+      : [];
 
   const nearbyIds = new Set(nearbyLocations.map((l) => l.id));
 
   const initialRegion: Region = {
-    latitude: userCoords?.latitude ?? 44.4268,
-    longitude: userCoords?.longitude ?? 26.1025,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
+    latitude: userCoords?.latitude ?? 46.76073058700941,
+    longitude: userCoords?.longitude ?? 23.571628332138065,
+    latitudeDelta: 0.0025,
+    longitudeDelta: 0.0025,
   };
 
   return (
@@ -159,12 +267,13 @@ export default function MapScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton={false}
+        onRegionChangeComplete={handleRegionChangeComplete}
+        events={visibleEvents}
       >
-        {activeLocations.map((location) => {
+        {markersToShow.map((location) => {
           const isNearby = nearbyIds.has(location.id);
           const color = CATEGORY_COLORS[location.category] ?? '#FF6B35';
           const pulseAnim = pulseAnims.current[location.id];
@@ -174,13 +283,14 @@ export default function MapScreen() {
               key={location.id}
               coordinate={{ latitude: location.latitude, longitude: location.longitude }}
               onPress={() => handleMarkerPress(location)}
+              category={location.category}
+              isExpired={location.isExpired}
+              isNearby={isNearby}
             >
               <Animated.View
                 style={[
                   styles.markerContainer,
-                  isNearby && pulseAnim
-                    ? { transform: [{ scale: pulseAnim }] }
-                    : undefined,
+                  isNearby && pulseAnim ? { transform: [{ scale: pulseAnim }] } : undefined,
                 ]}
               >
                 <View
@@ -197,36 +307,35 @@ export default function MapScreen() {
         })}
       </MapView>
 
-      {/* Recenter button */}
       {userCoords && (
         <TouchableOpacity
           style={styles.recenterBtn}
           onPress={() =>
-            mapRef.current?.animateToRegion({
-              latitude: userCoords.latitude,
-              longitude: userCoords.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }, 400)
+            mapRef.current?.animateToRegion(
+              {
+                latitude: userCoords.latitude,
+                longitude: userCoords.longitude,
+                latitudeDelta: 0.0025,
+                longitudeDelta: 0.0025,
+              },
+              400
+            )
           }
         >
-          <Text style={styles.recenterIcon}>◎</Text>
+          <Image source={Icons.center} style={styles.recenterIcon} />
         </TouchableOpacity>
       )}
 
-      {/* FAB */}
       <TouchableOpacity style={styles.fab} onPress={handleFABPress}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
 
-      {/* Proximity cards */}
       <ProximityCardStack
         locations={nearbyLocations}
         onConfirm={handleConfirmInteraction}
         onDismiss={handleDismissCard}
       />
 
-      {/* Add location modal */}
       <AddLocationModal
         visible={addModalVisible}
         onClose={() => setAddModalVisible(false)}
@@ -234,9 +343,9 @@ export default function MapScreen() {
         longitude={newLocationCoords.longitude}
       />
 
-      {/* Location detail modal */}
       {selectedLocation && (
         <LocationDetailModal
+          key={selectedLocation.id}
           location={selectedLocation}
           onClose={() => setSelectedLocation(null)}
         />
@@ -292,12 +401,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   recenterIcon: {
-    color: '#FF6B35',
-    fontSize: 22,
+    width: 22,
+    height: 22,
+    tintColor: '#FF6B35',
   },
   fab: {
     position: 'absolute',
-    bottom: 200,
+    bottom: 84,
     right: 20,
     width: 52,
     height: 52,

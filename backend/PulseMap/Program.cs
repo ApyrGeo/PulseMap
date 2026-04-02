@@ -70,7 +70,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
-            ?? new[] { "http://localhost:4200", "https://localhost:4200" };
+            ?? new[] { "http://localhost:4200", "https://localhost:4200", "https://localhost:4201", "http://localhost:4201" };
 
         policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
@@ -80,11 +80,11 @@ builder.Services.AddCors(options =>
 });
 
 //database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<PulseMapContext>((sp, options) =>
 {
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    );
+    options.UseNpgsql(connectionString);
 });
 
 builder.Services.AddHttpContextAccessor();
@@ -355,7 +355,7 @@ builder.Services.AddScoped<IEventClusteringService, EventClusteringService>();
 
 // Hangfire
 builder.Services.AddHangfire(config =>
-    config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+    config.UsePostgreSqlStorage(connectionString));
 
 builder.Services.AddHangfireServer();
 
@@ -371,12 +371,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// CORS must be first — before any middleware that could short-circuit the pipeline
+app.UseCors(AppAllowSpecificOrigins);
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
-
-// CORS must be before Authorization and MapControllers
-app.UseCors(AppAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();

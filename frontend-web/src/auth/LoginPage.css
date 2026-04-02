@@ -3,23 +3,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    var(--gradient-angle),
-    var(--gradient-start) 0%,
-    var(--gradient-middle) 50%,
-    var(--gradient-end) 100%
-  );
-  background-attachment: fixed;
+  background-color: #0F0F1A;
   padding: 0 1rem;
 }
 
 .login-form {
   width: 100%;
   max-width: 28rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: #1A1A2E;
+  border-radius: 0.75rem;
+  border: 1px solid #2D2D44;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   padding: 1.5rem;
 }
 
@@ -31,8 +25,8 @@
 
 .login-heading {
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 700;
+  color: #ffffff;
   margin-bottom: 1rem;
   text-align: center;
 }
@@ -42,43 +36,46 @@
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: #8E8E8E;
 }
 
 .login-input {
   width: 100%;
   margin-bottom: 1rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2D2D44;
   border-radius: 0.5rem;
   outline: none;
+  background-color: #0F0F1A;
+  color: #ffffff;
 }
 
 .login-input:focus {
-  ring: 2px;
-  ring-color: #60a5fa;
+  border-color: #FF6B35;
 }
 
 .login-button {
   width: 100%;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
 }
 
 .login-button:not(:disabled) {
-  background-color: #2563eb;
+  background-color: #FF6B35;
   color: white;
 }
 
 .login-button:not(:disabled):hover {
-  background-color: #1d4ed8;
+  background-color: #e55a25;
 }
 
 .login-button:disabled {
-  background-color: #93c5fd;
-  color: white;
+  background-color: #3D2920;
+  color: #8E8E8E;
   cursor: not-allowed;
 }
 
@@ -86,11 +83,11 @@
   margin-top: 1rem;
   text-align: center;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #8E8E8E;
 }
 
 .login-register-link {
-  color: #2563eb;
+  color: #FF6B35;
 }
 
 .login-register-link:hover {

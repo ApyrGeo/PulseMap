@@ -7,13 +7,13 @@
 .admin-popup-title {
   font-size: 1.125rem;
   font-weight: bold;
-  color: #1f2937;
+  color: #fff;
   margin-bottom: 0.5rem;
 }
 
 .admin-popup-description {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: #ccc;
   margin-bottom: 0.75rem;
 }
 
@@ -31,11 +31,11 @@
 
 .admin-popup-label {
   font-weight: 500;
-  color: #4b5563;
+  color: #8E8E8E;
 }
 
 .admin-popup-value {
-  color: #1f2937;
+  color: #fff;
 }
 
 .admin-popup-status {
@@ -46,27 +46,27 @@
 }
 
 .admin-popup-status.active {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: #1B4D1B;
+  color: #10B981;
 }
 
 .admin-popup-status.expired {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: #4D1B1B;
+  color: #FF6B6B;
 }
 
 .admin-popup-divider {
   padding-top: 0.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #2D2D44;
 }
 
 .admin-popup-expired-text {
-  color: #dc2626;
+  color: #FF6B6B;
   font-weight: 600;
 }
 
 .admin-popup-event-box {
-  background-color: #f0fdf4;
+  background-color: #0F1F18;
   border: 2px solid #10b981;
   border-radius: 0.375rem;
   padding: 0.75rem;
@@ -74,19 +74,19 @@
 }
 
 .admin-popup-event-box.requires-review {
-  background-color: #fef3c7;
+  background-color: #1F1800;
   border-color: #f59e0b;
 }
 
 .admin-popup-event-title {
   font-weight: 700;
   font-size: 0.875rem;
-  color: #065f46;
+  color: #10B981;
   margin-bottom: 0.5rem;
 }
 
 .admin-popup-event-box.requires-review .admin-popup-event-title {
-  color: #92400e;
+  color: #F59E0B;
 }
 
 .admin-popup-event-name {
@@ -101,17 +101,17 @@
 
 .admin-popup-event-confidence {
   font-size: 0.75rem;
-  color: #065f46;
+  color: #10B981;
   margin-top: 0.25rem;
 }
 
 .admin-popup-event-box.requires-review .admin-popup-event-confidence {
-  color: #92400e;
+  color: #F59E0B;
 }
 
 .admin-popup-event-warning {
   font-size: 0.75rem;
-  color: #92400e;
+  color: #F59E0B;
   font-style: italic;
   margin-top: 0.25rem;
 }

@@ -32,24 +32,27 @@ public class InteractionRepository(PulseMapContext context) : IInteractionReposi
 
     public async Task<List<(int UserId, int Count)>> GetTopUsersByInteractionsAsync(int take = 10)
     {
-        return await _context.Interactions
+        var rows = await _context.Interactions
             .GroupBy(i => i.UserId)
             .Select(g => new { UserId = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Take(take)
-            .Select(x => ValueTuple.Create(x.UserId, x.Count))
             .ToListAsync();
+
+        return rows.Select(x => (x.UserId, x.Count)).ToList();
     }
 
     public async Task<List<(int LocationId, int Count)>> GetTopLocationsByInteractionsAsync(int take = 10)
     {
-        return await _context.Interactions
+        var rows = await _context.Interactions
+            .Where(i => !i.Location.IsExpired)
             .GroupBy(i => i.LocationId)
             .Select(g => new { LocationId = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Take(take)
-            .Select(x => ValueTuple.Create(x.LocationId, x.Count))
             .ToListAsync();
+
+        return rows.Select(x => (x.LocationId, x.Count)).ToList();
     }
 
     public async Task<List<int>> GetInteractedLocationIdsByUserIdAsync(int userId)

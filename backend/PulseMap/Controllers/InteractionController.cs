@@ -31,6 +31,16 @@ public class InteractionController(IInteractionService interactionService) : Con
         return Ok(result);
     }
 
+    [HttpGet("user/{userId}/interacted-location-ids")]
+    [Authorize(Roles = "User,Admin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<List<int>>> GetInteractedLocationIds(int userId)
+    {
+        var result = await _interactionService.GetInteractedLocationIdsAsync(userId);
+        return Ok(result);
+    }
+
     [HttpGet("leaderboard")]
     [AllowAnonymous]
     [ProducesResponseType(200)]

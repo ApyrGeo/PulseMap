@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   TouchableOpacity,
   FlatList,
@@ -18,6 +19,7 @@ import {
   LocationInteractionStatsDTO,
   InteractionType,
 } from '@pulse-map/shared';
+import { Icons } from '../utils/icons';
 
 type Tab = 'my' | 'leaderboard' | 'locations';
 
@@ -45,9 +47,15 @@ function MyStatsTab({
         <View style={styles.card}>
           <Text style={styles.cardName}>{item.locationName}</Text>
           <View style={styles.cardRow}>
-            <Text style={styles.cardType}>
-              {item.type === InteractionType.Confirmed ? '✅ Visited' : '👆 Proximity tap'}
-            </Text>
+            <View style={styles.cardTypeRow}>
+              <Image
+                source={item.type === InteractionType.Confirmed ? Icons.check : Icons.tap}
+                style={styles.cardTypeIcon}
+              />
+              <Text style={styles.cardType}>
+                {item.type === InteractionType.Confirmed ? 'Visited' : 'Proximity tap'}
+              </Text>
+            </View>
             <Text style={styles.cardDate}>
               {new Date(item.interactedAt).toLocaleDateString()}
             </Text>
@@ -78,7 +86,7 @@ function LeaderboardTab({
 }) {
   if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#FF6B35" />;
 
-  const medals = ['🥇', '🥈', '🥉'];
+  const medalIcons = [Icons.medal_gold, Icons.medal_silver, Icons.medal_bronze];
 
   return (
     <FlatList
@@ -92,7 +100,11 @@ function LeaderboardTab({
           ]}
         >
           <View style={styles.rankRow}>
-            <Text style={styles.rank}>{medals[index] ?? `#${index + 1}`}</Text>
+            {index < 3 ? (
+              <Image source={medalIcons[index]} style={styles.medal} />
+            ) : (
+              <Text style={styles.rankNum}>#{index + 1}</Text>
+            )}
             <View style={styles.userInfo}>
               <Text style={styles.cardName}>
                 {item.firstName} {item.lastName}
@@ -254,18 +266,20 @@ const styles = StyleSheet.create({
   tabTextActive: { color: '#fff' },
   card: {
     backgroundColor: '#1A1A2E',
-    borderRadius: 12,
+    borderRadius: 14,
     marginHorizontal: 16,
     marginBottom: 8,
-    padding: 14,
+    padding: 16,
   },
   cardHighlighted: { borderWidth: 1, borderColor: '#FF6B35' },
   cardName: { color: '#fff', fontSize: 15, fontWeight: '600', marginBottom: 4 },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  cardTypeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  cardTypeIcon: { width: 13, height: 13, tintColor: '#8E8E8E' },
   cardType: { color: '#8E8E8E', fontSize: 13 },
   cardDate: { color: '#8E8E8E', fontSize: 13 },
   rankRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rank: { fontSize: 22 },
+  medal: { width: 26, height: 26 },
   rankNum: { color: '#8E8E8E', fontSize: 16, fontWeight: '600', width: 28 },
   userInfo: { flex: 1 },
   username: { color: '#8E8E8E', fontSize: 12 },

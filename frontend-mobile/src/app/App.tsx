@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, ActivityIndicator, StatusBar } from 'react-native';
+import React from 'react';
+import { Platform, StatusBar } from 'react-native';
 import {
   initializeEnvironment,
   AuthProvider,
@@ -8,15 +8,21 @@ import {
   TokenService,
 } from '@pulse-map/shared';
 import { AppNavigator } from '../navigation/AppNavigator';
+import { LocationProvider } from '../contexts/LocationContext';
 
-// Initialize API/WS URLs for React Native runtime
+const AZURE_API = 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api';
+const AZURE_WS = 'wss://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/ws';
+
+const LOCAL_API = 'https://localhost:7215/api';
+const LOCAL_WS = 'wss://localhost:7215/ws';
+
+// In browser (web debug), localhost resolves to the dev machine — use local BE.
+// On a physical device, localhost refers to the device itself — use Azure.
+const isWeb = Platform.OS === 'web';
+
 initializeEnvironment({
-  apiUrl: __DEV__
-    ? 'https://localhost:7215/api'
-    : 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api',
-  wsUrl: __DEV__
-    ? 'wss://localhost:7215/ws'
-    : 'wss://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/ws',
+  apiUrl: isWeb ? LOCAL_API : AZURE_API,
+  wsUrl: isWeb ? LOCAL_WS : AZURE_WS,
   isDevelopment: __DEV__,
 });
 
@@ -28,9 +34,11 @@ export const App: React.FC = () => {
     <>
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1A" />
       <AuthProvider tokenService={tokenService}>
-        <LocationsProvider>
-          <AppNavigator />
-        </LocationsProvider>
+        <LocationProvider>
+          <LocationsProvider>
+            <AppNavigator />
+          </LocationsProvider>
+        </LocationProvider>
       </AuthProvider>
     </>
   );

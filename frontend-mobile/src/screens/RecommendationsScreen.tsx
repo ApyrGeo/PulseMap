@@ -2,17 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
+import { Icons } from '../utils/icons';
+import { useDeviceLocation } from '../contexts/LocationContext';
 import {
   fetchRecommendedLocationsByBounds,
   LocationRecommendationDTO,
   useAuth,
+  useLocations,
   recordInteraction,
   InteractionType,
 } from '@pulse-map/shared';
@@ -29,7 +32,10 @@ function RecommendationCard({
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleRow}>
           <Text style={styles.cardCategory}>{item.category}</Text>
-          <Text style={styles.cardScore}>⭐ {(item.score * 10).toFixed(1)}</Text>
+          <View style={styles.cardScoreRow}>
+            <Image source={Icons.star} style={styles.cardScoreIcon} />
+            <Text style={styles.cardScore}>{(item.score * 10).toFixed(1)}</Text>
+          </View>
         </View>
         <Text style={styles.cardName}>{item.name}</Text>
       </View>
@@ -40,7 +46,10 @@ function RecommendationCard({
       ) : null}
       <Text style={styles.cardReason}>{item.reason}</Text>
       <View style={styles.cardFooter}>
-        <Text style={styles.cardLikes}>🤍 {item.likesCount}</Text>
+        <View style={styles.cardLikesRow}>
+          <Image source={Icons.heart_empty} style={styles.cardLikesIcon} />
+          <Text style={styles.cardLikes}>{item.likesCount}</Text>
+        </View>
         <TouchableOpacity style={styles.interactBtn} onPress={() => onInteract(item)}>
           <Text style={styles.interactBtnText}>I've been here</Text>
         </TouchableOpacity>
@@ -51,42 +60,26 @@ function RecommendationCard({
 
 export default function RecommendationsScreen() {
   const { user, tokenService } = useAuth();
+  const { interactedLocationIds, markAsInteracted } = useLocations();
+  const { userCoords } = useDeviceLocation();
   const [recommendations, setRecommendations] = useState<LocationRecommendationDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(
     async (isRefresh = false) => {
-      if (!user) return;
+      if (!user || !userCoords) return;
       isRefresh ? setRefreshing(true) : setLoading(true);
       try {
-        await new Promise<void>((resolve, reject) => {
-          Geolocation.getCurrentPosition(
-            async (pos) => {
-              try {
-                const delta = 0.05;
-                const bounds = {
-                  minLat: pos.coords.latitude - delta,
-                  maxLat: pos.coords.latitude + delta,
-                  minLng: pos.coords.longitude - delta,
-                  maxLng: pos.coords.longitude + delta,
-                };
-                const data = await fetchRecommendedLocationsByBounds(
-                  tokenService,
-                  bounds,
-                  user.id,
-                  20
-                );
-                setRecommendations(data);
-                resolve();
-              } catch (e) {
-                reject(e);
-              }
-            },
-            (err) => reject(err),
-            { enableHighAccuracy: true, timeout: 10000 }
-          );
-        });
+        const delta = 0.05;
+        const bounds = {
+          minLat: userCoords.latitude - delta,
+          maxLat: userCoords.latitude + delta,
+          minLng: userCoords.longitude - delta,
+          maxLng: userCoords.longitude + delta,
+        };
+        const data = await fetchRecommendedLocationsByBounds(tokenService, bounds, user.id, 20);
+        setRecommendations(data.filter((r) => !interactedLocationIds.has(r.id)));
       } catch (e) {
         console.error('Failed to load recommendations:', e);
       } finally {
@@ -94,7 +87,7 @@ export default function RecommendationsScreen() {
         setRefreshing(false);
       }
     },
-    [user, tokenService]
+    [user, tokenService, userCoords]
   );
 
   useEffect(() => {
@@ -109,9 +102,11 @@ export default function RecommendationsScreen() {
         locationId: item.id,
         type: InteractionType.Confirmed,
       });
+    } catch {
+      // 409 = already interacted — still remove from list
+    } finally {
+      markAsInteracted(item.id);
       setRecommendations((prev) => prev.filter((r) => r.id !== item.id));
-    } catch (e) {
-      console.error('Interaction failed', e);
     }
   };
 
@@ -175,11 +170,15 @@ const styles = StyleSheet.create({
   cardHeader: { marginBottom: 8 },
   cardTitleRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
   cardCategory: { color: '#FF6B35', fontSize: 12, fontWeight: '600' },
+  cardScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  cardScoreIcon: { width: 12, height: 12, tintColor: '#FFD700' },
   cardScore: { color: '#FFD700', fontSize: 12, fontWeight: '600' },
   cardName: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
   cardDescription: { color: '#ccc', fontSize: 14, lineHeight: 20, marginBottom: 8 },
   cardReason: { color: '#8E8E8E', fontSize: 12, fontStyle: 'italic', marginBottom: 12 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardLikesRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  cardLikesIcon: { width: 14, height: 14, tintColor: '#8E8E8E' },
   cardLikes: { color: '#8E8E8E', fontSize: 14 },
   interactBtn: {
     backgroundColor: '#FF6B35',

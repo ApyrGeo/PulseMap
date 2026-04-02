@@ -2,25 +2,23 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  Image,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   RefreshControl,
-  SectionList,
+  ScrollView,
 } from 'react-native';
 import { useLocations, useAuth, Location } from '@pulse-map/shared';
+import { Icons } from '../utils/icons';
+
+type FilterType = 'all' | 'active' | 'expired' | 'review';
 
 function LocationItem({
   location,
   isOwned,
-  onExpire,
-  onExtend,
 }: {
   location: Location;
   isOwned: boolean;
-  onExpire: (id: number) => void;
-  onExtend: (id: number) => void;
 }) {
   const expired = location.isExpired;
 
@@ -29,13 +27,40 @@ function LocationItem({
       <View style={styles.cardTop}>
         <View style={styles.cardInfo}>
           <Text style={styles.cardCategory}>{location.category}</Text>
-          <Text style={styles.cardName}>{location.name}</Text>
-          {isOwned && <Text style={styles.ownedBadge}>📌 Owned</Text>}
+          <View style={styles.nameRow}>
+            <Text style={styles.cardName}>{location.name}</Text>
+            {isOwned && (
+              <View style={styles.ownedBadge}>
+                <Image source={Icons.pin_owned} style={styles.ownedBadgeIcon} />
+                <Text style={styles.ownedBadgeText}>Owned</Text>
+              </View>
+            )}
+            {(location as any).requiresReview && (
+              <View style={styles.reviewBadge}>
+                <Image source={Icons.warning} style={styles.reviewBadgeIcon} />
+                <Text style={styles.reviewBadgeText}>Review</Text>
+              </View>
+            )}
+          </View>
         </View>
         <View style={[styles.statusBadge, expired ? styles.statusExpired : styles.statusActive]}>
           <Text style={styles.statusText}>{expired ? 'Expired' : 'Active'}</Text>
         </View>
       </View>
+
+      {(location as any).requiresReview && (location as any).event && (
+        <View style={styles.reviewAlert}>
+          <Text style={styles.reviewAlertTitle}>Event Assignment Pending Review</Text>
+          <Text style={styles.reviewAlertText}>
+            Event: {(location as any).event?.name}
+          </Text>
+          {(location as any).eventAssignmentConfidence !== undefined && (
+            <Text style={styles.reviewAlertText}>
+              Confidence: {((location as any).eventAssignmentConfidence * 100).toFixed(1)}%
+            </Text>
+          )}
+        </View>
+      )}
 
       {location.description ? (
         <Text style={styles.description} numberOfLines={2}>
@@ -44,39 +69,24 @@ function LocationItem({
       ) : null}
 
       <View style={styles.meta}>
-        <Text style={styles.metaText}>🤍 {location.likesCount}</Text>
-        <Text style={styles.metaText}>💬 {location.messages?.length ?? 0}</Text>
+        <View style={styles.metaItem}>
+          <Image source={Icons.heart_empty} style={styles.metaIcon} />
+          <Text style={styles.metaText}>{location.likesCount}</Text>
+        </View>
+        <View style={styles.metaItem}>
+          <Text style={styles.metaText}>{location.messages?.length ?? 0} comments</Text>
+        </View>
       </View>
 
-      {!expired ? (
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.expireBtn]}
-            onPress={() =>
-              Alert.alert('Expire Location', 'Mark this location as expired?', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Expire', style: 'destructive', onPress: () => onExpire(location.id) },
-              ])
-            }
-          >
-            <Text style={styles.expireBtnText}>Expire</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.extendBtn]}
-            onPress={() => onExtend(location.id)}
-          >
-            <Text style={styles.extendBtnText}>Extend +1h</Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
     </View>
   );
 }
 
 export default function MyLocationsScreen() {
-  const { allLocations, refreshLocations, expireLocationById, extendLocationById } = useLocations();
+  const { allLocations, refreshLocations } = useLocations();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<FilterType>('all');
 
   useEffect(() => {
     refreshLocations(false);
@@ -88,62 +98,94 @@ export default function MyLocationsScreen() {
     setRefreshing(false);
   };
 
-  const createdLocations = allLocations.filter((l) => l.creator?.id === user?.id);
-  const ownedLocations = allLocations.filter(
-    (l) => l.owner?.id === user?.id && l.creator?.id !== user?.id
+  const myLocations = allLocations.filter(
+    (l) => l.creator?.id === user?.id || l.owner?.id === user?.id
   );
 
-  const sections = [
-    { title: 'Created by me', data: createdLocations },
-    { title: 'Owned by me', data: ownedLocations },
-  ].filter((s) => s.data.length > 0);
+  const filteredLocations = myLocations.filter((loc) => {
+    if (filter === 'active') return !loc.isExpired;
+    if (filter === 'expired') return loc.isExpired;
+    if (filter === 'review') return (loc as any).requiresReview;
+    return true;
+  });
 
-  if (sections.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.header}>My Locations</Text>
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No locations yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Tap the + button on the map to add your first location
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  const counts = {
+    all: myLocations.length,
+    active: myLocations.filter((l) => !l.isExpired).length,
+    expired: myLocations.filter((l) => l.isExpired).length,
+    review: myLocations.filter((l) => (l as any).requiresReview).length,
+  };
+
+  const filters: { key: FilterType; label: string }[] = [
+    { key: 'all', label: `All (${counts.all})` },
+    { key: 'active', label: `Active (${counts.active})` },
+    { key: 'expired', label: `Expired (${counts.expired})` },
+    { key: 'review', label: `Review (${counts.review})` },
+  ];
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>My Locations</Text>
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, section }) => (
-          <LocationItem
-            location={item}
-            isOwned={section.title === 'Owned by me'}
-            onExpire={expireLocationById}
-            onExtend={extendLocationById}
-          />
-        )}
-        renderSectionHeader={({ section }) => (
-          <Text style={styles.sectionHeader}>{section.title}</Text>
-        )}
+      {/* Fixed header + filter bar */}
+      <View style={styles.topSection}>
+        <Text style={styles.header}>My Locations</Text>
+
+        {/* Filter tabs */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterRow}
+          contentContainerStyle={styles.filterContent}
+        >
+          {filters.map(({ key, label }) => (
+            <TouchableOpacity
+              key={key}
+              style={[styles.filterTab, filter === key && styles.filterTabActive]}
+              onPress={() => setFilter(key)}
+            >
+              <Text style={[styles.filterTabText, filter === key && styles.filterTabTextActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Scrollable list — flex: 1 so it fills remaining space and doesn't push header away */}
+      <ScrollView
+        style={styles.list}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#FF6B35"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF6B35" />
         }
-        stickySectionHeadersEnabled={false}
-      />
+        contentContainerStyle={filteredLocations.length === 0 ? styles.emptyContainer : styles.listContent}
+      >
+        {filteredLocations.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>
+              {myLocations.length === 0 ? 'No locations yet' : 'No locations match this filter'}
+            </Text>
+            {myLocations.length === 0 && (
+              <Text style={styles.emptySubtitle}>
+                Tap the + button on the map to add your first location
+              </Text>
+            )}
+          </View>
+        ) : (
+          filteredLocations.map((location) => (
+            <LocationItem
+              key={location.id}
+              location={location}
+              isOwned={location.owner?.id === user?.id}
+            />
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F1A' },
+  topSection: { flexShrink: 0 },
   header: {
     color: '#fff',
     fontSize: 22,
@@ -151,16 +193,39 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 12,
   },
-  sectionHeader: {
+  list: { flex: 1 },
+  filterRow: {
+    flexGrow: 0,
+    marginBottom: 8,
+  },
+  filterContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+    flexDirection: 'row',
+  },
+  filterTab: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#1A1A2E',
+    borderWidth: 1,
+    borderColor: '#2D2D44',
+  },
+  filterTabActive: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
+  },
+  filterTabText: {
     color: '#8E8E8E',
     fontSize: 13,
-    fontWeight: '600',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontWeight: '500',
   },
+  filterTabTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  listContent: { paddingBottom: 20 },
+  emptyContainer: { flexGrow: 1 },
   card: {
     backgroundColor: '#1A1A2E',
     borderRadius: 14,
@@ -172,8 +237,32 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   cardInfo: { flex: 1 },
   cardCategory: { color: '#FF6B35', fontSize: 11, fontWeight: '600', marginBottom: 3 },
-  cardName: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 3 },
-  ownedBadge: { color: '#FFD700', fontSize: 11 },
+  nameRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
+  cardName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  ownedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  ownedBadgeIcon: { width: 11, height: 11, tintColor: '#FFD700' },
+  ownedBadgeText: { color: '#FFD700', fontSize: 11 },
+  reviewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#3D2E00',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  reviewBadgeIcon: { width: 11, height: 11, tintColor: '#F59E0B' },
+  reviewBadgeText: { color: '#F59E0B', fontSize: 11, fontWeight: '600' },
+  reviewAlert: {
+    backgroundColor: '#2D2000',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
+  },
+  reviewAlertTitle: { color: '#F59E0B', fontSize: 12, fontWeight: '600', marginBottom: 2 },
+  reviewAlertText: { color: '#ccc', fontSize: 12 },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -184,15 +273,11 @@ const styles = StyleSheet.create({
   statusExpired: { backgroundColor: '#4D1B1B' },
   statusText: { color: '#fff', fontSize: 11, fontWeight: '600' },
   description: { color: '#ccc', fontSize: 14, lineHeight: 19, marginBottom: 8 },
-  meta: { flexDirection: 'row', gap: 14, marginBottom: 10 },
+  meta: { flexDirection: 'row', gap: 14 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  metaIcon: { width: 13, height: 13, tintColor: '#8E8E8E' },
   metaText: { color: '#8E8E8E', fontSize: 13 },
-  actions: { flexDirection: 'row', gap: 10 },
-  actionBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
-  expireBtn: { backgroundColor: '#3D1A1A' },
-  expireBtnText: { color: '#FF5252', fontSize: 13, fontWeight: '600' },
-  extendBtn: { backgroundColor: '#1A2D1A' },
-  extendBtnText: { color: '#4CAF50', fontSize: 13, fontWeight: '600' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8 },
+  emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
   emptySubtitle: { color: '#8E8E8E', fontSize: 14, textAlign: 'center' },
 });

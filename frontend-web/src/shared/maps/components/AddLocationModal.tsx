@@ -188,9 +188,7 @@ const AddLocationModal = ({
                 className="duration-info"
                 style={{ color: '#3b82f6', marginTop: '4px' }}
               >
-                <span role="img" aria-label="info">
-                  ℹ️
-                </span>{' '}
+                <img src="/icons/info.png" style={{ width: 13, height: 13, verticalAlign: 'middle', marginRight: 4 }} alt="" />
                 Owned locations are for your business or place. You can set
                 custom duration.
               </p>

@@ -345,7 +345,8 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
               <p
                 style={{ margin: '3px 0', fontSize: '13px', color: '#f59e0b' }}
               >
-                ⚠️ Needs Review
+                <img src="/icons/warning.png" style={{ width: 12, height: 12, marginRight: 4, verticalAlign: 'middle' }} alt="" />
+                Needs Review
               </p>
             )}
             <p
@@ -784,59 +785,62 @@ const LeafletMap = ({
           />
         ))}
 
-      {/* Footer showing location and event counts */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          padding: '10px 20px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          zIndex: 1000,
-          pointerEvents: 'none',
-        }}
-      >
+      {/* Footer showing location and event counts — hidden when 0 to avoid flash */}
+      {locations.length > 0 && (
         <div
           style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: getColorByCount(locations.length),
+            position: 'absolute',
+            bottom: '20px',
+            left: '20px',
+            background: 'rgba(26, 26, 46, 0.92)',
+            border: '1px solid #2D2D44',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            zIndex: 1000,
+            pointerEvents: 'none',
           }}
         >
-          {locations.length}
-        </div>
-        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-          {shouldShowMarkers ? 'locations visible' : 'locations in area'}
-        </div>
-        {events.length > 0 && (
-          <>
-            <div
-              style={{
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: '#ef4444',
-                marginTop: '8px',
-              }}
-            >
-              {events.length}
-            </div>
-            <div
-              style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}
-            >
-              {shouldShowEvents
-                ? 'events visible'
-                : 'events in area (zoom in to 7+ to see)'}
-            </div>
-          </>
-        )}
-        {shouldShowCountOnly && (
-          <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
-            Zoom in to see details
+          <div
+            style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: getColorByCount(locations.length),
+            }}
+          >
+            {locations.length}
           </div>
-        )}
-      </div>
+          <div style={{ fontSize: '12px', color: '#8E8E8E' }}>
+            {shouldShowMarkers ? 'locations visible' : 'locations in area'}
+          </div>
+          {events.length > 0 && (
+            <>
+              <div
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  color: '#ef4444',
+                  marginTop: '8px',
+                }}
+              >
+                {events.length}
+              </div>
+              <div
+                style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}
+              >
+                {shouldShowEvents
+                  ? 'events visible'
+                  : 'events in area (zoom in to 7+ to see)'}
+              </div>
+            </>
+          )}
+          {shouldShowCountOnly && (
+            <div style={{ fontSize: '11px', color: '#8E8E8E', marginTop: '4px' }}>
+              Zoom in to see details
+            </div>
+          )}
+        </div>
+      )}
 
       {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
       {onBoundsChange && <MapBoundsHandler onBoundsChange={onBoundsChange} />}

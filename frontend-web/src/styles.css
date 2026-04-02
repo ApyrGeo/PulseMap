@@ -4,35 +4,31 @@
 
 /* Global Theme Colors */
 :root {
-  /* Gradient Colors - Change these to customize the entire app theme */
-  --gradient-start: #e0e7ff; /* Soft indigo */
-  --gradient-middle: #daf1dc; /* Soft green */
-  --gradient-end: #e0f2fe; /* Soft light blue */
-  --gradient-angle: 135deg;
-
-  /* Navbar Settings */
-  --navbar-opacity: 0.9; /* Navbar transparency (0-1) */
-  /* Note: Navbar uses the gradient colors above with --navbar-opacity applied */
+  --bg-primary: #0F0F1A;
+  --bg-secondary: #1A1A2E;
+  --bg-surface: #16213E;
+  --border-color: #2D2D44;
+  --accent: #FF6B35;
+  --text-primary: #ffffff;
+  --text-secondary: #8E8E8E;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(
-    var(--gradient-angle),
-    var(--gradient-start) 0%,
-    var(--gradient-middle) 50%,
-    var(--gradient-end) 100%
-  );
+  background-color: var(--bg-primary);
   background-attachment: fixed;
   min-height: 100vh;
+  color: var(--text-primary);
 }
 
 /* Override Leaflet popup styles for MUI components */
 .leaflet-popup-content-wrapper {
   padding: 0 !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  background-color: #1A1A2E !important;
+  border: 1px solid #2D2D44 !important;
 }
 
 .leaflet-popup-content {

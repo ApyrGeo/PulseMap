@@ -10,10 +10,11 @@
 }
 
 .modal-container {
-  background-color: white;
+  background-color: #1A1A2E;
+  border: 1px solid #2D2D44;
   border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.3);
   max-width: 28rem;
   width: 100%;
   margin: 0 1rem;
@@ -32,6 +33,7 @@
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
+  color: #fff;
 }
 
 .modal-close-button {
@@ -43,7 +45,7 @@
 }
 
 .modal-close-button:hover {
-  color: #374151;
+  color: #fff;
 }
 
 /* Form elements */
@@ -55,7 +57,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: #ccc;
   margin-bottom: 0.25rem;
 }
 
@@ -64,9 +66,11 @@
 .form-textarea {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2D2D44;
   border-radius: 0.375rem;
   outline: none;
+  background-color: #16213E;
+  color: #fff;
 }
 
 .form-input:focus,
@@ -77,12 +81,12 @@
 }
 
 .form-input:disabled {
-  background-color: #f3f4f6;
-  color: #4b5563;
+  background-color: #0F0F1A;
+  color: #8E8E8E;
 }
 
 .form-select {
-  background-color: white;
+  background-color: #16213E;
 }
 
 /* Duration controls */
@@ -95,7 +99,7 @@
 .duration-label {
   display: block;
   font-size: 0.75rem;
-  color: #4b5563;
+  color: #8E8E8E;
   margin-bottom: 0.25rem;
 }
 
@@ -123,14 +127,15 @@
 
 .modal-button-cancel {
   padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2D2D44;
   border-radius: 0.375rem;
-  background-color: white;
+  background-color: #2D2D44;
+  color: #ccc;
   cursor: pointer;
 }
 
 .modal-button-cancel:hover {
-  background-color: #f9fafb;
+  background-color: #3D3D54;
 }
 
 .modal-button-submit {

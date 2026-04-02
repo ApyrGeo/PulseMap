@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useState,
+  useRef,
   ReactNode,
   useCallback,
   useMemo,
@@ -28,6 +29,7 @@ import {
 } from '../types/location';
 import { addComment, addResponse } from '../services/MessagesApiService';
 import { LocationWsService, PayloadEntityType } from '../services/WsService';
+import { getInteractedLocationIds } from '../services/InteractionApiService';
 import { useAuth } from './AuthProvider';
 import { getWsUrl } from '../config/environment';
 
@@ -36,6 +38,7 @@ interface LocationsContextType {
   ownedLocations: Location[];
   activeLocations: Location[];
   allLocations: Location[];
+  interactedLocationIds: Set<number>;
   refreshLocations: (activeOnly?: boolean) => Promise<void>;
   addLocation: (location: LocationPostDTO) => Promise<Location>;
   addCommentToLocation: (message: MessagePostDTO) => Promise<void>;
@@ -45,6 +48,7 @@ interface LocationsContextType {
   expireLocationById: (id: number) => Promise<void>;
   extendLocationById: (id: number) => Promise<void>;
   likeLocation: (locationId: number) => Promise<void>;
+  markAsInteracted: (locationId: number) => void;
 }
 
 const LocationsContext = createContext<LocationsContextType | undefined>(undefined);
@@ -52,7 +56,16 @@ const LocationsContext = createContext<LocationsContextType | undefined>(undefin
 export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const { user, tokenService } = useAuth();
   const [locations, setLocations] = useState<Location[]>([]);
+  const deletedLocationIds = useRef<Set<number>>(new Set());
+  const [interactedLocationIds, setInteractedLocationIds] = useState<Set<number>>(new Set());
   const [wsService] = useState(() => new LocationWsService(getWsUrl()));
+
+  useEffect(() => {
+    if (!user?.id) return;
+    getInteractedLocationIds(tokenService, user.id)
+      .then((ids) => setInteractedLocationIds(new Set(ids)))
+      .catch((err) => console.error('Failed to load interacted location ids:', err));
+  }, [user?.id, tokenService]);
 
   const handleLocationCreated = useCallback((location: Location) => {
     setLocations((prev) => {
@@ -80,11 +93,13 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         );
       }
       if (updated.isExpired) return prev;
+      if (deletedLocationIds.current.has(updated.id)) return prev;
       return [...prev, { ...updated, messages: updated.messages ?? [] }];
     });
   }, []);
 
   const handleLocationDeleted = useCallback((locationId: number) => {
+    deletedLocationIds.current.add(locationId);
     setLocations((prev) => prev.filter((loc) => loc.id !== locationId));
   }, []);
 
@@ -160,9 +175,13 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
 
   const addLocation = useCallback(
     async (location: LocationPostDTO) => {
-      return createLocation(tokenService, location);
+      const created = await createLocation(tokenService, location);
+      // Immediately reflect in local state so the map updates without waiting for WS.
+      // handleLocationCreated's dedup check prevents a double-add if WS also fires.
+      handleLocationCreated(created);
+      return created;
     },
-    [tokenService]
+    [tokenService, handleLocationCreated]
   );
 
   const addCommentToLocation = useCallback(
@@ -247,6 +266,15 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
     [tokenService, applyLikesSummary, user]
   );
 
+  const markAsInteracted = useCallback((locationId: number) => {
+    setInteractedLocationIds((prev) => {
+      if (prev.has(locationId)) return prev;
+      const next = new Set(prev);
+      next.add(locationId);
+      return next;
+    });
+  }, []);
+
   const activeLocations = useMemo(
     () => locations.filter((loc) => !loc.isExpired),
     [locations]
@@ -266,6 +294,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         activeLocations,
         ownedLocations,
         allLocations,
+        interactedLocationIds,
         refreshLocations,
         addLocation,
         addCommentToLocation,
@@ -275,6 +304,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
         expireLocationById,
         extendLocationById,
         likeLocation,
+        markAsInteracted,
       }}
     >
       {children}

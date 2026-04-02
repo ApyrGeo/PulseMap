@@ -19,6 +19,10 @@ public class InteractionService(
         var location = await _locationRepository.GetLocationByIdAsync(dto.LocationId)
             ?? throw new NotFoundException($"Location {dto.LocationId} not found");
 
+        var alreadyInteracted = await _interactionRepository.HasUserInteractedAsync(dto.UserId, dto.LocationId);
+        if (alreadyInteracted)
+            throw new ConflictException($"User {dto.UserId} already interacted with location {dto.LocationId}");
+
         var interaction = new Interaction
         {
             Id = 0,
@@ -40,6 +44,11 @@ public class InteractionService(
             InteractedAt = added.InteractedAt,
             Type = added.Type
         };
+    }
+
+    public async Task<List<int>> GetInteractedLocationIdsAsync(int userId)
+    {
+        return await _interactionRepository.GetInteractedLocationIdsByUserIdAsync(userId);
     }
 
     public async Task<List<InteractionResponseDTO>> GetUserInteractionsAsync(int userId)

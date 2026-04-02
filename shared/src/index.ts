@@ -17,6 +17,7 @@ export * from './services/CategoriesApiService';
 export * from './services/WsService';
 export * from './services/InteractionApiService';
 export * from './services/StatisticsApiService';
+export * from './services/EventsApiService';
 
 // Providers
 export * from './providers/AuthProvider';

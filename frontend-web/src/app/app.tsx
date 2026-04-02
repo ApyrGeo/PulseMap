@@ -14,6 +14,7 @@ import NavigationBar from '../shared/navigation/NavigationBar';
 import AdminEventsPage from '../admin/events/AdminEventsPage';
 import StatisticsPage from '../admin/statistics/StatisticsPage';
 import AdminSettingsPage from '../admin/settings/AdminSettingsPage';
+import UserStatisticsPage from '../user/statistics/UserStatisticsPage';
 
 export function App() {
   return (
@@ -58,6 +59,7 @@ function AppRoutes() {
 
       <Route element={<UserRoutes />}>
         <Route path="/map" element={<UserMapPage />} />
+        <Route path="/user/statistics" element={<UserStatisticsPage />} />
       </Route>
 
       <Route path="/owner" element={<UserRoutes />}>

@@ -43,7 +43,7 @@ const AdminContextMenu = ({
           }}
           className="context-menu-item delete"
         >
-          <span>🗑️</span>
+          <img src="/icons/trash.png" style={{ width: 15, height: 15 }} alt="" />
           <span>Delete</span>
         </button>
 

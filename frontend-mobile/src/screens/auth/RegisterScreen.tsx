@@ -58,7 +58,7 @@ export default function RegisterScreen({ navigation }: any) {
             key={label}
             style={styles.input}
             placeholder={label}
-            placeholderTextColor="#666"
+            placeholderTextColor="#6B6B8A"
             value={value}
             onChangeText={setter}
             autoCapitalize={autoCapitalize ?? 'words'}
@@ -69,7 +69,7 @@ export default function RegisterScreen({ navigation }: any) {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor="#666"
+          placeholderTextColor="#6B6B8A"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
