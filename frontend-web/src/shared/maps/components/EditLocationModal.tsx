@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CategoryDTO, Location, LocationPutDTO } from '../Interfaces';
 import { fetchCategories } from '../services/CategoriesApiService';
+import { uploadMultipleImagesToAzure } from '../../services/AzureBlobService';
 import './LocationModal.css';
 
 interface EditLocationModalProps {
@@ -20,17 +21,19 @@ const EditLocationModal = ({
   const [description, setDescription] = useState(location.description || '');
   const [category, setCategory] = useState(location.category);
   const [categories, setCategories] = useState<CategoryDTO[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>(location.imageUrls ?? []);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setName(location.name);
     setDescription(location.description || '');
     setCategory(location.category);
+    setImageUrls(location.imageUrls ?? []);
   }, [location]);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     (async () => {
       try {
@@ -44,9 +47,24 @@ const EditLocationModal = ({
 
   if (!isOpen) return null;
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setIsUploadingImages(true);
+    try {
+      const results = await uploadMultipleImagesToAzure(files);
+      setImageUrls((prev) => [...prev, ...results.map((r) => r.url)]);
+    } catch (err) {
+      console.error('Image upload failed', err);
+    } finally {
+      setIsUploadingImages(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, description, category });
+    onSubmit({ name, description, category, imageUrls });
   };
 
   return (
@@ -97,6 +115,60 @@ const EditLocationModal = ({
             />
           </div>
 
+          <div className="form-group">
+            <label className="form-label">Images</label>
+            {imageUrls.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                {imageUrls.map((url, i) => (
+                  <div key={i} style={{ position: 'relative' }}>
+                    <img
+                      src={url}
+                      alt=""
+                      style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setImageUrls((prev) => prev.filter((_, idx) => idx !== i))}
+                      style={{
+                        position: 'absolute',
+                        top: 2,
+                        right: 2,
+                        background: '#EF4444',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: 20,
+                        height: 20,
+                        cursor: 'pointer',
+                        fontSize: 12,
+                        lineHeight: '20px',
+                        padding: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: 'none' }}
+              onChange={handleImageSelect}
+            />
+            <button
+              type="button"
+              className="modal-button-cancel"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingImages}
+            >
+              {isUploadingImages ? 'Uploading...' : '+ Add Photos'}
+            </button>
+          </div>
+
           <div className="modal-footer">
             <button
               type="button"
@@ -105,7 +177,7 @@ const EditLocationModal = ({
             >
               Cancel
             </button>
-            <button type="submit" className="modal-button-submit">
+            <button type="submit" className="modal-button-submit" disabled={isUploadingImages}>
               Save Changes
             </button>
           </div>

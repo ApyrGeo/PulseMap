@@ -135,45 +135,82 @@ const LocationsListView = ({
     <Box sx={{ p: 3 }}>
       {/* Header with filters */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 600, color: '#fff' }}>
           My Locations ({myLocations.length})
         </Typography>
-        
-        <Stack direction="row" spacing={1}>
+
+        <Stack direction="row" spacing={1} flexWrap="wrap">
           <Chip
             label={`All (${myLocations.length})`}
             onClick={() => setFilter('all')}
-            color={filter === 'all' ? 'primary' : 'default'}
+            sx={{
+              backgroundColor: filter === 'all' ? '#FF6B35' : '#2D2D44',
+              color: '#fff',
+              '&:hover': { backgroundColor: filter === 'all' ? '#E55A25' : '#3D3D54' },
+            }}
           />
           <Chip
             label={`Active (${myLocations.filter((l) => !l.isExpired).length})`}
             onClick={() => setFilter('active')}
-            color={filter === 'active' ? 'primary' : 'default'}
+            sx={{
+              backgroundColor: filter === 'active' ? '#10B981' : '#2D2D44',
+              color: '#fff',
+              '&:hover': { backgroundColor: filter === 'active' ? '#059669' : '#3D3D54' },
+            }}
           />
           <Chip
             label={`Expired (${myLocations.filter((l) => l.isExpired).length})`}
             onClick={() => setFilter('expired')}
-            color={filter === 'expired' ? 'default' : 'default'}
+            sx={{
+              backgroundColor: filter === 'expired' ? '#EF4444' : '#2D2D44',
+              color: '#fff',
+              '&:hover': { backgroundColor: filter === 'expired' ? '#DC2626' : '#3D3D54' },
+            }}
           />
           <Chip
             label={`Needs Review (${myLocations.filter((l) => l.requiresReview).length})`}
             onClick={() => setFilter('review')}
-            color={filter === 'review' ? 'warning' : 'default'}
             icon={<Warning />}
+            sx={{
+              backgroundColor: filter === 'review' ? '#F59E0B' : '#2D2D44',
+              color: '#fff',
+              '&:hover': { backgroundColor: filter === 'review' ? '#D97706' : '#3D3D54' },
+              '& .MuiChip-icon': { color: '#fff' },
+            }}
           />
         </Stack>
       </Box>
 
       {/* Owned location alert */}
       {ownedLocation && (
-        <Alert severity="info" sx={{ mb: 2 }} icon={<EmojiEvents />}>
+        <Alert
+          severity="info"
+          sx={{
+            mb: 2,
+            backgroundColor: '#0F1824',
+            border: '1px solid #3b82f6',
+            color: '#3b82f6',
+            '& .MuiAlert-icon': { color: '#3b82f6' },
+          }}
+          icon={<EmojiEvents />}
+        >
           You own: <strong>{ownedLocation.name}</strong> - This is your permanent location
         </Alert>
       )}
 
       {/* Locations list */}
       {filteredLocations.length === 0 ? (
-        <Alert severity="info">No locations found with the current filter.</Alert>
+        <Alert
+          severity="info"
+          sx={{
+            backgroundColor: '#0F1824',
+            border: '1px solid #3b82f6',
+            color: '#3b82f6',
+            '& .MuiAlert-icon': { color: '#3b82f6' },
+          }}
+        >
+          No locations found with the current filter.
+        </Alert>
       ) : (
         <Stack spacing={2}>
           {filteredLocations.map((location) => (
@@ -181,15 +218,16 @@ const LocationsListView = ({
               key={location.id}
               sx={{
                 position: 'relative',
-                border: location.owner?.id === currentUserId ? '2px solid #F59E0B' : 'none',
-                opacity: location.isExpired ? 0.6 : 1,
+                backgroundColor: '#1A1A2E',
+                border: location.owner?.id === currentUserId ? '2px solid #F59E0B' : '1px solid #2D2D44',
+                opacity: location.isExpired ? 0.7 : 1,
               }}
             >
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                   <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#fff' }}>
                         {location.name}
                       </Typography>
                       
@@ -231,7 +269,7 @@ const LocationsListView = ({
                     />
 
                     {location.description && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      <Typography variant="body2" sx={{ mt: 1, color: '#8E8E8E' }}>
                         {location.description}
                       </Typography>
                     )}
@@ -240,68 +278,74 @@ const LocationsListView = ({
                     {location.requiresReview && location.event && (
                       <Alert
                         severity="warning"
-                        sx={{ mt: 2 }}
+                        sx={{
+                          mt: 2,
+                          backgroundColor: '#1F1800',
+                          border: '1px solid #F59E0B',
+                          color: '#F59E0B',
+                          '& .MuiAlert-icon': { color: '#F59E0B' },
+                        }}
                         icon={<Warning />}
                       >
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#F59E0B' }}>
                           Event Assignment Pending Review
                         </Typography>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ color: '#F59E0B' }}>
                           Event: <strong>{location.event.name}</strong>
                         </Typography>
                         {location.eventAssignmentConfidence !== undefined && (
-                          <Typography variant="body2">
+                          <Typography variant="body2" sx={{ color: '#F59E0B' }}>
                             Confidence: <strong>{(location.eventAssignmentConfidence * 100).toFixed(1)}%</strong>
                           </Typography>
                         )}
                       </Alert>
                     )}
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <LocationOn fontSize="small" color="action" />
-                        <Typography variant="caption" color="text.secondary">
+                        <LocationOn fontSize="small" sx={{ color: '#8E8E8E' }} />
+                        <Typography variant="caption" sx={{ color: '#8E8E8E' }}>
                           {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                         </Typography>
                       </Box>
-                      
+
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Favorite fontSize="small" color="action" />
-                        <Typography variant="caption">{location.likesCount}</Typography>
+                        <Favorite fontSize="small" sx={{ color: '#8E8E8E' }} />
+                        <Typography variant="caption" sx={{ color: '#ccc' }}>{location.likesCount}</Typography>
                       </Box>
-                      
+
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <ChatBubble fontSize="small" color="action" />
-                        <Typography variant="caption">{location.messages.length}</Typography>
+                        <ChatBubble fontSize="small" sx={{ color: '#8E8E8E' }} />
+                        <Typography variant="caption" sx={{ color: '#ccc' }}>{location.messages.length}</Typography>
                       </Box>
-                      
+
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Timer fontSize="small" color="action" />
-                        <Typography variant="caption">
+                        <Timer fontSize="small" sx={{ color: '#8E8E8E' }} />
+                        <Typography variant="caption" sx={{ color: '#ccc' }}>
                           Expires: {formatDate(location.expiresAt)}
                         </Typography>
                       </Box>
                     </Box>
                   </Box>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ml: 2 }}>
                     {location.requiresReview && (
                       <>
                         <Button
                           variant="contained"
-                          color="success"
                           size="small"
                           startIcon={<CheckCircle />}
                           onClick={() => handleConfirmEvent(location.id)}
+                          sx={{ backgroundColor: '#10B981', '&:hover': { backgroundColor: '#059669' } }}
                         >
                           Approve
                         </Button>
                         <Button
                           variant="outlined"
-                          color="error"
                           size="small"
                           startIcon={<Cancel />}
                           onClick={() => handleRejectEvent(location.id)}
+                          sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { borderColor: '#DC2626', backgroundColor: '#2D1B1B' } }}
                         >
                           Reject
                         </Button>
@@ -312,16 +356,17 @@ const LocationsListView = ({
                       size="small"
                       startIcon={<Edit />}
                       onClick={() => setEditingLocation(location)}
+                      sx={{ borderColor: '#3b82f6', color: '#3b82f6', '&:hover': { borderColor: '#2563eb', backgroundColor: '#0F1824' } }}
                     >
                       Edit
                     </Button>
                     <Button
                       variant="outlined"
-                      color="error"
                       size="small"
                       startIcon={<Delete />}
                       onClick={() => handleDelete(location.id)}
                       disabled={location.owner?.id === currentUserId}
+                      sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { borderColor: '#DC2626', backgroundColor: '#2D1B1B' }, '&.Mui-disabled': { borderColor: '#2D2D44', color: '#4D4D64' } }}
                     >
                       Delete
                     </Button>

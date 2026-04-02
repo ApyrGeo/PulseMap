@@ -120,7 +120,7 @@ const LocationPopup = memo(
         sx={{
           minWidth: 550,
           maxWidth: 650,
-          bgcolor: 'background.paper',
+          bgcolor: '#1A1A2E',
           borderRadius: 2,
           overflow: 'hidden',
         }}
@@ -194,7 +194,7 @@ const LocationPopup = memo(
           >
             {/* Description */}
             {location.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography variant="body2" sx={{ mb: 1, color: '#ccc' }}>
                 {location.description}
               </Typography>
             )}
@@ -236,8 +236,8 @@ const LocationPopup = memo(
                   sx={{
                     p: 1.5,
                     bgcolor: location.event.requiresReview
-                      ? '#fef3c7'
-                      : '#d1fae5',
+                      ? '#2D1F0A'
+                      : '#0A2D1A',
                     borderRadius: 1,
                     border: 1,
                     borderColor: location.event.requiresReview
@@ -252,11 +252,12 @@ const LocationPopup = memo(
                         fontWeight={600}
                         sx={{
                           color: location.event.requiresReview
-                            ? '#92400e'
-                            : '#065f46',
+                            ? '#fbbf24'
+                            : '#34d399',
                         }}
                       >
-                        🎯 Part of Event:
+                        <img src="/icons/target.png" style={{ width: 14, height: 14, marginRight: 4, verticalAlign: 'middle' }} alt="" />
+                        Part of Event:
                       </Typography>
                       <Chip
                         label={location.event.name}
@@ -276,8 +277,8 @@ const LocationPopup = memo(
                         variant="caption"
                         sx={{
                           color: location.event.requiresReview
-                            ? '#92400e'
-                            : '#065f46',
+                            ? '#fbbf24'
+                            : '#34d399',
                           fontWeight: 500,
                         }}
                       >
@@ -288,9 +289,10 @@ const LocationPopup = memo(
                     {location.event.requiresReview && (
                       <Typography
                         variant="caption"
-                        sx={{ color: '#92400e', fontStyle: 'italic' }}
+                        sx={{ color: '#fbbf24', fontStyle: 'italic' }}
                       >
-                        ⚠️ This event requires admin review
+                        <img src="/icons/warning.png" style={{ width: 12, height: 12, marginRight: 4, verticalAlign: 'middle' }} alt="" />
+                        This event requires admin review
                       </Typography>
                     )}
                   </Stack>
@@ -341,7 +343,7 @@ const LocationPopup = memo(
             {/* Comments Section */}
             {user && (
               <>
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1, borderColor: '#2D2D44' }} />
                 <Box sx={{ maxHeight: 250, overflowY: 'auto' }}>
                   <LocationComments
                     comments={location.messages}

@@ -85,6 +85,7 @@ export interface LocationPutDTO {
   name: string;
   description?: string;
   category: string;
+  imageUrls?: string[];
 }
 
 export interface CategoryDTO {

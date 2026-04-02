@@ -26,7 +26,7 @@ const OwnerContextMenu = ({
           }}
           className="context-menu-item edit"
         >
-          <span>✏️</span>
+          <img src="/icons/edit.png" style={{ width: 15, height: 15 }} alt="" />
           <span>Modify</span>
         </button>
         <button
@@ -36,7 +36,7 @@ const OwnerContextMenu = ({
           }}
           className="context-menu-item delete"
         >
-          <span>🗑️</span>
+          <img src="/icons/trash.png" style={{ width: 15, height: 15 }} alt="" />
           <span>Delete</span>
         </button>
       </div>

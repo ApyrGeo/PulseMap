@@ -14,6 +14,7 @@ public class PulseMapContext(DbContextOptions<PulseMapContext> options) : DbCont
     public DbSet<LikeStatus> LikeStatuses => Set<LikeStatus>();
     public DbSet<AIStatistics> AIStatistics => Set<AIStatistics>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<Interaction> Interactions => Set<Interaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

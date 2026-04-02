@@ -84,8 +84,8 @@ public class LocationController(ILocationService locationService, IAuthorization
         if (existingLocation == null)
             return NotFound();
 
-        // Only owner or admin can update
-        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id))
+        // Creator or owner (or admin) can update
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
         var updatedLocation = await _locationService.UpdateLocationAsync(locationResponseDTO, id);
@@ -115,8 +115,8 @@ public class LocationController(ILocationService locationService, IAuthorization
         if (existingLocation == null)
             return NotFound();
 
-        // Only owner or admin can expire
-        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id))
+        // Creator or owner (or admin) can expire
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
         var updatedLocation = await _locationService.ExpireLocationAsync(id);
@@ -135,8 +135,8 @@ public class LocationController(ILocationService locationService, IAuthorization
         if (existingLocation == null)
             return NotFound();
 
-        // Only owner or admin can extend
-        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id))
+        // Creator or owner (or admin) can extend
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
         var updatedLocation = await _locationService.ExtendLocationExpirationAsync(id);
@@ -165,25 +165,39 @@ public class LocationController(ILocationService locationService, IAuthorization
     }
 
     [HttpPatch("{locationId}/confirm-event")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User,Admin")]
     [ProducesResponseType(200)]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     public async Task<ActionResult<LocationResponseDTO>> ConfirmLocationEvent(int locationId)
     {
+        var existingLocation = await _locationService.GetLocationByIdAsync(locationId);
+        if (existingLocation == null)
+            return NotFound();
+
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
+            return Forbid();
+
         var updatedLocation = await _locationService.ConfirmLocationEventAsync(locationId);
         return Ok(updatedLocation);
     }
 
     [HttpPatch("{locationId}/reject-event")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User,Admin")]
     [ProducesResponseType(200)]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     public async Task<ActionResult<LocationResponseDTO>> RejectLocationEvent(int locationId)
     {
+        var existingLocation = await _locationService.GetLocationByIdAsync(locationId);
+        if (existingLocation == null)
+            return NotFound();
+
+        if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
+            return Forbid();
+
         var updatedLocation = await _locationService.RejectLocationEventAsync(locationId);
         return Ok(updatedLocation);
     }

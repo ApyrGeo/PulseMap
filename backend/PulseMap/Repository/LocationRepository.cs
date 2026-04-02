@@ -88,6 +88,14 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
             .FirstOrDefaultAsync(l => l.OwnerId == ownerId && !l.IsExpired);
     }
 
+    public async Task<List<Location>> GetLocationsByIdsAsync(List<int> ids)
+    {
+        return await _context.Locations
+            .Where(l => ids.Contains(l.Id))
+            .Include(l => l.Category)
+            .ToListAsync();
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

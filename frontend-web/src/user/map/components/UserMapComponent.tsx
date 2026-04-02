@@ -282,6 +282,32 @@ const UserMapComponent = () => {
                 onChange={(_, value) =>
                   setSelectedType(value === 'None' ? null : value)
                 }
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#0F0F1A',
+                    color: '#fff',
+                    '& fieldset': { borderColor: '#2D2D44' },
+                    '&:hover fieldset': { borderColor: '#4D4D64' },
+                    '&.Mui-focused fieldset': { borderColor: '#FF6B35' },
+                  },
+                  '& .MuiInputLabel-root': { color: '#8E8E8E' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#FF6B35' },
+                  '& .MuiSvgIcon-root': { color: '#8E8E8E' },
+                }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      backgroundColor: '#1A1A2E',
+                      border: '1px solid #2D2D44',
+                      color: '#fff',
+                      '& .MuiAutocomplete-option': {
+                        color: '#fff',
+                        '&:hover': { backgroundColor: '#2D2D44' },
+                        '&[aria-selected="true"]': { backgroundColor: '#2D2D54' },
+                      },
+                    },
+                  },
+                }}
                 renderInput={(params) => (
                   <TextField {...params} label="Ping Type" variant="outlined" />
                 )}
@@ -306,25 +332,25 @@ const UserMapComponent = () => {
 
           <aside
             style={{
-              border: '1px solid #e5e7eb',
+              border: '1px solid #2D2D44',
               borderRadius: '10px',
               padding: '12px',
-              backgroundColor: '#fff',
+              backgroundColor: '#1A1A2E',
               minHeight: '240px',
               maxHeight: 'calc(100vh - 220px)',
               overflowY: 'auto',
             }}
           >
-            <h3 style={{ margin: 0, marginBottom: 8, fontSize: '1rem' }}>
+            <h3 style={{ margin: 0, marginBottom: 8, fontSize: '1rem', color: '#fff' }}>
               Recommended for you
             </h3>
 
             {isLoadingRecommendations && (
-              <p style={{ margin: 0, color: '#6b7280' }}>Loading…</p>
+              <p style={{ margin: 0, color: '#8E8E8E' }}>Loading…</p>
             )}
 
             {!isLoadingRecommendations && recommendedLocations.length === 0 && (
-              <p style={{ margin: 0, color: '#6b7280' }}>
+              <p style={{ margin: 0, color: '#8E8E8E' }}>
                 No recommendations in this area yet.
               </p>
             )}
@@ -341,19 +367,19 @@ const UserMapComponent = () => {
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    border: '1px solid #e5e7eb',
+                    border: `1px solid ${focusedRecommendationId === rec.id ? '#FF6B35' : '#2D2D44'}`,
                     borderRadius: '10px',
                     padding: '10px',
                     marginTop: index === 0 ? 0 : 10,
                     cursor: 'pointer',
                     background:
                       focusedRecommendationId === rec.id
-                        ? 'linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%)'
-                        : '#ffffff',
+                        ? 'linear-gradient(135deg, #2D1F1A 0%, #1A1A2E 100%)'
+                        : '#16213E',
                     boxShadow:
                       focusedRecommendationId === rec.id
-                        ? '0 4px 12px rgba(59,130,246,0.15)'
-                        : '0 2px 8px rgba(15,23,42,0.06)',
+                        ? '0 4px 12px rgba(255,107,53,0.15)'
+                        : '0 2px 8px rgba(0,0,0,0.3)',
                     transition: 'all 0.2s ease',
                   }}
                 >
@@ -369,7 +395,7 @@ const UserMapComponent = () => {
                       style={{
                         fontWeight: 700,
                         fontSize: '0.95rem',
-                        color: '#111827',
+                        color: '#fff',
                         maxWidth: '80%',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -382,8 +408,8 @@ const UserMapComponent = () => {
                       style={{
                         fontSize: '0.72rem',
                         fontWeight: 700,
-                        color: '#1d4ed8',
-                        backgroundColor: '#dbeafe',
+                        color: '#FF6B35',
+                        backgroundColor: '#2D1F1A',
                         borderRadius: 9999,
                         padding: '2px 8px',
                       }}
@@ -395,7 +421,7 @@ const UserMapComponent = () => {
                   <div
                     style={{
                       fontSize: '0.78rem',
-                      color: '#4b5563',
+                      color: '#8E8E8E',
                       marginBottom: 6,
                     }}
                   >
@@ -405,7 +431,7 @@ const UserMapComponent = () => {
                   <div
                     style={{
                       fontSize: '0.8rem',
-                      color: '#374151',
+                      color: '#ccc',
                       lineHeight: 1.35,
                     }}
                   >

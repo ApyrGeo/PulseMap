@@ -1,21 +1,22 @@
 .event-detection-panel {
-  background: white;
+  background: #1A1A2E;
   border-radius: 12px;
   padding: 24px;
   margin: 20px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2D2D44;
 }
 
 .event-detection-header h2 {
   margin: 0 0 8px 0;
-  color: #1f2937;
+  color: #fff;
   font-size: 24px;
   font-weight: 600;
 }
 
 .event-detection-subtitle {
   margin: 0;
-  color: #6b7280;
+  color: #8E8E8E;
   font-size: 14px;
 }
 
@@ -25,7 +26,7 @@
   gap: 16px;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #2D2D44;
 }
 
 .control-group {
@@ -37,20 +38,23 @@
 .control-group label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: #ccc;
 }
 
 .control-group input {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2D2D44;
   border-radius: 6px;
   font-size: 14px;
   width: 200px;
+  background-color: #0F0F1A;
+  color: #fff;
 }
 
 .control-group input:disabled {
-  background-color: #f3f4f6;
+  background-color: #2D2D44;
   cursor: not-allowed;
+  color: #8E8E8E;
 }
 
 .analyze-button {
@@ -70,17 +74,18 @@
 }
 
 .analyze-button:disabled {
-  background-color: #9ca3af;
+  background-color: #2D2D44;
+  color: #8E8E8E;
   cursor: not-allowed;
 }
 
 .event-detection-error {
   margin-top: 16px;
   padding: 12px;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  background-color: #4D1B1B;
+  border: 1px solid #FF6B6B;
   border-radius: 6px;
-  color: #991b1b;
+  color: #FF6B6B;
 }
 
 .event-detection-results {
@@ -89,15 +94,15 @@
 
 .result-summary {
   padding: 16px;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background-color: #0F1F18;
+  border: 1px solid #10B981;
   border-radius: 6px;
   margin-bottom: 20px;
 }
 
 .result-summary h3 {
   margin: 0 0 12px 0;
-  color: #166534;
+  color: #10B981;
   font-size: 18px;
 }
 
@@ -113,19 +118,19 @@
 }
 
 .stat-label {
-  color: #166534;
+  color: #10B981;
   font-weight: 500;
 }
 
 .stat-value {
-  color: #166534;
+  color: #10B981;
   font-weight: 700;
   font-size: 20px;
 }
 
 .events-list h4 {
   margin: 0 0 16px 0;
-  color: #1f2937;
+  color: #fff;
   font-size: 16px;
   font-weight: 600;
 }
@@ -137,15 +142,16 @@
 }
 
 .event-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: #0F0F1A;
+  border: 1px solid #2D2D44;
   border-radius: 8px;
   padding: 16px;
   transition: box-shadow 0.2s;
 }
 
 .event-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border-color: #FF6B35;
 }
 
 .event-header {
@@ -169,25 +175,25 @@
 }
 
 .event-badge.review {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: #1F1800;
+  color: #F59E0B;
 }
 
 .event-badge.inactive {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: #2D2D44;
+  color: #8E8E8E;
 }
 
 .event-details p {
   margin: 6px 0;
   font-size: 14px;
-  color: #4b5563;
+  color: #ccc;
 }
 
 .event-date {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #2D2D44;
   font-size: 12px;
-  color: #6b7280;
+  color: #8E8E8E;
 }

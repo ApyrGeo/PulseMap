@@ -1,0 +1,65 @@
+/* Teardrop marker base rotation */
+.teardrop-marker {
+  transform: rotate(-45deg);
+}
+
+/* Nearby/active location ping animation */
+@keyframes marker-ping {
+  0%, 100% {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 0 0 0 rgba(255, 107, 53, 0.7);
+  }
+  50% {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 0 0 14px rgba(255, 107, 53, 0);
+  }
+}
+
+.teardrop-marker-nearby {
+  transform: rotate(-45deg);
+  animation: marker-ping 1.4s ease-in-out infinite;
+}
+
+/* New marker bounce-in */
+@keyframes marker-new {
+  0%   { transform: scale(0.2) rotate(-45deg); opacity: 0.4; }
+  60%  { transform: scale(1.25) rotate(-45deg); opacity: 1; }
+  80%  { transform: scale(0.9) rotate(-45deg); }
+  100% { transform: scale(1) rotate(-45deg); }
+}
+
+.teardrop-marker-new {
+  transform: rotate(-45deg);
+  animation: marker-new 0.7s ease-out forwards;
+}
+
+/* Zoom-out overlay */
+.map-zoom-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(26, 26, 46, 0.88);
+  border: 1px solid #2D2D44;
+  border-radius: 10px;
+  padding: 10px 16px;
+  z-index: 1000;
+  pointer-events: none;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+.map-zoom-overlay .count {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.map-zoom-overlay .label {
+  font-size: 11px;
+  color: #8E8E8E;
+  margin-top: 2px;
+}
+
+.map-zoom-overlay .hint {
+  font-size: 10px;
+  color: #FF6B35;
+  margin-top: 4px;
+}

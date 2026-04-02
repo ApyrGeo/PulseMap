@@ -15,6 +15,7 @@ public class LocationService(
     IRecommendationAiScorer recommendationAiScorer,
     IUserRepository userRepository,
     IMessageRepository messageRepository,
+    IInteractionRepository interactionRepository,
     IMapper mapper,
     IValidatorFactory validatorFactory,
     IWebSocketNotificationService webSocketNotificationService) : ILocationService
@@ -24,6 +25,7 @@ public class LocationService(
     private readonly IRecommendationAiScorer _recommendationAiScorer = recommendationAiScorer;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IMessageRepository _messageRepository = messageRepository;
+    private readonly IInteractionRepository _interactionRepository = interactionRepository;
     private readonly IMapper _mapper = mapper;
     private readonly IValidatorFactory _validator = validatorFactory;
     private readonly IWebSocketNotificationService _webSocketNotificationService = webSocketNotificationService;
@@ -155,6 +157,20 @@ public class LocationService(
         existingLocation.Category = category;
         existingLocation.Name = locationPutDto.Name;
         existingLocation.Description = locationPutDto.Description;
+
+        if (locationPutDto.ImageUrls != null)
+        {
+            existingLocation.Images.Clear();
+            for (var i = 0; i < locationPutDto.ImageUrls.Count; i++)
+            {
+                existingLocation.Images.Add(new LocationImage
+                {
+                    Url = locationPutDto.ImageUrls[i],
+                    CreatedAt = DateTime.UtcNow,
+                    Order = i,
+                });
+            }
+        }
 
         await _locationRepository.SaveChangesAsync();
 
@@ -358,6 +374,9 @@ public class LocationService(
         var likedLocations = await _locationRepository.GetLikedLocationsByUserIdAsync(userId);
         var likedLocationIds = likedLocations.Select(l => l.Id).ToHashSet();
 
+        var interactedLocationIds = await _interactionRepository.GetInteractedLocationIdsByUserIdAsync(userId);
+        var interactedLocationIdSet = interactedLocationIds.ToHashSet();
+
         var preferenceScores = new Dictionary<int, double>();
 
         foreach (var liked in likedLocations.Where(l => l.CategoryId > 0))
@@ -366,7 +385,6 @@ public class LocationService(
             {
                 preferenceScores[liked.CategoryId] = 0;
             }
-
             preferenceScores[liked.CategoryId] += 1.0;
         }
 
@@ -375,7 +393,7 @@ public class LocationService(
         var now = DateTime.UtcNow;
 
         var recommendationCandidates = inBoundsLocations
-            .Where(l => !likedLocationIds.Contains(l.Id) && l.CreatorId != userId)
+            .Where(l => !likedLocationIds.Contains(l.Id) && !interactedLocationIdSet.Contains(l.Id) && l.CreatorId != userId)
             .ToList();
 
         var likedDescriptions = likedLocations
@@ -383,8 +401,21 @@ public class LocationService(
             .Select(l => l.Description!)
             .ToList();
 
+        // Include interacted location descriptions in AI preference profile
+        var interactedLocations = await _locationRepository.GetLocationsByIdsAsync(interactedLocationIds.Take(20).ToList());
+        var interactedDescriptions = interactedLocations
+            .Where(l => !string.IsNullOrWhiteSpace(l.Description))
+            .Select(l => l.Description!)
+            .ToList();
+
+        var combinedDescriptions = likedDescriptions
+            .Concat(interactedDescriptions)
+            .Distinct()
+            .Take(30)
+            .ToList();
+
         var aiSimilarityScores = await _recommendationAiScorer.ScoreCandidatesByProfileAsync(
-            likedDescriptions,
+            combinedDescriptions,
             recommendationCandidates.Select(c => (c.Id, c.Description ?? string.Empty)).ToList());
 
         var recommendations = recommendationCandidates
