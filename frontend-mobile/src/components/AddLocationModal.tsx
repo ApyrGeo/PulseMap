@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -99,6 +99,7 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
   const { user, tokenService } = useAuth();
   const { userCoords } = useDeviceLocation();
 
+  const descriptionRef = useRef<TextInput>(null);
   const [coords, setCoords] = useState({ latitude, longitude });
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -259,9 +260,10 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
         ownerId: isOwned ? user.id : undefined,
         imageUrls: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
       });
+      Alert.alert('Succes', 'Locația a fost adăugată!');
       handleClose();
-    } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to add location');
+    } catch {
+      Alert.alert('Eroare', 'Eroare la adăugarea locației');
     } finally {
       setLoading(false);
     }
@@ -300,10 +302,17 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
             </TouchableOpacity>
           </View>
 
+          {!userCoords && (
+            <View style={styles.gpsBanner}>
+              <Text style={styles.gpsBannerText}>📍 Activați GPS-ul pentru a plasa corect locația</Text>
+            </View>
+          )}
+
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* Mini map — tap to adjust pin */}
+            {/* Mini map — tap to adjust pin. key forces re-render on each open */}
             <View style={styles.miniMapWrap}>
               <MapView
+                key={`minimap-${visible}`}
                 style={styles.miniMap}
                 initialRegion={{
                   latitude: coords.latitude,
@@ -339,13 +348,17 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
               placeholderTextColor="#6B6B8A"
               value={name}
               onChangeText={setName}
+              returnKeyType="next"
+              onSubmitEditing={() => descriptionRef.current?.focus()}
+              blurOnSubmit={false}
             />
 
             {/* Description */}
             <Text style={styles.label}>Description</Text>
             <TextInput
+              ref={descriptionRef}
               style={[styles.input, styles.textArea]}
-              placeholder="Optional description (triggers AI category suggestion on blur)"
+              placeholder="Descriere opțională (declanșează sugestie categorie AI)"
               placeholderTextColor="#6B6B8A"
               value={description}
               onChangeText={(t) => {
@@ -355,8 +368,10 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                 setShowVagueWarning(false);
               }}
               onBlur={handleDescriptionBlur}
+              onSubmitEditing={handleDescriptionBlur}
               multiline
               numberOfLines={3}
+              blurOnSubmit={false}
             />
 
             {/* Category */}
@@ -558,6 +573,16 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   closeBtn: { color: '#8E8E8E', fontSize: 20 },
 
+  gpsBanner: {
+    backgroundColor: '#2D1F0A',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F59E0B44',
+  },
+  gpsBannerText: { color: '#F59E0B', fontSize: 13, textAlign: 'center' },
+
   miniMapWrap: {
     marginBottom: 16,
     borderRadius: 12,
@@ -605,7 +630,7 @@ const styles = StyleSheet.create({
   },
   checkboxActive: { borderColor: '#FF6B35', backgroundColor: '#FF6B35' },
   checkmark: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  ownedLabel: { color: '#ccc', fontSize: 14 },
+  ownedLabel: { color: '#fff', fontSize: 14 },
 
   label: { color: '#8E8E8E', fontSize: 13, marginBottom: 6, marginTop: 12 },
   input: {

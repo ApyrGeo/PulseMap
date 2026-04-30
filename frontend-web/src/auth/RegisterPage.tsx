@@ -83,26 +83,11 @@ const RegisterPage = () => {
       toast.success('Registration successful! Please login.');
       navigate('/login');
     } catch (error: unknown) {
-      // Parse error message from response
-      let errorMessage = 'Registration failed';
-      if (error instanceof Error && error.message) {
-        try {
-          // Backend might return validation errors as JSON
-          const errorObj = JSON.parse(error.message);
-          if (errorObj.errors) {
-            // FluentValidation errors format
-            const firstError = Object.values(errorObj.errors)[0];
-            errorMessage = Array.isArray(firstError)
-              ? firstError[0]
-              : errorMessage;
-          } else if (errorObj.title) {
-            errorMessage = errorObj.title;
-          }
-        } catch {
-          errorMessage = error.message;
-        }
+      if (error instanceof Error && error.message === 'USER_ALREADY_EXISTS') {
+        toast.error('Adresă de email deja folosită');
+      } else {
+        toast.error('Înregistrare eșuată. Verificați datele și încercați din nou.');
       }
-      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

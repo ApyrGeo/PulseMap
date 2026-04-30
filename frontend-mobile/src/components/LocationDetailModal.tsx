@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,10 @@ import {
   Dimensions,
   Platform,
   KeyboardAvoidingView,
+  Alert,
+  Modal,
 } from 'react-native';
-import { Location, useAuth, useLocations, addComment } from '@pulse-map/shared';
+import { Location, useAuth, useLocations, addComment, reportLocation, ReportType } from '@pulse-map/shared';
 import { Icons } from '../utils/icons';
 
 const PROD_API = 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api';
@@ -73,6 +75,8 @@ export default function LocationDetailModal({ location, onClose }: Props) {
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const rawImages = location.imageUrls ?? [];
   const images = rawImages.map(normalizeImageUrl);
@@ -81,6 +85,17 @@ export default function LocationDetailModal({ location, onClose }: Props) {
   // Animate sheet height — avoids the "inputRow below screen" problem of translateY approach
   const animHeight = useRef(new Animated.Value(HALF_H)).current;
   const snapRef = useRef<'half' | 'full'>('half');
+
+  // Slide-up on mount so the X button doesn't appear outside the sheet
+  const openTranslateY = useRef(new Animated.Value(HALF_H)).current;
+  useEffect(() => {
+    Animated.spring(openTranslateY, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 80,
+      friction: 12,
+    }).start();
+  }, [openTranslateY]);
 
   const snapTo = useCallback(
     (pos: 'half' | 'full') => {
@@ -142,6 +157,23 @@ export default function LocationDetailModal({ location, onClose }: Props) {
     }
   }, [likeLocation, location.id, liked]);
 
+  const handleReport = useCallback(async (type: ReportType) => {
+    if (!user) return;
+    setShowReportModal(false);
+    try {
+      await reportLocation(tokenService, { userId: user.id, locationId: location.id, type });
+      setHasReported(true);
+      Alert.alert('Mulțumim', 'Raportul a fost trimis.');
+    } catch (e) {
+      if (e instanceof Error && e.message === 'ALREADY_REPORTED') {
+        setHasReported(true);
+        Alert.alert('Raport existent', 'Ai raportat deja această locație.');
+      } else {
+        Alert.alert('Eroare', 'Eroare la trimiterea raportului.');
+      }
+    }
+  }, [user, tokenService, location.id]);
+
   const handleAddComment = useCallback(async () => {
     if (!commentText.trim() || !user) return;
     setSubmitting(true);
@@ -155,6 +187,7 @@ export default function LocationDetailModal({ location, onClose }: Props) {
       setCommentText('');
     } catch (e) {
       console.error('Comment failed', e);
+      Alert.alert('Eroare', 'Eroare la trimiterea comentariului');
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +198,7 @@ export default function LocationDetailModal({ location, onClose }: Props) {
       {/* Backdrop tap to close */}
       <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
 
-      <Animated.View style={[styles.sheet, { height: animHeight }]}>
+      <Animated.View style={[styles.sheet, { height: animHeight, transform: [{ translateY: openTranslateY }] }]}>
         {/* Drag area: handle + header — PanResponder only here */}
         <View style={styles.dragArea} {...panResponder.panHandlers}>
           <View style={styles.handle} />
@@ -254,6 +287,18 @@ export default function LocationDetailModal({ location, onClose }: Props) {
               <Text style={styles.likeLabel}>{liked ? 'Unlike' : 'Like'}</Text>
             </TouchableOpacity>
 
+            {user && user.id !== location.creator?.id && (
+              <TouchableOpacity
+                style={[styles.reportBtn, hasReported && styles.reportBtnDisabled]}
+                onPress={() => !hasReported && setShowReportModal(true)}
+                disabled={hasReported}
+              >
+                <Text style={styles.reportBtnText}>
+                  {hasReported ? '⚑ Raportat' : '⚑ Raportează'}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             <View style={styles.commentsSection}>
               <Text style={styles.commentsTitle}>Comments ({comments.length})</Text>
               {comments.map((msg) => (
@@ -294,6 +339,28 @@ export default function LocationDetailModal({ location, onClose }: Props) {
           )}
         </KeyboardAvoidingView>
       </Animated.View>
+
+      {/* Report type selection modal */}
+      <Modal visible={showReportModal} transparent animationType="fade" onRequestClose={() => setShowReportModal(false)}>
+        <TouchableOpacity style={styles.reportModalOverlay} activeOpacity={1} onPress={() => setShowReportModal(false)}>
+          <View style={styles.reportModalBox}>
+            <Text style={styles.reportModalTitle}>Motiv raportare</Text>
+            {[
+              { type: ReportType.LocationDoesNotExist, label: 'Locația nu există' },
+              { type: ReportType.MisleadingInformation, label: 'Informație înșelătoare' },
+              { type: ReportType.InappropriateContent, label: 'Conținut necorespunzător' },
+              { type: ReportType.Duplicate, label: 'Locație duplicată' },
+            ].map(({ type, label }) => (
+              <TouchableOpacity key={type} style={styles.reportModalOption} onPress={() => handleReport(type)}>
+                <Text style={styles.reportModalOptionText}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.reportModalCancel} onPress={() => setShowReportModal(false)}>
+              <Text style={styles.reportModalCancelText}>Anulează</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -420,4 +487,35 @@ const styles = StyleSheet.create({
   },
   sendBtnDisabled: { backgroundColor: '#2D2D44' },
   sendBtnText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+
+  reportBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#0F0F1A', borderRadius: 10, padding: 12,
+    marginBottom: 20, borderWidth: 1, borderColor: '#EF444433',
+  },
+  reportBtnDisabled: { opacity: 0.4 },
+  reportBtnText: { color: '#EF4444', fontSize: 14, fontWeight: '600' },
+
+  reportModalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  reportModalBox: {
+    backgroundColor: '#1A1A2E', borderRadius: 16,
+    padding: 20, width: 300, borderWidth: 1, borderColor: '#2D2D44',
+  },
+  reportModalTitle: {
+    color: '#fff', fontSize: 16, fontWeight: '700',
+    textAlign: 'center', marginBottom: 16,
+  },
+  reportModalOption: {
+    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#2D2D44',
+  },
+  reportModalOptionText: { color: '#fff', fontSize: 15, textAlign: 'center' },
+  reportModalCancel: {
+    paddingVertical: 14, marginTop: 4,
+  },
+  reportModalCancelText: {
+    color: '#8E8E8E', fontSize: 15, textAlign: 'center', fontWeight: '600',
+  },
 });

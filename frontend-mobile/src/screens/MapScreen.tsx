@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import {
   useLocations,
@@ -18,6 +19,8 @@ import {
   EventResponseDTO,
   Location,
   MapBounds,
+  reportLocation,
+  ReportType,
 } from '@pulse-map/shared';
 import { useProximityDetection } from '../hooks/useProximityDetection';
 import { useDeviceLocation } from '../contexts/LocationContext';
@@ -49,6 +52,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function MapScreen() {
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
   const { activeLocations, refreshLocations, interactedLocationIds, markAsInteracted } = useLocations();
   const { user, tokenService } = useAuth();
   const { userCoords } = useDeviceLocation();
@@ -104,6 +109,27 @@ export default function MapScreen() {
       );
     }
   }, [userCoords, hasInitialLocation]);
+
+  // Navigate-to-location from RecommendationsScreen
+  useEffect(() => {
+    const { focusLocationId, latitude, longitude } = route.params ?? {};
+    if (!focusLocationId) return;
+
+    mapRef.current?.animateToRegion(
+      {
+        latitude,
+        longitude,
+        latitudeDelta: 0.002,
+        longitudeDelta: 0.002,
+      },
+      600
+    );
+
+    const found = activeLocations.find((l) => l.id === focusLocationId);
+    if (found) setSelectedLocation(found);
+
+    navigation.setParams({ focusLocationId: undefined, latitude: undefined, longitude: undefined });
+  }, [route.params?.focusLocationId]);
 
   // WS sync: re-filter activeLocations by bounds on WS push, only at neighborhood zoom
   useEffect(() => {
@@ -167,6 +193,24 @@ export default function MapScreen() {
       markInteracted(location.id);
     },
     [markInteracted]
+  );
+
+  const handleReportCard = useCallback(
+    async (location: Location) => {
+      if (!user) return;
+      try {
+        await reportLocation(tokenService, {
+          userId: user.id,
+          locationId: location.id,
+          type: ReportType.LocationDoesNotExist,
+        });
+      } catch {
+        // 409 = already reported — still dismiss
+      } finally {
+        markInteracted(location.id);
+      }
+    },
+    [user, tokenService, markInteracted]
   );
 
   const handleMarkerPress = useCallback(
@@ -330,10 +374,17 @@ export default function MapScreen() {
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
 
+      {!userCoords && (
+        <View style={styles.gpsBanner}>
+          <Text style={styles.gpsBannerText}>📍 Activați GPS-ul pentru a folosi harta</Text>
+        </View>
+      )}
+
       <ProximityCardStack
         locations={nearbyLocations}
         onConfirm={handleConfirmInteraction}
         onDismiss={handleDismissCard}
+        onReport={handleReportCard}
       />
 
       <AddLocationModal
@@ -357,6 +408,20 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
+  gpsBanner: {
+    position: 'absolute',
+    top: 12,
+    left: 16,
+    right: 16,
+    backgroundColor: '#2D1F0A',
+    borderRadius: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#F59E0B55',
+    zIndex: 100,
+    alignItems: 'center',
+  },
+  gpsBannerText: { color: '#F59E0B', fontSize: 13, fontWeight: '500' },
   markerContainer: {
     width: 32,
     height: 32,

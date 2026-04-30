@@ -46,8 +46,8 @@ function MainTabs() {
         tabBarStyle: {
           backgroundColor: '#1A1A2E',
           borderTopColor: '#2D2D44',
-          height: 72,
-          paddingBottom: 12,
+          height: 80,
+          paddingBottom: 16,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 10, marginTop: 2 },

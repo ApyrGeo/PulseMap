@@ -7,6 +7,8 @@ import {
 import { useEffect, useState, useRef, memo } from 'react';
 import LocationComments from './LocationComments';
 import { useAuth } from '../../../auth/AuthProvider';
+import toast from 'react-hot-toast';
+import { reportLocation, ReportType, REPORT_TYPE_LABELS } from '../services/ReportApiService';
 import {
   Box,
   Typography,
@@ -27,7 +29,10 @@ import {
   AccessTime,
   Warning,
   Image as ImageIcon,
+  Flag,
 } from '@mui/icons-material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 const categoryColors: { [key: string]: string } = {
   [LocationCategory.NotSet]: '#6B7280', // Gray
@@ -64,6 +69,9 @@ const LocationPopup = memo(
     const [likeCount, setLikeCount] = useState(location.likesCount || 0);
     const [isLiked, setIsLiked] = useState(location.isLikedByCurrentUser);
     const isOptimisticUpdate = useRef(false);
+    const [hasReported, setHasReported] = useState(false);
+    const [isReporting, setIsReporting] = useState(false);
+    const [reportMenuAnchor, setReportMenuAnchor] = useState<null | HTMLElement>(null);
 
     // Use actual images from location or placeholder
     const images =
@@ -107,13 +115,30 @@ const LocationPopup = memo(
     };
 
     useEffect(() => {
-      // Don't update if we're in the middle of an optimistic update
-      if (isOptimisticUpdate.current) {
-        return;
-      }
+      if (isOptimisticUpdate.current) return;
       setLikeCount(location.likesCount || 0);
       setIsLiked(location.isLikedByCurrentUser);
     }, [location.likesCount, location.isLikedByCurrentUser]);
+
+    const handleReportSelect = async (type: ReportType) => {
+      setReportMenuAnchor(null);
+      if (!user) return;
+      setIsReporting(true);
+      try {
+        await reportLocation(user.id, location.id, type);
+        setHasReported(true);
+        toast.success('Raportul a fost trimis.');
+      } catch (err) {
+        if (err instanceof Error && err.message === 'ALREADY_REPORTED') {
+          toast.error('Ai raportat deja această locație.');
+          setHasReported(true);
+        } else {
+          toast.error('Eroare la trimiterea raportului.');
+        }
+      } finally {
+        setIsReporting(false);
+      }
+    };
 
     return (
       <Box
@@ -331,13 +356,44 @@ const LocationPopup = memo(
                 color={isLiked ? 'error' : 'primary'}
                 startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
                 onClick={handleLikeToggle}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                }}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
               >
                 {isLiked ? 'Unlike' : 'Like'}
               </Button>
+
+              {/* Report Button — hidden for own locations */}
+              {user && user.id !== location.creator?.id && (
+                <>
+                  <Button
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    startIcon={<Flag />}
+                    disabled={hasReported || isReporting}
+                    onClick={(e) => setReportMenuAnchor(e.currentTarget)}
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                  >
+                    {hasReported ? 'Raportat' : 'Raportează'}
+                  </Button>
+                  <Menu
+                    anchorEl={reportMenuAnchor}
+                    open={Boolean(reportMenuAnchor)}
+                    onClose={() => setReportMenuAnchor(null)}
+                    PaperProps={{ sx: { bgcolor: '#1A1A2E', color: 'white' } }}
+                  >
+                    {(Object.values(ReportType).filter((v) => typeof v === 'number') as ReportType[]).map((type) => (
+                      <MenuItem
+                        key={type}
+                        onClick={() => handleReportSelect(type)}
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        {REPORT_TYPE_LABELS[type]}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </>
+              )}
             </Stack>
 
             {/* Comments Section */}

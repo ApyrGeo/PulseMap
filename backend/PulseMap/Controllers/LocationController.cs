@@ -6,15 +6,17 @@ using PulseMap.Authorization;
 using PulseMap.Domain.DTOs;
 using PulseMap.Extensions;
 using PulseMap.Interfaces;
+using PulseMap.Domain;
 
 namespace PulseMap.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class LocationController(ILocationService locationService, IAuthorizationService authorizationService) : ControllerBase
+public class LocationController(ILocationService locationService, IAuthorizationService authorizationService, IEventService eventService) : ControllerBase
 {
     private readonly ILocationService _locationService = locationService;
     private readonly IAuthorizationService _authorizationService = authorizationService;
+    private readonly IEventService _eventService = eventService;
 
     [HttpGet("{id}")]
     [AllowAnonymous]
@@ -200,5 +202,54 @@ public class LocationController(ILocationService locationService, IAuthorization
 
         var updatedLocation = await _locationService.RejectLocationEventAsync(locationId);
         return Ok(updatedLocation);
+    }
+
+    [HttpPatch("{id}/star")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<LocationResponseDTO>> ToggleStar(int id)
+    {
+        var result = await _locationService.ToggleStarAsync(id);
+        return Ok(result);
+    }
+
+    [HttpGet("starred")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<List<LocationResponseDTO>>> GetStarred()
+    {
+        var result = await _locationService.GetStarredLocationsAsync();
+        return Ok(result);
+    }
+
+    [HttpPost("seed-starred")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<SeedResultDTO>> SeedStarred()
+    {
+        var newLocations = await _locationService.SeedStarredLocationsAsync();
+        if (newLocations.Count == 0)
+            return Ok(new SeedResultDTO { LocationsSeeded = 0, EventsCreated = 0, EventsUpdated = 0 });
+
+        var eventIds = newLocations
+            .Where(l => l.EventId.HasValue)
+            .Select(l => l.EventId!.Value)
+            .Distinct()
+            .ToList();
+
+        var reactivated = eventIds.Count > 0
+            ? await _eventService.ReactivateExpiredEventsAsync(eventIds)
+            : 0;
+
+        return Ok(new SeedResultDTO
+        {
+            LocationsSeeded = newLocations.Count,
+            EventsCreated = 0,
+            EventsUpdated = reactivated
+        });
     }
 }

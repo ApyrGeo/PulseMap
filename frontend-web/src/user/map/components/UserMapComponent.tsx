@@ -256,10 +256,18 @@ const UserMapComponent = () => {
     await addResponseToMessage(message);
   };
   const handleLike = async (locationId: number) => {
-    await likeLocation(locationId);
+    try {
+      await likeLocation(locationId);
+    } catch {
+      toast.error('Nu poți da like de mai multe ori');
+    }
   };
   const handleUnlike = async (locationId: number) => {
-    await unlikeLocation(locationId);
+    try {
+      await unlikeLocation(locationId);
+    } catch {
+      toast.error('Eroare la unlike');
+    }
   };
 
   return (

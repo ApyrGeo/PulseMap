@@ -58,5 +58,9 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.RequiresReview)
             .HasDefaultValue(false)
             .IsRequired();
+
+        builder.Property(l => l.IsStarred)
+            .HasDefaultValue(false)
+            .IsRequired();
     }
 }

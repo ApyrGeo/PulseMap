@@ -72,9 +72,10 @@ public class EmbeddingLocationClassifier : ILocationClassifier
                 _logger.LogDebug("Category {Category} similarity: {Similarity:F4}", category, similarity);
             }
             
-            // Sort by similarity and take top 3
+            // Sort by similarity, filter by minimum threshold, take top 3
             var topCategories = categoryScores
                 .OrderByDescending(kvp => kvp.Value)
+                .Where(kvp => kvp.Value >= 0.25)
                 .Take(3)
                 .Select(kvp => kvp.Key)
                 .ToList();
@@ -117,9 +118,24 @@ public class EmbeddingLocationClassifier : ILocationClassifier
         return dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
     }
 
+    private static readonly Dictionary<string, string> CategoryDescriptions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Music"]         = "music concert live performance band DJ festival show stage singer musician gig venue sound",
+        ["Sport"]         = "sport fitness gym workout training match football basketball tennis swimming run marathon stadium",
+        ["Food"]          = "food restaurant cafe bistro dining eat meal cuisine bar drink brunch lunch dinner snack",
+        ["Entertainment"] = "entertainment cinema movie theater comedy show event party festival attraction amusement leisure fun",
+        ["Education"]     = "education school university library lecture workshop seminar museum exhibit learning study class",
+        ["Health"]        = "health clinic pharmacy hospital wellness medical doctor therapy meditation yoga spa wellness",
+        ["Technology"]    = "technology hackathon startup coworking office tech meetup conference coding programming innovation",
+        ["Travel"]        = "travel tourism landmark monument attraction sightseeing historic viewpoint scenic outdoor hiking",
+        ["Art"]           = "art gallery exhibition street art mural painting sculpture craft design creative installation",
+        ["Business"]      = "business market fair trade shop store retail commercial networking professional meeting",
+    };
+
     private static string BuildCategoryDescription(string categoryName)
     {
-        var lower = categoryName.ToLowerInvariant();
-        return $"{categoryName} {lower} places events activities points of interest map location";
+        if (CategoryDescriptions.TryGetValue(categoryName, out var desc))
+            return desc;
+        return $"{categoryName} place event activity point of interest";
     }
 }

@@ -8,6 +8,7 @@ public interface IEventService
     Task<List<EventResponseDTO>> GetAllEventsAsync(bool activeOnly = true);
     Task<List<EventResponseDTO>> GetEventsInBoundsAsync(double minLat, double maxLat, double minLng, double maxLng, bool activeOnly = true, bool includeLocations = false);
     Task<EventClusteringResultDTO> AnalyzeAndClusterLocationsAsync(double maxDistanceMeters = 100, CancellationToken ct = default);
+    Task<int> ReactivateExpiredEventsAsync(List<int> eventIds);
     Task<EventResponseDTO> ConfirmEventAsync(int eventId);
     Task DeleteEventAsync(int id);
 }

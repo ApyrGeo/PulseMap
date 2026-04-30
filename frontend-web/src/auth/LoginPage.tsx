@@ -24,7 +24,7 @@ const LoginPage = () => {
       await loginUser(email, password);
       toast.success('Logged in');
     } catch (error: any) {
-      toast.error('Login failed: ' + (error?.message ?? 'Unknown error'));
+      toast.error('Email sau parolă incorecte');
     } finally {
       setLoading(false);
     }

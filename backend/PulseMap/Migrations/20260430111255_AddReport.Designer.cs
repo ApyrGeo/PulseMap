@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PulseMap.Context;
@@ -11,9 +12,11 @@ using PulseMap.Context;
 namespace PulseMap.Migrations
 {
     [DbContext(typeof(PulseMapContext))]
-    partial class PulseMapContextModelSnapshot : ModelSnapshot
+    [Migration("20260430111255_AddReport")]
+    partial class AddReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -403,11 +406,6 @@ namespace PulseMap.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsExpired")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsStarred")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);

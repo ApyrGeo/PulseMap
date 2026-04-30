@@ -38,10 +38,7 @@ const UserNavigationBar = () => {
           {isAuthenticated && user?.role === Role.Admin && (
             <>
               <Link to="/admin/statistics" className="navigation-link">
-                Admin Panel
-              </Link>
-              <Link to="/admin/events" className="navigation-link">
-                Events
+                Statistics
               </Link>
               <Link to="/admin/settings" className="navigation-link">
                 Settings

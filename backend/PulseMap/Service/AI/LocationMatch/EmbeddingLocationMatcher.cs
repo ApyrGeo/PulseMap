@@ -12,9 +12,10 @@ public class EmbeddingLocationMatcher : ILocationMatcher
     private readonly IAIStatisticsService _statisticsService;
     private readonly ITranslationService _translationService;
 
-    private const double HIGH_CONFIDENCE_THRESHOLD = 0.65;  // Was 0.80 - more aggressive matching
-    private const double LOW_CONFIDENCE_THRESHOLD = 0.45;   // Was 0.65 - clear different locations
-    // Between 0.45-0.65 = PossiblySameLocation (GPT verification needed)
+    // Thresholds read from appsettings.json: AI:MatchThresholdHigh, AI:MatchThresholdLow
+    // Defaults: High=0.65, Low=0.45 (calibrate via F1 on labeled pairs)
+    private readonly double _highThreshold;
+    private readonly double _lowThreshold;
 
     public EmbeddingLocationMatcher(
         IConfiguration config, 
@@ -25,8 +26,9 @@ public class EmbeddingLocationMatcher : ILocationMatcher
         _logger = logger;
         _statisticsService = statisticsService;
         _translationService = translationService;
+        _highThreshold = config.GetValue<double>("AI:MatchThresholdHigh", 0.65);
+        _lowThreshold  = config.GetValue<double>("AI:MatchThresholdLow",  0.45);
 
-        // Always use OpenAI direct for embeddings (simpler, no deployment needed)
         var apiKey = config["OpenAI:ApiKey"];
         var model = config["OpenAI:EmbeddingModel"] ?? "text-embedding-3-large";
 
@@ -41,8 +43,8 @@ public class EmbeddingLocationMatcher : ILocationMatcher
 
         _embeddingClient = new EmbeddingClient(model, new System.ClientModel.ApiKeyCredential(apiKey));
 
-        _logger.LogInformation("EmbeddingLocationMatcher initialized successfully with thresholds: HIGH={High}, LOW={Low}", 
-            HIGH_CONFIDENCE_THRESHOLD, LOW_CONFIDENCE_THRESHOLD);
+        _logger.LogInformation("EmbeddingLocationMatcher initialized with thresholds: HIGH={High}, LOW={Low}",
+            _highThreshold, _lowThreshold);
     }
 
     public async Task<LocationMatchResult> MatchLocationsAsync(string description1, string description2, CancellationToken ct)
@@ -72,25 +74,25 @@ public class EmbeddingLocationMatcher : ILocationMatcher
             _logger.LogInformation("Cosine similarity: {Similarity:F4}", similarity);
 
             LocationMatchResult result;
-            if (similarity >= HIGH_CONFIDENCE_THRESHOLD)
+            if (similarity >= _highThreshold)
             {
                 result = LocationMatchResult.SameLocation;
-                _logger.LogInformation("HIGH confidence: Same location (similarity: {Similarity:F4} >= {Threshold})", 
-                    similarity, HIGH_CONFIDENCE_THRESHOLD);
+                _logger.LogInformation("HIGH confidence: Same location (similarity: {Similarity:F4} >= {Threshold})",
+                    similarity, _highThreshold);
                 await _statisticsService.IncrementEmbeddingMatcherAsync();
             }
-            else if (similarity >= LOW_CONFIDENCE_THRESHOLD)
+            else if (similarity >= _lowThreshold)
             {
                 result = LocationMatchResult.PossiblySameLocation;
-                _logger.LogInformation("MEDIUM confidence: Possibly same location (similarity: {Similarity:F4}, range: {Low}-{High}) - will trigger GPT verification", 
-                    similarity, LOW_CONFIDENCE_THRESHOLD, HIGH_CONFIDENCE_THRESHOLD);
+                _logger.LogInformation("MEDIUM confidence: Possibly same location (similarity: {Similarity:F4}, range: {Low}-{High})",
+                    similarity, _lowThreshold, _highThreshold);
                 await _statisticsService.IncrementEmbeddingMatcherAsync();
             }
             else
             {
                 result = LocationMatchResult.DifferentLocation;
-                _logger.LogInformation("LOW confidence: Different location (similarity: {Similarity:F4} < {Threshold})", 
-                    similarity, LOW_CONFIDENCE_THRESHOLD);
+                _logger.LogInformation("LOW confidence: Different location (similarity: {Similarity:F4} < {Threshold})",
+                    similarity, _lowThreshold);
             }
 
             return result;

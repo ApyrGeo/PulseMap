@@ -34,7 +34,11 @@ export default function RegisterScreen({ navigation }: any) {
         { text: 'OK', onPress: () => navigation.navigate('Login') },
       ]);
     } catch (e: any) {
-      Alert.alert('Registration failed', e.message || 'Please try again');
+      if (e?.message === 'USER_ALREADY_EXISTS') {
+        Alert.alert('Eroare', 'Utilizatorul există deja');
+      } else {
+        Alert.alert('Eroare', 'Înregistrare eșuată. Încercați din nou.');
+      }
     } finally {
       setLoading(false);
     }

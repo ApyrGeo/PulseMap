@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Icons } from '../utils/icons';
 import { useDeviceLocation } from '../contexts/LocationContext';
 import {
@@ -16,19 +17,17 @@ import {
   LocationRecommendationDTO,
   useAuth,
   useLocations,
-  recordInteraction,
-  InteractionType,
 } from '@pulse-map/shared';
 
 function RecommendationCard({
   item,
-  onInteract,
+  onPress,
 }: {
   item: LocationRecommendationDTO;
-  onInteract: (item: LocationRecommendationDTO) => void;
+  onPress: (item: LocationRecommendationDTO) => void;
 }) {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => onPress(item)} activeOpacity={0.75}>
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleRow}>
           <Text style={styles.cardCategory}>{item.category}</Text>
@@ -45,38 +44,38 @@ function RecommendationCard({
         </Text>
       ) : null}
       <Text style={styles.cardReason}>{item.reason}</Text>
-      <View style={styles.cardFooter}>
-        <View style={styles.cardLikesRow}>
-          <Image source={Icons.heart_empty} style={styles.cardLikesIcon} />
-          <Text style={styles.cardLikes}>{item.likesCount}</Text>
-        </View>
-        <TouchableOpacity style={styles.interactBtn} onPress={() => onInteract(item)}>
-          <Text style={styles.interactBtnText}>I've been here</Text>
-        </TouchableOpacity>
+      <View style={styles.cardLikesRow}>
+        <Image source={Icons.heart_empty} style={styles.cardLikesIcon} />
+        <Text style={styles.cardLikes}>{item.likesCount}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 export default function RecommendationsScreen() {
+  const navigation = useNavigation<any>();
   const { user, tokenService } = useAuth();
-  const { interactedLocationIds, markAsInteracted } = useLocations();
+  const { interactedLocationIds } = useLocations();
   const { userCoords } = useDeviceLocation();
   const [recommendations, setRecommendations] = useState<LocationRecommendationDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const userCoordsRef = useRef(userCoords);
+  userCoordsRef.current = userCoords;
 
   const load = useCallback(
     async (isRefresh = false) => {
-      if (!user || !userCoords) return;
+      if (!user) return;
+      const coords = userCoordsRef.current;
+      if (!coords) return;
       isRefresh ? setRefreshing(true) : setLoading(true);
       try {
         const delta = 0.05;
         const bounds = {
-          minLat: userCoords.latitude - delta,
-          maxLat: userCoords.latitude + delta,
-          minLng: userCoords.longitude - delta,
-          maxLng: userCoords.longitude + delta,
+          minLat: coords.latitude - delta,
+          maxLat: coords.latitude + delta,
+          minLng: coords.longitude - delta,
+          maxLng: coords.longitude + delta,
         };
         const data = await fetchRecommendedLocationsByBounds(tokenService, bounds, user.id, 20);
         setRecommendations(data.filter((r) => !interactedLocationIds.has(r.id)));
@@ -87,28 +86,25 @@ export default function RecommendationsScreen() {
         setRefreshing(false);
       }
     },
-    [user, tokenService, userCoords]
+    [user, tokenService, interactedLocationIds]
   );
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
-  const handleInteract = async (item: LocationRecommendationDTO) => {
-    if (!user) return;
-    try {
-      await recordInteraction(tokenService, {
-        userId: user.id,
-        locationId: item.id,
-        type: InteractionType.Confirmed,
+  const handleCardPress = useCallback(
+    (item: LocationRecommendationDTO) => {
+      navigation.navigate('Map', {
+        focusLocationId: item.id,
+        latitude: item.latitude,
+        longitude: item.longitude,
       });
-    } catch {
-      // 409 = already interacted — still remove from list
-    } finally {
-      markAsInteracted(item.id);
-      setRecommendations((prev) => prev.filter((r) => r.id !== item.id));
-    }
-  };
+    },
+    [navigation]
+  );
 
   if (loading) {
     return (
@@ -125,9 +121,7 @@ export default function RecommendationsScreen() {
       <FlatList
         data={recommendations}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <RecommendationCard item={item} onInteract={handleInteract} />
-        )}
+        renderItem={({ item }) => <RecommendationCard item={item} onPress={handleCardPress} />}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -175,18 +169,10 @@ const styles = StyleSheet.create({
   cardScore: { color: '#FFD700', fontSize: 12, fontWeight: '600' },
   cardName: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
   cardDescription: { color: '#ccc', fontSize: 14, lineHeight: 20, marginBottom: 8 },
-  cardReason: { color: '#8E8E8E', fontSize: 12, fontStyle: 'italic', marginBottom: 12 },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardReason: { color: '#8E8E8E', fontSize: 12, fontStyle: 'italic', marginBottom: 8 },
   cardLikesRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   cardLikesIcon: { width: 14, height: 14, tintColor: '#8E8E8E' },
   cardLikes: { color: '#8E8E8E', fontSize: 14 },
-  interactBtn: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  interactBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
   emptyList: { flex: 1, justifyContent: 'center' },
   emptyContainer: { alignItems: 'center', padding: 40 },
   emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8 },

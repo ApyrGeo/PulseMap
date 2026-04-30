@@ -693,7 +693,6 @@ public class LocationService(
 
         var dto = _mapper.Map<LocationResponseDTO>(location);
 
-        // Broadcast update
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
         {
             EntityType = PayloadEntityType.Location,
@@ -702,6 +701,43 @@ public class LocationService(
         });
 
         return dto;
+    }
+
+    public async Task<LocationResponseDTO> ToggleStarAsync(int locationId)
+    {
+        _logger.InfoFormat("Toggling star on location {0}", locationId);
+        await _locationRepository.ToggleStarAsync(locationId);
+        await _locationRepository.SaveChangesAsync();
+        var location = await _locationRepository.GetLocationByIdAsync(locationId)
+            ?? throw new NotFoundException($"Location {locationId} not found");
+        return _mapper.Map<LocationResponseDTO>(location);
+    }
+
+    public async Task<List<LocationResponseDTO>> GetStarredLocationsAsync()
+    {
+        var locations = await _locationRepository.GetStarredLocationsAsync();
+        return [.. locations.Select(l => _mapper.Map<LocationResponseDTO>(l))];
+    }
+
+    public async Task<List<Location>> SeedStarredLocationsAsync()
+    {
+        _logger.Info("Extending starred locations by 1 day");
+        var starred = await _locationRepository.GetStarredLocationsAsync();
+        if (starred.Count == 0) return [];
+
+        var toExtend = starred.Where(loc => loc.IsExpired || loc.ExpiresAt < DateTime.UtcNow).ToList();
+        if (toExtend.Count == 0) return [];
+
+        foreach (var loc in toExtend)
+        {
+            loc.ExpiresAt = DateTime.UtcNow.AddDays(1);
+            loc.IsExpired = false;
+        }
+        starred = toExtend;
+
+        await _locationRepository.SaveChangesAsync();
+        _logger.InfoFormat("Extended {0} starred locations by 1 day", starred.Count);
+        return starred;
     }
 }
 

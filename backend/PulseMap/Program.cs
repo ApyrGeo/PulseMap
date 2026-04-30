@@ -184,6 +184,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IInteractionRepository, InteractionRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 //services
 builder.Services.AddSingleton<IWebSocketNotificationService, WebSocketNotificationService>();
@@ -193,6 +194,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // JWT Token Service
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -436,7 +438,7 @@ if (builder.Configuration["HangFire:Running"] == "True")
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
             "extend-duration-by-likes",
             x => x.ExtendLocationDurationByLikeCounts(),
-            Cron.Daily);
+            Cron.HourInterval(6));
 
         // Check and merge duplicate locations every 24 hours
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(

@@ -10,24 +10,30 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useAuth } from '@pulse-map/shared';
+import { useAuth, Role, User } from '@pulse-map/shared';
 
 export default function LoginScreen({ navigation }: any) {
-  const { loginUser } = useAuth();
+  const { loginUser, logoutUser, tokenService } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Eroare', 'Completează toate câmpurile');
       return;
     }
     setLoading(true);
     try {
       await loginUser(email.trim(), password);
-    } catch (e: any) {
-      Alert.alert('Login failed', e.message || 'Invalid credentials');
+      const loggedUser = await tokenService.getUser<User>();
+      if (loggedUser?.role === Role.Admin) {
+        await logoutUser();
+        Alert.alert('Eroare', 'Date de autentificare invalide');
+        return;
+      }
+    } catch {
+      Alert.alert('Eroare', 'Email sau parolă greșite');
     } finally {
       setLoading(false);
     }

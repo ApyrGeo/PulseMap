@@ -14,6 +14,10 @@ public class LikeStatusConfiguration : IEntityTypeConfiguration<LikeStatus>
             .IsRequired()
             .HasDefaultValue(0);
 
+        builder.Property(ls => ls.PreviousReportCount)
+            .IsRequired()
+            .HasDefaultValue(0);
+
         builder.Property(ls => ls.LastChecked)
             .IsRequired();
     }

@@ -11,7 +11,6 @@ import { Role } from '../auth/Interfaces';
 import { AdminRoutes } from '../auth/routes/AdminRoutes';
 import { UserRoutes } from '../auth/routes/UserRoutes';
 import NavigationBar from '../shared/navigation/NavigationBar';
-import AdminEventsPage from '../admin/events/AdminEventsPage';
 import StatisticsPage from '../admin/statistics/StatisticsPage';
 import AdminSettingsPage from '../admin/settings/AdminSettingsPage';
 import UserStatisticsPage from '../user/statistics/UserStatisticsPage';
@@ -53,7 +52,7 @@ function AppRoutes() {
         {/* <Route path="/map" element={<Navigate to="/admin/map" replace />} /> */}
         <Route path="/admin/map" element={<AdminMapPage />} />
         <Route path="/admin/statistics" element={<StatisticsPage />} />
-        <Route path="/admin/events" element={<AdminEventsPage />} />
+        <Route path="/admin/events" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/settings" element={<AdminSettingsPage />} />
       </Route>
 

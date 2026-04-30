@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Location } from '../../../shared/maps/Interfaces';
+import { starLocation } from '../../../shared/maps/services/LocationsApiService';
 import './AdminLocationPopup.css';
 
 interface AdminLocationPopupProps {
@@ -6,6 +8,9 @@ interface AdminLocationPopupProps {
 }
 
 const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
+  const [isStarred, setIsStarred] = useState(location.isStarred ?? false);
+  const [starLoading, setStarLoading] = useState(false);
+
   const formatDateTime = (date: Date) => {
     return new Date(date).toLocaleString('en-US', {
       month: 'short',
@@ -14,6 +19,18 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleToggleStar = async () => {
+    setStarLoading(true);
+    try {
+      const updated = await starLocation(location.id);
+      setIsStarred(updated.isStarred ?? false);
+    } catch (e) {
+      console.error('Failed to toggle star', e);
+    } finally {
+      setStarLoading(false);
+    }
   };
 
   return (
@@ -99,6 +116,16 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
             </span>
           </div>
         </div>
+
+        {location.isExpired && (
+          <button
+            className={`admin-popup-star-btn ${isStarred ? 'starred' : ''}`}
+            onClick={handleToggleStar}
+            disabled={starLoading}
+          >
+            {isStarred ? '★ Starred' : '☆ Star Location'}
+          </button>
+        )}
       </div>
     </div>
   );

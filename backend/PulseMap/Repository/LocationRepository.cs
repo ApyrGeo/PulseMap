@@ -165,4 +165,21 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
         await _context.SaveChangesAsync();
         return location;
     }
+
+    public async Task<List<Location>> GetStarredLocationsAsync()
+    {
+        return await _context.Locations
+            .Where(l => l.IsStarred)
+            .Include(l => l.Images)
+            .Include(l => l.Category)
+            .Include(l => l.Creator)
+            .ToListAsync();
+    }
+
+    public async Task ToggleStarAsync(int locationId)
+    {
+        var location = await _context.Locations.FindAsync(locationId)
+            ?? throw new KeyNotFoundException($"Location {locationId} not found");
+        location.IsStarred = !location.IsStarred;
+    }
 }

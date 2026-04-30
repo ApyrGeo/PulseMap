@@ -18,6 +18,36 @@ import {
   FormControlLabel,
   Alert,
 } from '@mui/material';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+
+const MiniMap = ({ lat, lng }: { lat: number; lng: number }) => (
+  <MapContainer
+    center={[lat, lng]}
+    zoom={15}
+    style={{ height: 120, width: '100%', borderRadius: 6, marginTop: 8 }}
+    zoomControl={false}
+    scrollWheelZoom={false}
+    dragging={false}
+    attributionControl={false}
+  >
+    <TileLayer
+      url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+      maxZoom={22}
+      maxNativeZoom={19}
+      subdomains={['a', 'b', 'c', 'd']}
+    />
+    <Marker position={[lat, lng]} />
+  </MapContainer>
+);
 
 interface ForceMergeModalProps {
   isOpen: boolean;
@@ -121,8 +151,9 @@ const ForceMergeModal = ({
             | Messages: {location.messages?.length || 0}
           </Typography>
           <Typography variant="caption" display="block" color="text.secondary">
-            Location ID: {location.id}
+            Location ID: {location.id} | {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
           </Typography>
+          <MiniMap lat={location.latitude} lng={location.longitude} />
         </CardContent>
       </Card>
     );

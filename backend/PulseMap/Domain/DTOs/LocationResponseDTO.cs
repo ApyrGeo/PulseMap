@@ -18,6 +18,8 @@ public record LocationResponseDTO
 
     public List<string>? ImageUrls { get; set; }
 
+    public required bool IsStarred { get; set; }
+
     // Event clustering
     public SimplifiedEventResponseDTO? Event { get; set; }
     public float? EventAssignmentConfidence { get; set; }

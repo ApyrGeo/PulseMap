@@ -148,4 +148,26 @@ public class EventService : IEventService
         _logger.LogInformation("Event {EventId} deleted, {LocationCount} locations unassigned",
             id, locations.Count);
     }
+
+    public async Task<int> ReactivateExpiredEventsAsync(List<int> eventIds)
+    {
+        int reactivated = 0;
+        foreach (var eventId in eventIds)
+        {
+            var eventEntity = await _eventRepository.GetEventByIdAsync(eventId);
+            if (eventEntity == null || !eventEntity.IsExpired) continue;
+
+            var activeLocations = await _locationRepository.GetLocationsByEventIdAsync(eventId, activeOnly: true);
+            if (activeLocations.Count == 0) continue;
+
+            eventEntity.IsExpired = false;
+            eventEntity.ExpiresAt = activeLocations.Max(l => l.ExpiresAt);
+            await _eventRepository.UpdateEventAsync(eventEntity);
+            reactivated++;
+
+            _logger.LogInformation("Reactivated event {EventId} ({Name}) with {Count} active locations",
+                eventId, eventEntity.Name, activeLocations.Count);
+        }
+        return reactivated;
+    }
 }

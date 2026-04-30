@@ -107,7 +107,7 @@ export default function MyLocationsScreen() {
   const { allLocations, refreshLocations, confirmLocationEvent, rejectLocationEvent } = useLocations();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FilterType>('active');
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
   useEffect(() => {

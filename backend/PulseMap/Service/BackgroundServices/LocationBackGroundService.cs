@@ -58,10 +58,14 @@ public class LocationBackGroundService(
 
     public async Task ExtendLocationDurationByLikeCounts()
     {
-        const double L = 0.01;
-        const double K = 0.5;       
-        const double Lambda = 0.05; 
-        const double MinDays = 0.1; 
+        // Formula: Δt = K × [(L_new − w_r × R_new) − E] / ln(1 + N)
+        // t' = (t + Δt) × e^{−λ × Δh/24}, clamped to [MinDays, MaxDays]
+        // Instant expiry if R_total ≥ 5 AND R_total > L_total × 0.5
+        const double L = 0.01;       // baseline: expected likes per user per day
+        const double K = 0.5;        // activity sensitivity weight
+        const double Wr = 3.0;       // report penalty: 1 report = -3 virtual likes
+        const double Lambda = 0.05;  // daily exponential decay rate
+        const double MinDays = 0.1;
         const double MaxDays = 14;
 
         int totalUsers = await _context.Users.CountAsync();
@@ -70,6 +74,14 @@ public class LocationBackGroundService(
             .Where(l => !l.IsExpired && l.Owner == null)
             .Include(l => l.Likes)
             .ToListAsync();
+
+        var locationIds = locations.Select(l => l.Id).ToList();
+
+        var reportCounts = await _context.Reports
+            .Where(r => locationIds.Contains(r.LocationId))
+            .GroupBy(r => r.LocationId)
+            .Select(g => new { LocationId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.LocationId, x => x.Count);
 
         foreach (var location in locations)
         {
@@ -80,43 +92,45 @@ public class LocationBackGroundService(
                 .SingleOrDefaultAsync();
 
             int currentLikeCount = location.Likes.Count;
-            int previousLikeCount = 0;
+            int currentReportCount = reportCounts.GetValueOrDefault(location.Id, 0);
 
             if (prevLikeStatus != null)
             {
-                previousLikeCount = prevLikeStatus.PreviousLikeCount;
-
-                var newLikes = currentLikeCount - previousLikeCount;
-
+                var newLikes = currentLikeCount - prevLikeStatus.PreviousLikeCount;
+                var newReports = currentReportCount - prevLikeStatus.PreviousReportCount;
                 var hoursSinceLastCheck = (DateTime.UtcNow - prevLikeStatus.LastChecked).TotalHours;
 
-                var expectedLikes = totalUsers * L * (hoursSinceLastCheck / 24.0);
-
-                var denominator = Math.Log(1 + totalUsers);
-
-                var deltaDays = K * (newLikes - expectedLikes) / denominator;
-
-                remainingTime = remainingTime.Add(TimeSpan.FromDays(deltaDays));
-
-                var decayFactor = Math.Exp(-Lambda * (hoursSinceLastCheck / 24.0)); 
-
-                remainingTime = TimeSpan.FromTicks((long)(remainingTime.Ticks * decayFactor));
-
-
-                if (remainingTime.TotalSeconds < 0)
-                    remainingTime = TimeSpan.Zero;
-
-                if (remainingTime < TimeSpan.FromDays(MinDays))
+                // Instant expiry: location heavily reported relative to likes
+                if (currentReportCount >= 5 && currentReportCount > currentLikeCount * 0.5)
                 {
-                    remainingTime = TimeSpan.FromDays(MinDays);
+                    location.IsExpired = true;
+                    _logger.LogInformation(
+                        "Location {Id} flagged for expiry: {Reports} reports vs {Likes} likes",
+                        location.Id, currentReportCount, currentLikeCount);
                 }
-                else if (remainingTime > TimeSpan.FromDays(MaxDays))
+                else
                 {
-                    remainingTime = TimeSpan.FromDays(MaxDays);
+                    var expectedLikes = totalUsers * L * (hoursSinceLastCheck / 24.0);
+                    var denominator = Math.Log(1 + totalUsers);
+                    var deltaDays = K * ((newLikes - Wr * newReports) - expectedLikes) / denominator;
+
+                    remainingTime = remainingTime.Add(TimeSpan.FromDays(deltaDays));
+                    var decayFactor = Math.Exp(-Lambda * (hoursSinceLastCheck / 24.0));
+                    remainingTime = TimeSpan.FromTicks((long)(remainingTime.Ticks * decayFactor));
+
+                    if (remainingTime.TotalSeconds < 0)
+                        remainingTime = TimeSpan.Zero;
+
+                    if (remainingTime < TimeSpan.FromDays(MinDays))
+                        remainingTime = TimeSpan.FromDays(MinDays);
+                    else if (remainingTime > TimeSpan.FromDays(MaxDays))
+                        remainingTime = TimeSpan.FromDays(MaxDays);
+
+                    location.ExpiresAt = DateTime.UtcNow.Add(remainingTime);
                 }
 
-                location.ExpiresAt = DateTime.UtcNow.Add(remainingTime);
                 prevLikeStatus.PreviousLikeCount = currentLikeCount;
+                prevLikeStatus.PreviousReportCount = currentReportCount;
                 prevLikeStatus.LastChecked = DateTime.UtcNow;
                 _context.LikeStatuses.Update(prevLikeStatus);
             }
@@ -127,11 +141,14 @@ public class LocationBackGroundService(
                     LocationId = location.Id,
                     Location = location,
                     PreviousLikeCount = currentLikeCount,
+                    PreviousReportCount = currentReportCount,
                     LastChecked = DateTime.UtcNow
                 };
                 await _context.LikeStatuses.AddAsync(newLikeStatus);
             }
         }
+
+        await _context.SaveChangesAsync();
     }
 
     public async Task CheckAndMergeDuplicateLocations()

@@ -18,6 +18,7 @@ export * from './services/WsService';
 export * from './services/InteractionApiService';
 export * from './services/StatisticsApiService';
 export * from './services/EventsApiService';
+export * from './services/ReportApiService';
 
 // Providers
 export * from './providers/AuthProvider';
@@ -26,3 +27,4 @@ export * from './providers/LocationsProvider';
 // Types
 export * from './types/location';
 export * from './types/interaction';
+export * from './types/report';
