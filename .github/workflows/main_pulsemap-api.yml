@@ -63,9 +63,6 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B41DA1FA92B64DAA84AED70227F4AC59 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BB4E40CFF7F44D10925F944C8E40B88D }}
 
-      - name: Stop App Service to release deployment lock
-        run: az webapp stop --name pulsemap-api --resource-group $(az webapp show --name pulsemap-api --query resourceGroup -o tsv)
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -73,7 +70,3 @@ jobs:
           app-name: 'pulsemap-api'
           slot-name: 'Production'
           package: .
-
-      - name: Start App Service
-        if: always()
-        run: az webapp start --name pulsemap-api --resource-group $(az webapp show --name pulsemap-api --query resourceGroup -o tsv)
