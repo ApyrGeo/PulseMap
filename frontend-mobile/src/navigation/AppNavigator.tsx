@@ -1,9 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Image, Text } from 'react-native';
 import { useAuth } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
 
 import MapScreen from '../screens/MapScreen';
@@ -25,6 +26,7 @@ const TAB_ICONS: Record<string, any> = {
 };
 
 function MainTabs() {
+  const { t } = useTranslation();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -41,24 +43,24 @@ function MainTabs() {
             />
           );
         },
-        tabBarActiveTintColor: '#FF6B35',
+        tabBarActiveTintColor: '#22C55E',
         tabBarInactiveTintColor: '#8E8E8E',
         tabBarStyle: {
           backgroundColor: '#1A1A2E',
           borderTopColor: '#2D2D44',
-          height: 72,
-          paddingBottom: 12,
+          height: 80,
+          paddingBottom: 16,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 10, marginTop: 2 },
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Recommendations" component={RecommendationsScreen} />
-      <Tab.Screen name="My Locations" component={MyLocationsScreen} />
-      <Tab.Screen name="Statistics" component={StatisticsScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Map" component={MapScreen} options={{ tabBarLabel: t('tabs.map') }} />
+      <Tab.Screen name="Recommendations" component={RecommendationsScreen} options={{ tabBarLabel: t('tabs.recommendations') }} />
+      <Tab.Screen name="My Locations" component={MyLocationsScreen} options={{ tabBarLabel: t('tabs.myLocations') }} />
+      <Tab.Screen name="Statistics" component={StatisticsScreen} options={{ tabBarLabel: t('tabs.statistics') }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: t('tabs.settings') }} />
     </Tab.Navigator>
   );
 }

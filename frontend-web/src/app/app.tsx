@@ -11,10 +11,11 @@ import { Role } from '../auth/Interfaces';
 import { AdminRoutes } from '../auth/routes/AdminRoutes';
 import { UserRoutes } from '../auth/routes/UserRoutes';
 import NavigationBar from '../shared/navigation/NavigationBar';
-import AdminEventsPage from '../admin/events/AdminEventsPage';
 import StatisticsPage from '../admin/statistics/StatisticsPage';
 import AdminSettingsPage from '../admin/settings/AdminSettingsPage';
 import UserStatisticsPage from '../user/statistics/UserStatisticsPage';
+import HomePage from '../pages/HomePage';
+import TutorialModal from '../shared/components/TutorialModal';
 
 export function App() {
   return (
@@ -32,9 +33,11 @@ export function App() {
 }
 
 function Layout() {
+  const { isAuthenticated } = useAuth();
   return (
     <>
       <NavigationBar />
+      {isAuthenticated && <TutorialModal />}
       <div className="container mx-auto px-4 py-6">
         <AppRoutes />
       </div>
@@ -53,7 +56,7 @@ function AppRoutes() {
         {/* <Route path="/map" element={<Navigate to="/admin/map" replace />} /> */}
         <Route path="/admin/map" element={<AdminMapPage />} />
         <Route path="/admin/statistics" element={<StatisticsPage />} />
-        <Route path="/admin/events" element={<AdminEventsPage />} />
+        <Route path="/admin/events" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/settings" element={<AdminSettingsPage />} />
       </Route>
 
@@ -88,7 +91,10 @@ function AppRoutes() {
         }
       />
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route
+        path="/"
+        element={isAuthenticated ? <Navigate to={defaultPath} replace /> : <HomePage />}
+      />
     </Routes>
   );
 }

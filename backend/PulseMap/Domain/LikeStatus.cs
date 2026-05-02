@@ -6,5 +6,6 @@ public class LikeStatus
     public int LocationId { get; set; }
     public required Location Location { get; set; }
     public int PreviousLikeCount { get; set; }
+    public int PreviousReportCount { get; set; }
     public required DateTime LastChecked { get; set; }
 }

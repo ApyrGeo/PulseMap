@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,24 +10,46 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useAuth } from '@pulse-map/shared';
+import { useAuth, Role, User } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
+import ImageStack from '../../components/ImageStack';
+
+const AZURE_API = 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api';
 
 export default function LoginScreen({ navigation }: any) {
-  const { loginUser } = useAuth();
+  const { loginUser, logoutUser, tokenService } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch(`${AZURE_API}/Location/featured?count=6`)
+      .then((r) => r.json())
+      .then((data: Array<{ imageUrls: string[] }>) => {
+        const imgs = data.flatMap((l) => l.imageUrls).filter(Boolean).slice(0, 4);
+        if (imgs.length >= 2) setHeroImages(imgs);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Eroare', t('auth.login.fillAll'));
       return;
     }
     setLoading(true);
     try {
       await loginUser(email.trim(), password);
-    } catch (e: any) {
-      Alert.alert('Login failed', e.message || 'Invalid credentials');
+      const loggedUser = await tokenService.getUser<User>();
+      if (loggedUser?.role === Role.Admin) {
+        await logoutUser();
+        Alert.alert('Eroare', t('auth.login.adminBlocked'));
+        return;
+      }
+    } catch {
+      Alert.alert('Eroare', t('auth.login.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -38,12 +60,17 @@ export default function LoginScreen({ navigation }: any) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {heroImages.length >= 2 && (
+        <View style={styles.heroStack}>
+          <ImageStack images={heroImages} width={220} height={140} autoplayDelay={2500} />
+        </View>
+      )}
       <Text style={styles.title}>PulseMap</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+      <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder={t('auth.login.email')}
         placeholderTextColor="#6B6B8A"
         value={email}
         onChangeText={setEmail}
@@ -52,7 +79,7 @@ export default function LoginScreen({ navigation }: any) {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder={t('auth.login.password')}
         placeholderTextColor="#6B6B8A"
         value={password}
         onChangeText={setPassword}
@@ -63,12 +90,12 @@ export default function LoginScreen({ navigation }: any) {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={styles.buttonText}>{t('auth.login.submit')}</Text>
         )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.link}>Don't have an account? Register</Text>
+        <Text style={styles.link}>{t('auth.login.noAccount')}</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );
@@ -84,7 +111,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#22C55E',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -103,7 +130,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   button: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#22C55E',
     borderRadius: 10,
     padding: 16,
     alignItems: 'center',
@@ -116,8 +143,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   link: {
-    color: '#FF6B35',
+    color: '#22C55E',
     textAlign: 'center',
     fontSize: 14,
+  },
+  heroStack: {
+    alignItems: 'center',
+    marginBottom: 20,
+    height: 160,
+    justifyContent: 'center',
   },
 });

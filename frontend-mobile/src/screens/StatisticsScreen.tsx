@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import {
   LocationInteractionStatsDTO,
   InteractionType,
 } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
 
 type Tab = 'my' | 'leaderboard' | 'locations';
@@ -34,14 +35,15 @@ function MyStatsTab({
   onRefresh: () => void;
   refreshing: boolean;
 }) {
-  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#FF6B35" />;
+  const { t } = useTranslation();
+  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#22C55E" />;
 
   return (
     <FlatList
       data={interactions}
       keyExtractor={(item) => item.id.toString()}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6B35" />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22C55E" />
       }
       renderItem={({ item }) => (
         <View style={styles.card}>
@@ -53,7 +55,7 @@ function MyStatsTab({
                 style={styles.cardTypeIcon}
               />
               <Text style={styles.cardType}>
-                {item.type === InteractionType.Confirmed ? 'Visited' : 'Proximity tap'}
+                {item.type === InteractionType.Confirmed ? t('statistics.visited') : t('statistics.proximityTap')}
               </Text>
             </View>
             <Text style={styles.cardDate}>
@@ -64,10 +66,8 @@ function MyStatsTab({
       )}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No interactions yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Walk near locations and confirm your visits to see them here
-          </Text>
+          <Text style={styles.emptyTitle}>{t('statistics.noInteractions')}</Text>
+          <Text style={styles.emptySubtitle}>{t('statistics.noInteractionsHint')}</Text>
         </View>
       }
       contentContainerStyle={interactions.length === 0 ? styles.emptyList : undefined}
@@ -84,7 +84,8 @@ function LeaderboardTab({
   loading: boolean;
   currentUserId?: number;
 }) {
-  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#FF6B35" />;
+  const { t } = useTranslation();
+  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#22C55E" />;
 
   const medalIcons = [Icons.medal_gold, Icons.medal_silver, Icons.medal_bronze];
 
@@ -117,7 +118,7 @@ function LeaderboardTab({
       )}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No data yet</Text>
+          <Text style={styles.emptyTitle}>{t('statistics.noData')}</Text>
         </View>
       }
     />
@@ -131,7 +132,8 @@ function TopLocationsTab({
   locations: LocationInteractionStatsDTO[];
   loading: boolean;
 }) {
-  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#FF6B35" />;
+  const { t } = useTranslation();
+  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#22C55E" />;
 
   return (
     <FlatList
@@ -144,13 +146,13 @@ function TopLocationsTab({
             <View style={styles.userInfo}>
               <Text style={styles.cardName}>{item.locationName}</Text>
             </View>
-            <Text style={styles.interactionCount}>{item.totalInteractions} visits</Text>
+            <Text style={styles.interactionCount}>{item.totalInteractions} {t('statistics.visits')}</Text>
           </View>
         </View>
       )}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No data yet</Text>
+          <Text style={styles.emptyTitle}>{t('statistics.noData')}</Text>
         </View>
       }
     />
@@ -159,6 +161,7 @@ function TopLocationsTab({
 
 export default function StatisticsScreen() {
   const { user, tokenService } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('my');
   const [myInteractions, setMyInteractions] = useState<InteractionResponseDTO[]>([]);
   const [leaderboard, setLeaderboard] = useState<UserInteractionStatsDTO[]>([]);
@@ -193,14 +196,14 @@ export default function StatisticsScreen() {
   }, [activeTab, user]);
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'my', label: 'My Stats' },
-    { id: 'leaderboard', label: 'Leaderboard' },
-    { id: 'locations', label: 'Hot Spots' },
+    { id: 'my', label: t('statistics.myStats') },
+    { id: 'leaderboard', label: t('statistics.leaderboard') },
+    { id: 'locations', label: t('statistics.hotSpots') },
   ];
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Statistics</Text>
+      <Text style={styles.header}>{t('statistics.title')}</Text>
 
       <View style={styles.tabs}>
         {tabs.map((tab) => (
@@ -245,6 +248,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     padding: 20,
+    paddingTop: 52,
     paddingBottom: 12,
   },
   loader: { marginTop: 40 },
@@ -261,7 +265,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1A2E',
     alignItems: 'center',
   },
-  tabActive: { backgroundColor: '#FF6B35' },
+  tabActive: { backgroundColor: '#22C55E' },
   tabText: { color: '#8E8E8E', fontSize: 13, fontWeight: '600' },
   tabTextActive: { color: '#fff' },
   card: {
@@ -271,7 +275,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 16,
   },
-  cardHighlighted: { borderWidth: 1, borderColor: '#FF6B35' },
+  cardHighlighted: { borderWidth: 1, borderColor: '#22C55E' },
   cardName: { color: '#fff', fontSize: 15, fontWeight: '600', marginBottom: 4 },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between' },
   cardTypeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -283,7 +287,7 @@ const styles = StyleSheet.create({
   rankNum: { color: '#8E8E8E', fontSize: 16, fontWeight: '600', width: 28 },
   userInfo: { flex: 1 },
   username: { color: '#8E8E8E', fontSize: 12 },
-  interactionCount: { color: '#FF6B35', fontWeight: '700', fontSize: 15 },
+  interactionCount: { color: '#22C55E', fontWeight: '700', fontSize: 15 },
   empty: { alignItems: 'center', padding: 40 },
   emptyList: { flex: 1, justifyContent: 'center' },
   emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8 },

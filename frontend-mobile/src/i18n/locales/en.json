@@ -1,0 +1,175 @@
+{
+  "tabs": {
+    "map": "Map",
+    "recommendations": "For you",
+    "myLocations": "Mine",
+    "statistics": "Stats",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": {
+      "subtitle": "Sign in to continue",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "noAccount": "Don't have an account? Register",
+      "fillAll": "Please fill in all fields",
+      "invalidCredentials": "Invalid email or password",
+      "adminBlocked": "Invalid credentials"
+    },
+    "register": {
+      "title": "Create Account",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create Account",
+      "hasAccount": "Already have an account? Sign in",
+      "fillAll": "Please fill in all fields",
+      "success": "Account created! Please sign in.",
+      "emailExists": "User already exists",
+      "failed": "Registration failed. Please try again."
+    }
+  },
+  "location": {
+    "like": "Like",
+    "unlike": "Unlike",
+    "report": "Report",
+    "reported": "Reported",
+    "reportTitle": "Report Location",
+    "reportTypes": {
+      "doesNotExist": "Location does not exist",
+      "misleading": "Misleading information",
+      "inappropriate": "Inappropriate content",
+      "duplicate": "Duplicate location"
+    },
+    "reportSuccess": "Report submitted.",
+    "alreadyReported": "You have already reported this location.",
+    "reportError": "Error submitting report.",
+    "commentPlaceholder": "Add a comment...",
+    "send": "Send",
+    "commentError": "Error submitting comment",
+    "thankYou": "Thank you",
+    "alreadyReportedTitle": "Already reported",
+    "partOfEvent": "Part of Event",
+    "createdBy": "Created by",
+    "expires": "Expires",
+    "commentsCount": "Comments ({{count}})",
+    "cancel": "Cancel"
+  },
+  "common": {
+    "error": "Error",
+    "success": "Success"
+  },
+  "addLocation": {
+    "title": "Add Location",
+    "name": "Name *",
+    "namePlaceholder": "Enter location name",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description (triggers AI category suggestion)",
+    "category": "Category *",
+    "images": "Images (optional)",
+    "addPhotos": "📷  Add Photos",
+    "duration": "Duration *",
+    "days": "Days",
+    "hours": "Hours",
+    "ownedLocation": "Owned Location (My Business/Place)",
+    "submit": "Add Location",
+    "submitWithPhotos": "Add Location with Photos",
+    "gpsBanner": "📍 Enable GPS to correctly place the location",
+    "tapMapAdjust": "Tap map to adjust pin position",
+    "aiClassifying": "Generating best category match...",
+    "aiSuggested": "Suggested tags:",
+    "manualSelect": "Manual selection",
+    "descriptionVague": "Description too vague. Try adding more details or select manually.",
+    "addSuccess": "Location added!",
+    "addError": "Error adding location",
+    "enterName": "Please enter a location name",
+    "setDuration": "Please set a duration for your owned location"
+  },
+  "proximity": {
+    "nearby": "You are nearby",
+    "visited": "I was here",
+    "ignore": "Ignore",
+    "notExist": "⚑ Doesn't exist"
+  },
+  "myLocations": {
+    "title": "My Locations",
+    "filterAll": "All",
+    "filterActive": "Active",
+    "filterExpired": "Expired",
+    "filterReview": "Review",
+    "ownedBadge": "Owned",
+    "reviewBadge": "Review",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "eventPending": "Event Assignment Pending Review",
+    "event": "Event",
+    "confidence": "Confidence",
+    "approve": "✓  Approve",
+    "reject": "✕  Reject",
+    "noLocations": "No locations",
+    "approveSuccess": "Approved successfully",
+    "rejectSuccess": "Rejected successfully",
+    "approveError": "Error approving",
+    "rejectError": "Error rejecting"
+  },
+  "recommendations": {
+    "title": "Recommended for you",
+    "loading": "Finding recommendations near you...",
+    "noRecommendations": "No recommendations yet",
+    "noRecommendationsHint": "Like some locations to improve your recommendations"
+  },
+  "statistics": {
+    "title": "Statistics",
+    "myStats": "My Stats",
+    "leaderboard": "Leaderboard",
+    "hotSpots": "Hot Spots",
+    "visited": "Visited",
+    "proximityTap": "Proximity tap",
+    "noInteractions": "No interactions yet",
+    "noInteractionsHint": "Walk near locations and confirm your visits to see them here",
+    "noData": "No data yet",
+    "visits": "visits"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "username": "Username",
+    "role": "Role",
+    "language": "Language",
+    "logout": "Log Out"
+  },
+  "language": {
+    "ro": "Romanian",
+    "en": "English"
+  },
+  "tutorial": {
+    "step1Title": "Welcome to PulseMap",
+    "step1Desc": "Discover and share locations around you in real time.",
+    "step2Title": "Explore the Map",
+    "step2Desc": "Zoom in to see markers. Tap the + button to add your own location.",
+    "step3Title": "Like & Recommend",
+    "step3Desc": "Like locations to train the AI recommendation engine for better suggestions.",
+    "step4Title": "Visit Confirmation",
+    "step4Desc": "When nearby a location, confirm your visit to earn points on the leaderboard.",
+    "step5Title": "You're ready!",
+    "step5Desc": "Start exploring the map and discover what's happening around you.",
+    "skip": "Skip",
+    "next": "Next",
+    "finish": "Start Exploring"
+  },
+  "tips": {
+    "mobMapFab": "Tap + to add a location at your current GPS position.",
+    "mobRecs": "Like locations on the map to improve these recommendations.",
+    "mobMyLocations": "Manage all your posted locations here."
+  },
+  "settingsExtended": {
+    "tips": "Tips & Hints",
+    "tipsOn": "Tips are enabled",
+    "tipsOff": "Tips are disabled",
+    "resetTutorial": "Re-run Tutorial",
+    "resetTutorialDone": "Tutorial will show again on next login"
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+﻿import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Location } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
 
 const { width } = Dimensions.get('window');
@@ -18,6 +19,7 @@ interface ProximityCardStackProps {
   locations: Location[];
   onConfirm: (location: Location) => void;
   onDismiss: (location: Location) => void;
+  onReport: (location: Location) => void;
 }
 
 function ProximityCard({
@@ -25,12 +27,15 @@ function ProximityCard({
   index,
   onConfirm,
   onDismiss,
+  onReport,
 }: {
   location: Location;
   index: number;
   onConfirm: (l: Location) => void;
   onDismiss: (l: Location) => void;
+  onReport: (l: Location) => void;
 }) {
+  const { t } = useTranslation();
   const opacity = useRef(new Animated.Value(1)).current;
 
   const animateAndCall = (cb: () => void) => {
@@ -41,7 +46,6 @@ function ProximityCard({
     }).start(cb);
   };
 
-  // Only the first card (index=0) is fully visible
   const translateY = index * 8;
   const scale = 1 - index * 0.03;
 
@@ -60,25 +64,34 @@ function ProximityCard({
       <View style={styles.cardContent}>
         <View style={styles.nearbyLabelRow}>
           <Image source={Icons.location} style={styles.nearbyIcon} />
-          <Text style={styles.nearbyLabel}>You're nearby</Text>
+          <Text style={styles.nearbyLabel}>{t('proximity.nearby')}</Text>
         </View>
         <Text style={styles.locationName}>{location.name}</Text>
         {location.category ? (
           <Text style={styles.category}>{location.category}</Text>
         ) : null}
-        <Text style={styles.question}>Did you visit this place?</Text>
-        <View style={styles.actions}>
+
+        {/* Primary action — full width */}
+        <TouchableOpacity
+          style={styles.confirmBtn}
+          onPress={() => animateAndCall(() => onConfirm(location))}
+        >
+          <Text style={styles.confirmText}>{t('proximity.visited')}</Text>
+        </TouchableOpacity>
+
+        {/* Secondary actions — two small buttons in a row */}
+        <View style={styles.secondaryRow}>
           <TouchableOpacity
-            style={[styles.actionBtn, styles.dismissBtn]}
+            style={[styles.smallBtn, styles.dismissBtn]}
             onPress={() => animateAndCall(() => onDismiss(location))}
           >
-            <Text style={styles.dismissText}>Not now</Text>
+            <Text style={styles.dismissText}>{t('proximity.ignore')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionBtn, styles.confirmBtn]}
-            onPress={() => animateAndCall(() => onConfirm(location))}
+            style={[styles.smallBtn, styles.reportBtn]}
+            onPress={() => animateAndCall(() => onReport(location))}
           >
-            <Text style={styles.confirmText}>Yes, I visited!</Text>
+            <Text style={styles.reportText}>{t('proximity.notExist')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -90,10 +103,10 @@ export default function ProximityCardStack({
   locations,
   onConfirm,
   onDismiss,
+  onReport,
 }: ProximityCardStackProps) {
   if (locations.length === 0) return null;
 
-  // Show at most 3 cards in the stack
   const visible = locations.slice(0, 3);
 
   return (
@@ -107,6 +120,7 @@ export default function ProximityCardStack({
             index={index}
             onConfirm={onConfirm}
             onDismiss={onDismiss}
+            onReport={onReport}
           />
         );
       })}
@@ -120,7 +134,7 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: 24,
     right: 24,
-    height: 160,
+    height: 190,
   },
   card: {
     position: 'absolute',
@@ -128,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1A2E',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#FF6B35',
+    borderColor: '#22C55E',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -144,50 +158,29 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 4,
   },
-  nearbyIcon: { width: 14, height: 14, tintColor: '#FF6B35' },
-  nearbyLabel: {
-    fontSize: 12,
-    color: '#FF6B35',
-    fontWeight: '600',
-  },
-  locationName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 2,
-  },
-  category: {
-    fontSize: 13,
-    color: '#8E8E8E',
+  nearbyIcon: { width: 14, height: 14, tintColor: '#22C55E' },
+  nearbyLabel: { fontSize: 12, color: '#22C55E', fontWeight: '600' },
+  locationName: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 2 },
+  category: { fontSize: 13, color: '#8E8E8E', marginBottom: 10 },
+
+  confirmBtn: {
+    backgroundColor: '#22C55E',
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
     marginBottom: 8,
   },
-  question: {
-    fontSize: 14,
-    color: '#ccc',
-    marginBottom: 12,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionBtn: {
+  confirmText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+
+  secondaryRow: { flexDirection: 'row', gap: 8 },
+  smallBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: 8,
     alignItems: 'center',
   },
-  dismissBtn: {
-    backgroundColor: '#2D2D44',
-  },
-  confirmBtn: {
-    backgroundColor: '#FF6B35',
-  },
-  dismissText: {
-    color: '#8E8E8E',
-    fontWeight: '600',
-  },
-  confirmText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
+  dismissBtn: { backgroundColor: '#2D2D44' },
+  dismissText: { color: '#8E8E8E', fontWeight: '600', fontSize: 13 },
+  reportBtn: { backgroundColor: '#2D0A0A', borderWidth: 1, borderColor: '#EF444433' },
+  reportText: { color: '#EF4444', fontWeight: '600', fontSize: 13 },
 });

@@ -1,4 +1,4 @@
-/* Location Popup Styles */
+﻿/* Location Popup Styles */
 .location-popup-container {
   min-width: 500px;
   max-width: 600px;
@@ -109,7 +109,7 @@
 }
 
 .popup-image-indicator.active {
-  background-color: #FF6B35;
+  background-color: #22C55E;
   width: 1rem;
 }
 

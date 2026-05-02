@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -32,9 +32,9 @@ function buildGalleryPickerHTML(apiUrl: string, token: string): string {
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0F0F1A;font-family:sans-serif;gap:16px;}
-label{background:#FF6B35;color:#fff;padding:16px 36px;font-size:17px;border-radius:12px;cursor:pointer;display:inline-block;}
+label{background:#22C55E;color:#fff;padding:16px 36px;font-size:17px;border-radius:12px;cursor:pointer;display:inline-block;}
 p{color:#8E8E8E;font-size:13px;}
-#status{color:#FF6B35;font-size:13px;margin-top:8px;}
+#status{color:#22C55E;font-size:13px;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  chipActive: { backgroundColor: '#FF6B35', borderColor: '#FF6B35' },
+  chipActive: { backgroundColor: '#22C55E', borderColor: '#22C55E' },
   chipText: { color: '#8E8E8E', fontSize: 13 },
   chipTextActive: { color: '#fff', fontWeight: '600' },
   imagePickBtn: {
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  imagePickBtnText: { color: '#FF6B35', fontSize: 15 },
+  imagePickBtnText: { color: '#22C55E', fontSize: 15 },
   imagePreviewRow: { marginBottom: 8 },
   imagePreview: { position: 'relative', marginRight: 8 },
   previewImg: { width: 80, height: 80, borderRadius: 8 },
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   removeImgText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
   submitBtn: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#22C55E',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -373,5 +373,5 @@ const styles = StyleSheet.create({
   submitBtnDisabled: { backgroundColor: '#2D2D44' },
   submitText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   pickerCancelBtn: { padding: 16 },
-  pickerCancelText: { color: '#FF6B35', fontSize: 16 },
+  pickerCancelText: { color: '#22C55E', fontSize: 16 },
 });

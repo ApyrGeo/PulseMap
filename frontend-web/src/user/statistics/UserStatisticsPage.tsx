@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AuthProvider';
 import {
   fetchMyInteractions,
@@ -30,7 +31,7 @@ const DARK = {
   bg: '#0F0F1A',
   surface: '#1A1A2E',
   border: '#2D2D44',
-  accent: '#FF6B35',
+  accent: '#22C55E',
   text: '#ffffff',
   muted: '#8E8E8E',
 };
@@ -42,6 +43,7 @@ function MyStatsTab({
 }: {
   userId: number;
 }) {
+  const { t } = useTranslation();
   const [interactions, setInteractions] = useState<InteractionRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,9 +64,9 @@ function MyStatsTab({
       {/* Summary row */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
         {[
-          { label: 'Total Visits', value: interactions.length, icon: '/icons/location.png' },
-          { label: 'Confirmed', value: confirmed, icon: '/icons/check.png' },
-          { label: 'Proximity Taps', value: taps, icon: '/icons/tap.png' },
+          { label: t('statistics.totalVisits'), value: interactions.length, icon: '/icons/location.png' },
+          { label: t('statistics.confirmed'), value: confirmed, icon: '/icons/check.png' },
+          { label: t('statistics.proximityTaps'), value: taps, icon: '/icons/tap.png' },
         ].map((stat) => (
           <Card key={stat.label} sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
             <CardContent sx={{ textAlign: 'center' }}>
@@ -80,8 +82,8 @@ function MyStatsTab({
       {interactions.length === 0 ? (
         <Card sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
           <CardContent sx={{ textAlign: 'center', py: 5 }}>
-            <Typography sx={{ color: DARK.text, fontSize: 18, fontWeight: 600 }}>No interactions yet</Typography>
-            <Typography sx={{ color: DARK.muted, mt: 1 }}>Walk near locations and confirm your visits to see them here</Typography>
+            <Typography sx={{ color: DARK.text, fontSize: 18, fontWeight: 600 }}>{t('statistics.noInteractions')}</Typography>
+            <Typography sx={{ color: DARK.muted, mt: 1 }}>{t('statistics.noInteractionsHint')}</Typography>
           </CardContent>
         </Card>
       ) : (
@@ -96,7 +98,7 @@ function MyStatsTab({
                   <Box>
                     <Typography sx={{ color: DARK.text, fontWeight: 600, fontSize: 14 }}>{item.locationName}</Typography>
                     <Typography sx={{ color: DARK.muted, fontSize: 12 }}>
-                      {item.type === 0 ? 'Confirmed visit' : 'Proximity tap'}
+                      {item.type === 0 ? t('statistics.confirmedVisit') : t('statistics.proximityTap')}
                     </Typography>
                   </Box>
                 </Box>
@@ -113,6 +115,7 @@ function MyStatsTab({
 }
 
 function LeaderboardTab({ currentUserId }: { currentUserId: number }) {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserInteractionStats[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -134,7 +137,7 @@ function LeaderboardTab({ currentUserId }: { currentUserId: number }) {
           <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: '12px !important' }}>
             <EmojiEvents sx={{ color: DARK.accent }} />
             <Typography sx={{ color: DARK.text, fontWeight: 600 }}>
-              Your rank: #{myRank + 1} with {users[myRank].totalInteractions} interactions
+              {t('statistics.yourRank', { rank: myRank + 1, count: users[myRank].totalInteractions })}
             </Typography>
           </CardContent>
         </Card>
@@ -167,7 +170,7 @@ function LeaderboardTab({ currentUserId }: { currentUserId: number }) {
                 <Typography sx={{ color: DARK.muted, fontSize: 12 }}>@{user.username}</Typography>
               </Box>
               <Chip
-                label={`${user.totalInteractions} visits`}
+                label={`${user.totalInteractions} ${t('statistics.visits')}`}
                 size="small"
                 sx={{ backgroundColor: '#2D1A10', color: DARK.accent, fontWeight: 700, border: `1px solid ${DARK.accent}` }}
               />
@@ -180,6 +183,7 @@ function LeaderboardTab({ currentUserId }: { currentUserId: number }) {
 }
 
 function HotSpotsTab() {
+  const { t } = useTranslation();
   const [locations, setLocations] = useState<LocationInteractionStats[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -205,7 +209,7 @@ function HotSpotsTab() {
               {loc.locationName}
             </Typography>
             <Chip
-              label={`${loc.totalInteractions} visits`}
+              label={`${loc.totalInteractions} ${t('statistics.visits')}`}
               size="small"
               sx={{ backgroundColor: '#2D1A10', color: DARK.accent, fontWeight: 700, border: `1px solid ${DARK.accent}` }}
             />
@@ -215,7 +219,7 @@ function HotSpotsTab() {
       {locations.length === 0 && (
         <Card sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
           <CardContent sx={{ textAlign: 'center', py: 5 }}>
-            <Typography sx={{ color: DARK.muted }}>No hot spots data yet</Typography>
+            <Typography sx={{ color: DARK.muted }}>{t('statistics.noHotSpots')}</Typography>
           </CardContent>
         </Card>
       )}
@@ -224,6 +228,7 @@ function HotSpotsTab() {
 }
 
 export default function UserStatisticsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [tab, setTab] = useState(0);
 
@@ -232,7 +237,7 @@ export default function UserStatisticsPage() {
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', py: 3, px: 2 }}>
       <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700, mb: 3 }}>
-        Statistics
+        {t('statistics.title')}
       </Typography>
 
       <Tabs
@@ -246,9 +251,9 @@ export default function UserStatisticsPage() {
           borderBottom: `1px solid ${DARK.border}`,
         }}
       >
-        <Tab label="My Stats" />
-        <Tab label="Leaderboard" />
-        <Tab label="Hot Spots" />
+        <Tab label={t('statistics.myStats')} />
+        <Tab label={t('statistics.leaderboard')} />
+        <Tab label={t('statistics.hotSpots')} />
       </Tabs>
 
       {tab === 0 && <MyStatsTab userId={user.id} />}

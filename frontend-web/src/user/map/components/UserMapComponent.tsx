@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import LeafletMap, {
   LocationAnimationState,
 } from '../../../shared/maps/components/LeafletMap';
@@ -30,6 +31,7 @@ import {
 import '../../../shared/maps/LocationsPage.css';
 
 const UserMapComponent = () => {
+  const { t } = useTranslation();
   const {
     addLocation,
     addCommentToLocation,
@@ -161,7 +163,7 @@ const UserMapComponent = () => {
     [selectedType, user?.id]
   );
 
-  // Re-fetch when the selected type filter changes while we have bounds
+  // Re-fetch locations when the selected type filter changes (recommendations are not type-dependent)
   useEffect(() => {
     if (!lastBounds) return;
     if (currentZoom < ZOOM_THRESHOLDS.CITY) return;
@@ -178,26 +180,15 @@ const UserMapComponent = () => {
           user?.id
         );
         setVisibleLocations(data);
-
-        if (user?.id) {
-          setIsLoadingRecommendations(true);
-          const recommendations = await fetchRecommendedLocationsByBounds(
-            lastBounds,
-            user.id,
-            8
-          );
-          setRecommendedLocations(recommendations);
-          setIsLoadingRecommendations(false);
-        }
       } catch (err) {
         console.error(
           'Failed to fetch locations by bounds (type change):',
           err
         );
-        setIsLoadingRecommendations(false);
       }
     })();
-  }, [selectedType, lastBounds, currentZoom, user?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedType]);
 
   const handleMapClick = (lat: number, lng: number) => {
     // Don't show any error when zoom is too far out (< 12)
@@ -208,16 +199,14 @@ const UserMapComponent = () => {
     // Show warning if zoom is between 12 and 15
     if (currentZoom >= 12 && currentZoom <= 15) {
       toast.error(
-        (t) => (
+        (toastRef) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img
               src="https://www.ag-grid.com/charts/images/zoom-out-touch.gif"
               alt="Zoom in"
               style={{ width: '50px', height: '50px', borderRadius: '4px' }}
             />
-            <span>
-              Please zoom in more to be more precise with the placement
-            </span>
+            <span>{t('map.zoomIn')}</span>
           </div>
         ),
         { duration: 3000 }
@@ -256,10 +245,18 @@ const UserMapComponent = () => {
     await addResponseToMessage(message);
   };
   const handleLike = async (locationId: number) => {
-    await likeLocation(locationId);
+    try {
+      await likeLocation(locationId);
+    } catch {
+      toast.error(t('map.likeError'));
+    }
   };
   const handleUnlike = async (locationId: number) => {
-    await unlikeLocation(locationId);
+    try {
+      await unlikeLocation(locationId);
+    } catch {
+      toast.error(t('map.unlikeError'));
+    }
   };
 
   return (
@@ -288,10 +285,10 @@ const UserMapComponent = () => {
                     color: '#fff',
                     '& fieldset': { borderColor: '#2D2D44' },
                     '&:hover fieldset': { borderColor: '#4D4D64' },
-                    '&.Mui-focused fieldset': { borderColor: '#FF6B35' },
+                    '&.Mui-focused fieldset': { borderColor: '#22C55E' },
                   },
                   '& .MuiInputLabel-root': { color: '#8E8E8E' },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#FF6B35' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#22C55E' },
                   '& .MuiSvgIcon-root': { color: '#8E8E8E' },
                 }}
                 slotProps={{
@@ -309,7 +306,7 @@ const UserMapComponent = () => {
                   },
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} label="Ping Type" variant="outlined" />
+                  <TextField {...params} label={t('map.pingType')} variant="outlined" />
                 )}
               />
             </div>
@@ -342,16 +339,16 @@ const UserMapComponent = () => {
             }}
           >
             <h3 style={{ margin: 0, marginBottom: 8, fontSize: '1rem', color: '#fff' }}>
-              Recommended for you
+              {t('map.recommendedForYou')}
             </h3>
 
             {isLoadingRecommendations && (
-              <p style={{ margin: 0, color: '#8E8E8E' }}>Loading…</p>
+              <p style={{ margin: 0, color: '#8E8E8E' }}>{t('map.loading')}</p>
             )}
 
             {!isLoadingRecommendations && recommendedLocations.length === 0 && (
               <p style={{ margin: 0, color: '#8E8E8E' }}>
-                No recommendations in this area yet.
+                {t('map.noRecommendations')}
               </p>
             )}
 
@@ -367,7 +364,7 @@ const UserMapComponent = () => {
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    border: `1px solid ${focusedRecommendationId === rec.id ? '#FF6B35' : '#2D2D44'}`,
+                    border: `1px solid ${focusedRecommendationId === rec.id ? '#22C55E' : '#2D2D44'}`,
                     borderRadius: '10px',
                     padding: '10px',
                     marginTop: index === 0 ? 0 : 10,
@@ -408,7 +405,7 @@ const UserMapComponent = () => {
                       style={{
                         fontSize: '0.72rem',
                         fontWeight: 700,
-                        color: '#FF6B35',
+                        color: '#22C55E',
                         backgroundColor: '#2D1F1A',
                         borderRadius: 9999,
                         padding: '2px 8px',

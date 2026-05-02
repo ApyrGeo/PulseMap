@@ -130,6 +130,30 @@ public class AIStatisticsService : IAIStatisticsService
         _logger.LogDebug("Incremented Event Clustering Run count");
     }
 
+    public async Task IncrementRecommendationRequestAsync()
+    {
+        var stats = await GetOrCreateStatsAsync();
+        stats.RecommendationRequestsTotal++;
+        stats.LastUpdated = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task IncrementRecommendationAiAsync()
+    {
+        var stats = await GetOrCreateStatsAsync();
+        stats.RecommendationAiSuccess++;
+        stats.LastUpdated = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task IncrementRecommendationFallbackAsync()
+    {
+        var stats = await GetOrCreateStatsAsync();
+        stats.RecommendationFallbackCalls++;
+        stats.LastUpdated = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<AIStatistics> GetStatisticsAsync()
     {
         return await GetOrCreateStatsAsync();

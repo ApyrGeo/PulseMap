@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+﻿import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,13 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  Platform,
-  KeyboardAvoidingView,
+  Keyboard,
+  Alert,
+  Modal,
 } from 'react-native';
-import { Location, useAuth, useLocations, addComment } from '@pulse-map/shared';
+import ImageStack from './ImageStack';
+import { Location, useAuth, useLocations, addComment, reportLocation, ReportType } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
 
 const PROD_API = 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api';
@@ -65,6 +68,7 @@ const FULL_H  = SCREEN_H * 0.90;   // expanded: 90% — stays well below camera/
 export default function LocationDetailModal({ location, onClose }: Props) {
   const { user, tokenService } = useAuth();
   const { likeLocation } = useLocations();
+  const { t } = useTranslation();
 
   const [imgIndex, setImgIndex] = useState(0);
   const [liked, setLiked] = useState(location.isLikedByCurrentUser);
@@ -73,14 +77,39 @@ export default function LocationDetailModal({ location, onClose }: Props) {
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const rawImages = location.imageUrls ?? [];
   const images = rawImages.map(normalizeImageUrl);
-  const catColor = CATEGORY_COLORS[location.category] ?? '#FF6B35';
+  const catColor = CATEGORY_COLORS[location.category] ?? '#22C55E';
 
   // Animate sheet height — avoids the "inputRow below screen" problem of translateY approach
   const animHeight = useRef(new Animated.Value(HALF_H)).current;
   const snapRef = useRef<'half' | 'full'>('half');
+
+  // Slide-up on mount so the X button doesn't appear outside the sheet
+  const openTranslateY = useRef(new Animated.Value(HALF_H)).current;
+  useEffect(() => {
+    Animated.spring(openTranslateY, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 80,
+      friction: 12,
+    }).start();
+  }, [openTranslateY]);
+
+  // Track keyboard height to push inputRow above keyboard without moving the sheet top
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   const snapTo = useCallback(
     (pos: 'half' | 'full') => {
@@ -142,6 +171,23 @@ export default function LocationDetailModal({ location, onClose }: Props) {
     }
   }, [likeLocation, location.id, liked]);
 
+  const handleReport = useCallback(async (type: ReportType) => {
+    if (!user) return;
+    setShowReportModal(false);
+    try {
+      await reportLocation(tokenService, { userId: user.id, locationId: location.id, type });
+      setHasReported(true);
+      Alert.alert(t('location.thankYou'), t('location.reportSuccess'));
+    } catch (e) {
+      if (e instanceof Error && e.message === 'ALREADY_REPORTED') {
+        setHasReported(true);
+        Alert.alert(t('location.alreadyReportedTitle'), t('location.alreadyReported'));
+      } else {
+        Alert.alert(t('common.error'), t('location.reportError'));
+      }
+    }
+  }, [user, tokenService, location.id]);
+
   const handleAddComment = useCallback(async () => {
     if (!commentText.trim() || !user) return;
     setSubmitting(true);
@@ -155,6 +201,7 @@ export default function LocationDetailModal({ location, onClose }: Props) {
       setCommentText('');
     } catch (e) {
       console.error('Comment failed', e);
+      Alert.alert(t('common.error'), t('location.commentError'));
     } finally {
       setSubmitting(false);
     }
@@ -165,6 +212,10 @@ export default function LocationDetailModal({ location, onClose }: Props) {
       {/* Backdrop tap to close */}
       <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
 
+      {/* Outer view: slide-in animation (native driver — transforms only) */}
+      {/* Inner view: height animation (JS driver — height not supported by native) */}
+      {/* Mixing both on a single Animated.View causes the "moved to native" error */}
+      <Animated.View style={{ transform: [{ translateY: openTranslateY }] }}>
       <Animated.View style={[styles.sheet, { height: animHeight }]}>
         {/* Drag area: handle + header — PanResponder only here */}
         <View style={styles.dragArea} {...panResponder.panHandlers}>
@@ -182,40 +233,18 @@ export default function LocationDetailModal({ location, onClose }: Props) {
           </View>
         </View>
 
-        {/* Scrollable content + comment input — flex:1 fills remaining sheet height */}
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        {/* Scrollable content + comment input — paddingBottom tracks keyboard height */}
+        <View style={[styles.keyboardView, { paddingBottom: keyboardHeight }]}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             scrollEnabled={isExpanded}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Image carousel */}
+            {/* Image stack */}
             {images.length > 0 && (
               <View style={styles.carouselWrap}>
-                <Image source={{ uri: images[imgIndex] }} style={styles.carouselImg} resizeMode="cover" />
-                {images.length > 1 && (
-                  <View style={styles.carouselControls}>
-                    <TouchableOpacity
-                      style={styles.carouselBtn}
-                      onPress={() => setImgIndex((p) => (p - 1 + images.length) % images.length)}
-                    >
-                      <Text style={styles.carouselBtnText}>‹</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.carouselDots}>
-                      {images.map((_, i) => (i === imgIndex ? '●' : '○')).join(' ')}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.carouselBtn}
-                      onPress={() => setImgIndex((p) => (p + 1) % images.length)}
-                    >
-                      <Text style={styles.carouselBtnText}>›</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                <ImageStack images={images} height={180} autoplayDelay={2000} />
               </View>
             )}
 
@@ -227,7 +256,7 @@ export default function LocationDetailModal({ location, onClose }: Props) {
               <View style={styles.eventBadge}>
                 <Image source={Icons.target} style={styles.eventIcon} />
                 <View>
-                  <Text style={styles.eventLabel}>Part of event</Text>
+                  <Text style={styles.eventLabel}>{t('location.partOfEvent')}</Text>
                   <Text style={styles.eventName}>{location.event.name}</Text>
                 </View>
               </View>
@@ -235,27 +264,41 @@ export default function LocationDetailModal({ location, onClose }: Props) {
 
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Created by</Text>
+                <Text style={styles.metaLabel}>{t('location.createdBy')}</Text>
                 <Text style={styles.metaValue}>
                   {location.creator?.firstName} {location.creator?.lastName}
                 </Text>
               </View>
               <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Expires</Text>
+                <Text style={styles.metaLabel}>{t('location.expires')}</Text>
                 <Text style={[styles.metaValue, location.isExpired && { color: '#EF4444' }]}>
                   {location.isExpired ? 'Expired' : formatExpiry(location.expiresAt)}
                 </Text>
               </View>
             </View>
 
-            <TouchableOpacity style={styles.likeBtn} onPress={handleLike}>
-              <Image source={liked ? Icons.heart_filled : Icons.heart_empty} style={styles.likeIcon} />
-              <Text style={styles.likeCount}>{likeCount}</Text>
-              <Text style={styles.likeLabel}>{liked ? 'Unlike' : 'Like'}</Text>
-            </TouchableOpacity>
+            {user?.id !== location.creator?.id && (
+              <TouchableOpacity style={styles.likeBtn} onPress={handleLike}>
+                <Image source={liked ? Icons.heart_filled : Icons.heart_empty} style={styles.likeIcon} />
+                <Text style={styles.likeCount}>{likeCount}</Text>
+                <Text style={styles.likeLabel}>{liked ? t('location.unlike') : t('location.like')}</Text>
+              </TouchableOpacity>
+            )}
+
+            {user && user.id !== location.creator?.id && (
+              <TouchableOpacity
+                style={[styles.reportBtn, hasReported && styles.reportBtnDisabled]}
+                onPress={() => !hasReported && setShowReportModal(true)}
+                disabled={hasReported}
+              >
+                <Text style={styles.reportBtnText}>
+                  {hasReported ? `⚑ ${t('location.reported')}` : `⚑ ${t('location.report')}`}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <View style={styles.commentsSection}>
-              <Text style={styles.commentsTitle}>Comments ({comments.length})</Text>
+              <Text style={styles.commentsTitle}>{t('location.commentsCount', { count: comments.length })}</Text>
               {comments.map((msg) => (
                 <View key={msg.id} style={styles.comment}>
                   <Text style={styles.commentAuthor}>
@@ -272,7 +315,7 @@ export default function LocationDetailModal({ location, onClose }: Props) {
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.input}
-                placeholder="Add a comment…"
+                placeholder={t('location.commentPlaceholder')}
                 placeholderTextColor="#6B6B8A"
                 value={commentText}
                 onChangeText={setCommentText}
@@ -292,8 +335,31 @@ export default function LocationDetailModal({ location, onClose }: Props) {
               </TouchableOpacity>
             </View>
           )}
-        </KeyboardAvoidingView>
+        </View>
       </Animated.View>
+      </Animated.View>
+
+      {/* Report type selection modal */}
+      <Modal visible={showReportModal} transparent animationType="fade" onRequestClose={() => setShowReportModal(false)}>
+        <TouchableOpacity style={styles.reportModalOverlay} activeOpacity={1} onPress={() => setShowReportModal(false)}>
+          <View style={styles.reportModalBox}>
+            <Text style={styles.reportModalTitle}>{t('location.reportTitle')}</Text>
+            {([
+              { type: ReportType.LocationDoesNotExist, key: 'doesNotExist' },
+              { type: ReportType.MisleadingInformation, key: 'misleading' },
+              { type: ReportType.InappropriateContent, key: 'inappropriate' },
+              { type: ReportType.Duplicate, key: 'duplicate' },
+            ] as { type: ReportType; key: string }[]).map(({ type, key }) => (
+              <TouchableOpacity key={type} style={styles.reportModalOption} onPress={() => handleReport(type)}>
+                <Text style={styles.reportModalOptionText}>{t(`location.reportTypes.${key}`)}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.reportModalCancel} onPress={() => setShowReportModal(false)}>
+              <Text style={styles.reportModalCancelText}>{t('location.cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -376,9 +442,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F0F1A', borderRadius: 10, padding: 12,
     marginBottom: 14, borderWidth: 1, borderColor: '#2D2D44',
   },
-  eventIcon: { width: 18, height: 18, tintColor: '#FF6B35' },
+  eventIcon: { width: 18, height: 18, tintColor: '#22C55E' },
   eventLabel: { color: '#8E8E8E', fontSize: 11 },
-  eventName: { color: '#FF6B35', fontSize: 14, fontWeight: '600' },
+  eventName: { color: '#22C55E', fontSize: 14, fontWeight: '600' },
 
   metaRow: { flexDirection: 'row', gap: 16, marginBottom: 14 },
   metaItem: { flex: 1 },
@@ -400,7 +466,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F0F1A', borderRadius: 10, padding: 12,
     marginBottom: 8, borderWidth: 1, borderColor: '#2D2D44',
   },
-  commentAuthor: { color: '#FF6B35', fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  commentAuthor: { color: '#22C55E', fontSize: 12, fontWeight: '600', marginBottom: 4 },
   commentText: { color: '#ccc', fontSize: 14, lineHeight: 20 },
 
   inputRow: {
@@ -416,8 +482,39 @@ const styles = StyleSheet.create({
   },
   sendBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#FF6B35', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#22C55E', alignItems: 'center', justifyContent: 'center',
   },
   sendBtnDisabled: { backgroundColor: '#2D2D44' },
   sendBtnText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+
+  reportBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#0F0F1A', borderRadius: 10, padding: 12,
+    marginBottom: 20, borderWidth: 1, borderColor: '#EF444433',
+  },
+  reportBtnDisabled: { opacity: 0.4 },
+  reportBtnText: { color: '#EF4444', fontSize: 14, fontWeight: '600' },
+
+  reportModalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  reportModalBox: {
+    backgroundColor: '#1A1A2E', borderRadius: 16,
+    padding: 20, width: 300, borderWidth: 1, borderColor: '#2D2D44',
+  },
+  reportModalTitle: {
+    color: '#fff', fontSize: 16, fontWeight: '700',
+    textAlign: 'center', marginBottom: 16,
+  },
+  reportModalOption: {
+    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#2D2D44',
+  },
+  reportModalOptionText: { color: '#fff', fontSize: 15, textAlign: 'center' },
+  reportModalCancel: {
+    paddingVertical: 14, marginTop: 4,
+  },
+  reportModalCancelText: {
+    color: '#8E8E8E', fontSize: 15, textAlign: 'center', fontWeight: '600',
+  },
 });

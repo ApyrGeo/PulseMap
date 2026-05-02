@@ -16,6 +16,7 @@ export interface Location {
   event?: SimplifiedEvent;
   eventAssignmentConfidence?: number;
   imageUrls?: string[];
+  isStarred?: boolean;
 }
 
 export enum LocationCategory {

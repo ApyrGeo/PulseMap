@@ -22,6 +22,11 @@ export interface AIStatistics {
     embeddingEventExtractorSuccess: number;
     eventClusteringRuns: number;
   };
+  recommendations: {
+    requestsTotal: number;
+    aiScoringSuccess: number;
+    fallbackCalls: number;
+  };
   lastUpdated: string;
 }
 

@@ -7,7 +7,8 @@
     "jsx": "react-jsx",
     "noUnusedLocals": false,
     "lib": ["dom"],
-    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "resolveJsonModule": true
   },
   "files": ["../node_modules/@nx/react-native/typings/svg.d.ts"],
   "exclude": [
@@ -23,7 +24,7 @@
     "src/**/*.spec.jsx",
     "src/test-setup.ts"
   ],
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx", "src/**/*.json"],
   "references": [
     {
       "path": "../shared/tsconfig.lib.json"

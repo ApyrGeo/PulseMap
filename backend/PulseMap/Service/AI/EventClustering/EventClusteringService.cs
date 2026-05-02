@@ -232,6 +232,7 @@ public class EventClusteringService : IEventClusteringService
             existingEvent.Latitude = centroid.Latitude;
             existingEvent.Longitude = centroid.Longitude;
             existingEvent.ExpiresAt = allActiveLocations.Max(l => l.ExpiresAt);
+            if (existingEvent.IsExpired) existingEvent.IsExpired = false;
 
             // Recalculate confidence
             var avgConfidence = allActiveLocations.Average(l => l.EventAssignmentConfidence ?? 1.0f);
@@ -329,23 +330,30 @@ public class EventClusteringService : IEventClusteringService
                 }
             }
 
-            // If nearest event is within threshold, auto-assign with low confidence
-            if (nearestEvent != null && nearestDistance <= maxDistanceMeters)
+            // DBSCAN minPts = 2: location must have at least 1 neighbor within radius
+            // (beyond the event centroid) to avoid assigning isolated outliers
+            const int minPts = 2;
+            int neighborCount = allLocations.Count(other =>
+                other.Id != location.Id &&
+                CalculateDistance(location.Latitude, location.Longitude,
+                                  other.Latitude, other.Longitude) <= maxDistanceMeters);
+
+            if (nearestEvent != null && nearestDistance <= maxDistanceMeters && neighborCount >= minPts - 1)
             {
                 location.EventId = nearestEvent.Id;
                 location.EventAssignmentConfidence = PROXIMITY_CONFIDENCE;
-                location.RequiresReview = true; // Always require review for proximity-based assignments
+                location.RequiresReview = true;
 
                 await _locationRepository.UpdateLocationAsync(location);
                 result.LocationsAssigned++;
 
-                _logger.LogInformation("⚠️ Location {LocationId} AUTO-ASSIGNED to '{EventName}' based on proximity ({Distance:F1}m) - REQUIRES REVIEW",
-                    location.Id, nearestEvent.Name, nearestDistance);
+                _logger.LogInformation("⚠️ Location {LocationId} AUTO-ASSIGNED to '{EventName}' based on proximity ({Distance:F1}m, {Neighbors} neighbors) - REQUIRES REVIEW",
+                    location.Id, nearestEvent.Name, nearestDistance, neighborCount);
             }
             else
             {
-                _logger.LogDebug("Location {LocationId} too far from any event (nearest: {Distance:F1}m)",
-                    location.Id, nearestDistance);
+                _logger.LogDebug("Location {LocationId} is outlier — too far ({Distance:F1}m) or isolated ({Neighbors} neighbors)",
+                    location.Id, nearestDistance, neighborCount);
             }
         }
     }

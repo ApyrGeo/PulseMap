@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
   Alert,
 } from 'react-native';
 import { useLocations, useAuth, Location } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
 import EditLocationModal from '../components/EditLocationModal';
+import TipCard from '../components/TipCard';
 
 type FilterType = 'all' | 'active' | 'expired' | 'review';
 
@@ -28,6 +30,7 @@ function LocationItem({
   onConfirm: (loc: Location) => void;
   onReject: (loc: Location) => void;
 }) {
+  const { t } = useTranslation();
   const expired = location.isExpired;
 
   return (
@@ -40,20 +43,20 @@ function LocationItem({
             {isOwned && (
               <View style={styles.ownedBadge}>
                 <Image source={Icons.pin_owned} style={styles.ownedBadgeIcon} />
-                <Text style={styles.ownedBadgeText}>Owned</Text>
+                <Text style={styles.ownedBadgeText}>{t('myLocations.ownedBadge')}</Text>
               </View>
             )}
             {(location as any).requiresReview && (
               <View style={styles.reviewBadge}>
                 <Image source={Icons.warning} style={styles.reviewBadgeIcon} />
-                <Text style={styles.reviewBadgeText}>Review</Text>
+                <Text style={styles.reviewBadgeText}>{t('myLocations.reviewBadge')}</Text>
               </View>
             )}
           </View>
         </View>
         <View style={styles.cardTopRight}>
           <View style={[styles.statusBadge, expired ? styles.statusExpired : styles.statusActive]}>
-            <Text style={styles.statusText}>{expired ? 'Expired' : 'Active'}</Text>
+            <Text style={styles.statusText}>{expired ? t('myLocations.statusExpired') : t('myLocations.statusActive')}</Text>
           </View>
           <TouchableOpacity style={styles.editBtn} onPress={() => onEdit(location)}>
             <Text style={styles.editBtnText}>✏</Text>
@@ -63,7 +66,7 @@ function LocationItem({
 
       {(location as any).requiresReview && (location as any).event && (
         <View style={styles.reviewAlert}>
-          <Text style={styles.reviewAlertTitle}>Event Assignment Pending Review</Text>
+          <Text style={styles.reviewAlertTitle}>{t('myLocations.eventPending')}</Text>
           <Text style={styles.reviewAlertText}>
             Event: {(location as any).event?.name}
           </Text>
@@ -74,10 +77,10 @@ function LocationItem({
           )}
           <View style={styles.reviewActions}>
             <TouchableOpacity style={styles.approveBtn} onPress={() => onConfirm(location)}>
-              <Text style={styles.approveBtnText}>✓  Approve</Text>
+              <Text style={styles.approveBtnText}>{t('myLocations.approve')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.rejectBtn} onPress={() => onReject(location)}>
-              <Text style={styles.rejectBtnText}>✕  Reject</Text>
+              <Text style={styles.rejectBtnText}>{t('myLocations.reject')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -106,8 +109,9 @@ function LocationItem({
 export default function MyLocationsScreen() {
   const { allLocations, refreshLocations, confirmLocationEvent, rejectLocationEvent } = useLocations();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FilterType>('active');
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
   useEffect(() => {
@@ -182,17 +186,18 @@ export default function MyLocationsScreen() {
   };
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: `All (${counts.all})` },
-    { key: 'active', label: `Active (${counts.active})` },
-    { key: 'expired', label: `Expired (${counts.expired})` },
-    { key: 'review', label: `Review (${counts.review})` },
+    { key: 'all', label: `${t('myLocations.filterAll')} (${counts.all})` },
+    { key: 'active', label: `${t('myLocations.filterActive')} (${counts.active})` },
+    { key: 'expired', label: `${t('myLocations.filterExpired')} (${counts.expired})` },
+    { key: 'review', label: `${t('myLocations.filterReview')} (${counts.review})` },
   ];
 
   return (
     <View style={styles.container}>
+      <TipCard message={t('tips.mobMyLocations')} />
       {/* Fixed header + filter bar */}
       <View style={styles.topSection}>
-        <Text style={styles.header}>My Locations</Text>
+        <Text style={styles.header}>{t('myLocations.title')}</Text>
 
         {/* Filter tabs */}
         <ScrollView
@@ -219,7 +224,7 @@ export default function MyLocationsScreen() {
       <ScrollView
         style={styles.list}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF6B35" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#22C55E" />
         }
         contentContainerStyle={filteredLocations.length === 0 ? styles.emptyContainer : styles.listContent}
       >
@@ -267,6 +272,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     padding: 20,
+    paddingTop: 52,
     paddingBottom: 12,
   },
   list: { flex: 1 },
@@ -288,8 +294,8 @@ const styles = StyleSheet.create({
     borderColor: '#2D2D44',
   },
   filterTabActive: {
-    backgroundColor: '#FF6B35',
-    borderColor: '#FF6B35',
+    backgroundColor: '#22C55E',
+    borderColor: '#22C55E',
   },
   filterTabText: {
     color: '#8E8E8E',
@@ -322,7 +328,7 @@ const styles = StyleSheet.create({
   },
   editBtnText: { fontSize: 15 },
   cardInfo: { flex: 1 },
-  cardCategory: { color: '#FF6B35', fontSize: 11, fontWeight: '600', marginBottom: 3 },
+  cardCategory: { color: '#22C55E', fontSize: 11, fontWeight: '600', marginBottom: 3 },
   nameRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
   cardName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   ownedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },

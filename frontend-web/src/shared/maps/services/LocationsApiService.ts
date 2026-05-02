@@ -272,6 +272,46 @@ export async function classifyLocation(description: string): Promise<string[]> {
   }
 }
 
+export interface SeedResultDTO {
+  locationsSeeded: number;
+  eventsCreated: number;
+  eventsUpdated: number;
+}
+
+export async function starLocation(id: number): Promise<Location> {
+  const response = await fetch(`${LOCATIONS_URL}/${id}/star`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
+    },
+  });
+  if (!response.ok) throw new Error('Failed to toggle star');
+  const location = await response.json();
+  return normalizeLocationImageUrls(location);
+}
+
+export async function getStarredLocations(): Promise<Location[]> {
+  const response = await fetch(`${LOCATIONS_URL}/starred`, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
+  if (!response.ok) throw new Error('Failed to fetch starred locations');
+  const locations = await response.json();
+  return normalizeLocationsImageUrls(locations);
+}
+
+export async function seedStarredLocations(): Promise<SeedResultDTO> {
+  const response = await fetch(`${LOCATIONS_URL}/seed-starred`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...TokenService.getAuthHeader(),
+    },
+  });
+  if (!response.ok) throw new Error('Failed to seed starred locations');
+  return response.json();
+}
+
 export async function confirmLocationEvent(
   locationId: number
 ): Promise<Location> {

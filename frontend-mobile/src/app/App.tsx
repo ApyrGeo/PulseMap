@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StatusBar } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   initializeEnvironment,
   AuthProvider,
   LocationsProvider,
   MobileStorageAdapter,
   TokenService,
+  useAuth,
 } from '@pulse-map/shared';
 import { AppNavigator } from '../navigation/AppNavigator';
 import { LocationProvider } from '../contexts/LocationContext';
+import { TipsProvider } from '../contexts/TipsContext';
+import TutorialStepper from '../components/TutorialStepper';
+import i18n from '../i18n';
+
+const TUTORIAL_KEY = 'pulsemap_tutorial_seen';
 
 const AZURE_API = 'https://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/api';
 const AZURE_WS = 'wss://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsites.net/ws';
@@ -29,14 +36,45 @@ initializeEnvironment({
 const storage = new MobileStorageAdapter();
 const tokenService = new TokenService(storage);
 
+const AppWithTutorial: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialChecked, setTutorialChecked] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) { setTutorialChecked(true); return; }
+    AsyncStorage.getItem(TUTORIAL_KEY).then((v) => {
+      setShowTutorial(!v);
+      setTutorialChecked(true);
+    });
+  }, [isAuthenticated]);
+
+  return (
+    <>
+      <AppNavigator />
+      {tutorialChecked && showTutorial && isAuthenticated && (
+        <TutorialStepper onDismiss={() => setShowTutorial(false)} />
+      )}
+    </>
+  );
+};
+
 export const App: React.FC = () => {
+  useEffect(() => {
+    AsyncStorage.getItem('pulsemap_lang').then((lang) => {
+      if (lang) i18n.changeLanguage(lang);
+    });
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1A" />
       <AuthProvider tokenService={tokenService}>
         <LocationProvider>
           <LocationsProvider>
-            <AppNavigator />
+            <TipsProvider>
+              <AppWithTutorial />
+            </TipsProvider>
           </LocationsProvider>
         </LocationProvider>
       </AuthProvider>

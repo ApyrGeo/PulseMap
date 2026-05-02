@@ -50,12 +50,25 @@ public class RecommendationEmbeddingScorer : IRecommendationAiScorer
             return scores;
         }
 
-        var profileText = string.Join("\n", cleanLiked);
-
         try
         {
-            var profileEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(profileText, cancellationToken: ct);
-            var profileVector = profileEmbeddingResponse.Value.ToFloats();
+            // Build user profile as element-wise mean of individual description embeddings
+            // (not a single embedding of concatenated text, which loses per-item signal)
+            var likedEmbeddingTasks = cleanLiked
+                .Select(d => _embeddingClient.GenerateEmbeddingAsync(d, cancellationToken: ct))
+                .ToList();
+            var likedEmbeddingResponses = await Task.WhenAll(likedEmbeddingTasks);
+            var likedVectors = likedEmbeddingResponses
+                .Select(r => r.Value.ToFloats())
+                .ToList();
+
+            int dim = likedVectors[0].Length;
+            var profileArr = new double[dim];
+            foreach (var vec in likedVectors)
+                for (int i = 0; i < dim; i++)
+                    profileArr[i] += vec.Span[i];
+            for (int i = 0; i < dim; i++)
+                profileArr[i] /= likedVectors.Count;
 
             var candidateTasks = candidateDescriptions
                 .Where(c => !string.IsNullOrWhiteSpace(c.Description))
@@ -63,7 +76,7 @@ public class RecommendationEmbeddingScorer : IRecommendationAiScorer
                 {
                     var response = await _embeddingClient.GenerateEmbeddingAsync(candidate.Description, cancellationToken: ct);
                     var vector = response.Value.ToFloats();
-                    var cosine = CosineSimilarity(profileVector.Span, vector.Span);
+                    var cosine = CosineSimilarity(profileArr, vector.Span);
                     var normalized = (cosine + 1.0) / 2.0;
                     return (candidate.LocationId, Score: normalized);
                 })
@@ -90,22 +103,28 @@ public class RecommendationEmbeddingScorer : IRecommendationAiScorer
         if (a.Length != b.Length)
             throw new ArgumentException("Vectors must have the same length");
 
-        double dot = 0.0;
-        double magA = 0.0;
-        double magB = 0.0;
-
+        double dot = 0.0, magA = 0.0, magB = 0.0;
         for (int i = 0; i < a.Length; i++)
         {
             dot += a[i] * b[i];
             magA += a[i] * a[i];
             magB += b[i] * b[i];
         }
+        return (magA == 0 || magB == 0) ? 0 : dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
+    }
 
-        if (magA == 0 || magB == 0)
+    private static double CosineSimilarity(double[] a, ReadOnlySpan<float> b)
+    {
+        if (a.Length != b.Length)
+            throw new ArgumentException("Vectors must have the same length");
+
+        double dot = 0.0, magA = 0.0, magB = 0.0;
+        for (int i = 0; i < a.Length; i++)
         {
-            return 0;
+            dot += a[i] * b[i];
+            magA += a[i] * a[i];
+            magB += b[i] * b[i];
         }
-
-        return dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
+        return (magA == 0 || magB == 0) ? 0 : dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
     }
 }

@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Location } from '../../../shared/maps/Interfaces';
+import { starLocation } from '../../../shared/maps/services/LocationsApiService';
 import './AdminLocationPopup.css';
 
 interface AdminLocationPopupProps {
@@ -6,6 +9,10 @@ interface AdminLocationPopupProps {
 }
 
 const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
+  const { t } = useTranslation();
+  const [isStarred, setIsStarred] = useState(location.isStarred ?? false);
+  const [starLoading, setStarLoading] = useState(false);
+
   const formatDateTime = (date: Date) => {
     return new Date(date).toLocaleString('en-US', {
       month: 'short',
@@ -14,6 +21,18 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleToggleStar = async () => {
+    setStarLoading(true);
+    try {
+      const updated = await starLocation(location.id);
+      setIsStarred(updated.isStarred ?? false);
+    } catch (e) {
+      console.error('Failed to toggle star', e);
+    } finally {
+      setStarLoading(false);
+    }
   };
 
   return (
@@ -26,23 +45,23 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
 
       <div className="admin-popup-details">
         <div className="admin-popup-row">
-          <span className="admin-popup-label">Status:</span>
+          <span className="admin-popup-label">{t('adminPopup.status')}:</span>
           <span
             className={`admin-popup-status ${
               location.isExpired ? 'expired' : 'active'
             }`}
           >
-            {location.isExpired ? 'Expired' : 'Active'}
+            {location.isExpired ? t('adminPopup.expired') : t('adminPopup.active')}
           </span>
         </div>
 
         <div className="admin-popup-row">
-          <span className="admin-popup-label">Category:</span>
+          <span className="admin-popup-label">{t('adminPopup.category')}:</span>
           <span className="admin-popup-value">{location.category}</span>
         </div>
 
         <div className="admin-popup-row">
-          <span className="admin-popup-label">Creator:</span>
+          <span className="admin-popup-label">{t('adminPopup.creator')}:</span>
           <span className="admin-popup-value">{location.creator.username}</span>
         </div>
 
@@ -50,7 +69,7 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
           <div className={`admin-popup-event-box ${location.event.requiresReview ? 'requires-review' : ''}`}>
             <div className="admin-popup-event-title">
               <img src="/icons/target.png" style={{ width: 14, height: 14, marginRight: 4, verticalAlign: 'middle' }} alt="" />
-              Part of Event
+              {t('adminPopup.partOfEvent')}
             </div>
             <div className="admin-popup-event-name">
               {location.event.name}
@@ -60,12 +79,12 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
             </div>
             {location.eventAssignmentConfidence && (
               <div className="admin-popup-event-confidence">
-                Match Confidence: {(location.eventAssignmentConfidence * 100).toFixed(0)}%
+                {t('adminPopup.matchConfidence')}: {(location.eventAssignmentConfidence * 100).toFixed(0)}%
               </div>
             )}
             {location.event.requiresReview && (
               <div className="admin-popup-event-warning">
-                This event requires admin review
+                {t('adminPopup.requiresReview')}
               </div>
             )}
           </div>
@@ -73,14 +92,14 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
 
         {location.isExpired ? (
           <div className="admin-popup-row">
-            <span className="admin-popup-label">Expired:</span>
+            <span className="admin-popup-label">{t('adminPopup.expiredAt')}:</span>
             <span className="admin-popup-value">
               {formatDateTime(location.expiresAt)}
             </span>
           </div>
         ) : (
           <div className="admin-popup-row">
-            <span className="admin-popup-label">Expires:</span>
+            <span className="admin-popup-label">{t('adminPopup.expiresAt')}:</span>
             <span
               className={`admin-popup-value ${
                 location.isExpired ? 'admin-popup-expired-text' : ''
@@ -93,12 +112,22 @@ const AdminLocationPopup = ({ location }: AdminLocationPopupProps) => {
 
         <div className="admin-popup-divider">
           <div className="admin-popup-row">
-            <span className="admin-popup-label">Comments:</span>
+            <span className="admin-popup-label">{t('adminPopup.comments')}:</span>
             <span className="admin-popup-value">
               {location.messages.length}
             </span>
           </div>
         </div>
+
+        {location.isExpired && (
+          <button
+            className={`admin-popup-star-btn ${isStarred ? 'starred' : ''}`}
+            onClick={handleToggleStar}
+            disabled={starLoading}
+          >
+            {isStarred ? t('adminPopup.starred') : t('adminPopup.starLocation')}
+          </button>
+        )}
       </div>
     </div>
   );

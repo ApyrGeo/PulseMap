@@ -184,6 +184,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IInteractionRepository, InteractionRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 //services
 builder.Services.AddSingleton<IWebSocketNotificationService, WebSocketNotificationService>();
@@ -193,6 +194,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // JWT Token Service
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -420,7 +422,6 @@ if (builder.Configuration["HangFire:Running"] == "True")
         // Run when app starts
         backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
         backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredEvents());
-        backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
 
         // Run every minute
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
@@ -436,13 +437,19 @@ if (builder.Configuration["HangFire:Running"] == "True")
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
             "extend-duration-by-likes",
             x => x.ExtendLocationDurationByLikeCounts(),
-            Cron.Daily);
+            Cron.HourInterval(6));
 
         // Check and merge duplicate locations every 24 hours
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
             "check-merge-duplicate-locations",
             x => x.CheckAndMergeDuplicateLocations(),
             Cron.Daily);
+
+        // Analyze and cluster events every 6 hours
+        recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+            "analyze-and-cluster-events",
+            x => x.AnalyzeAndClusterEvents(100),
+            Cron.HourInterval(6));
     }
 }
 

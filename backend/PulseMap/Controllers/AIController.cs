@@ -59,6 +59,12 @@ namespace PulseMap.Controllers
                     EmbeddingEventExtractorSuccess = stats.EmbeddingEventExtractorSuccess,
                     EventClusteringRuns = stats.EventClusteringRuns
                 },
+                Recommendations = new AIStatisticsResponseDTO.RecommendationStats
+                {
+                    RequestsTotal = stats.RecommendationRequestsTotal,
+                    AiScoringSuccess = stats.RecommendationAiSuccess,
+                    FallbackCalls = stats.RecommendationFallbackCalls
+                },
                 LastUpdated = stats.LastUpdated
             };
 

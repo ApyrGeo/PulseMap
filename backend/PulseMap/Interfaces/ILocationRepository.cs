@@ -16,5 +16,8 @@ public interface ILocationRepository
     Task<List<Location>> GetLocationsByEventIdAsync(int eventId, bool activeOnly = true);
     Task<List<Location>> GetLocationsByIdsAsync(List<int> ids);
     Task<Location> UpdateLocationAsync(Location location);
+    Task<List<Location>> GetStarredLocationsAsync();
+    Task ToggleStarAsync(int locationId);
     Task SaveChangesAsync();
+    Task<List<Location>> GetLocationsWithImagesAsync(int count = 50);
 }

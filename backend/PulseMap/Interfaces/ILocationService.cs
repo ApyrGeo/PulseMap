@@ -1,3 +1,4 @@
+using PulseMap.Domain;
 using PulseMap.Domain.DTOs;
 
 namespace PulseMap.Interfaces;
@@ -20,4 +21,8 @@ public interface ILocationService
     Task<List<LocationResponseDTO>> GetLocationsNeedingReviewAsync(int? eventId = null);
     Task<LocationResponseDTO> ConfirmLocationEventAsync(int locationId);
     Task<LocationResponseDTO> RejectLocationEventAsync(int locationId);
+    Task<LocationResponseDTO> ToggleStarAsync(int locationId);
+    Task<List<LocationResponseDTO>> GetStarredLocationsAsync();
+    Task<List<Location>> SeedStarredLocationsAsync();
+    Task<List<FeaturedLocationDTO>> GetFeaturedLocationsAsync(int count = 15);
 }

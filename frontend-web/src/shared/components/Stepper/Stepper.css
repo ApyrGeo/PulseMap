@@ -1,0 +1,109 @@
+.stepper-root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.stepper-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.stepper-indicator-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.stepper-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2D2D44;
+  color: #888;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #3D3D5C;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+  flex-shrink: 0;
+}
+
+.stepper-dot--active {
+  background: #22C55E;
+  color: white;
+  border-color: #22C55E;
+}
+
+.stepper-dot--done {
+  background: #166534;
+  color: #86efac;
+  border-color: #22C55E;
+}
+
+.stepper-connector {
+  width: 48px;
+  height: 2px;
+  background: #22C55E;
+  transform-origin: left;
+}
+
+.stepper-content-wrap {
+  min-height: 100px;
+  overflow: hidden;
+}
+
+.stepper-content {
+  text-align: center;
+  padding: 0 8px;
+}
+
+.stepper-step-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px 0;
+}
+
+.stepper-step-desc {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.stepper-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.stepper-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.stepper-btn:hover {
+  opacity: 0.85;
+}
+
+.stepper-btn--skip {
+  background: transparent;
+  color: #666;
+  border: 1px solid #3D3D5C;
+}
+
+.stepper-btn--next {
+  background: #22C55E;
+  color: #fff;
+}

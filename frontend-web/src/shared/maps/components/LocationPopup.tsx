@@ -7,27 +7,30 @@ import {
 import { useEffect, useState, useRef, memo } from 'react';
 import LocationComments from './LocationComments';
 import { useAuth } from '../../../auth/AuthProvider';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { reportLocation, ReportType } from '../services/ReportApiService';
+import ImageStack from '../../components/Stack/Stack';
 import {
   Box,
   Typography,
   Avatar,
   Button,
-  IconButton,
   Chip,
   Card,
   Divider,
   Stack,
-  CardMedia,
 } from '@mui/material';
 import {
   Favorite,
   FavoriteBorder,
-  NavigateBefore,
-  NavigateNext,
   AccessTime,
   Warning,
   Image as ImageIcon,
+  Flag,
 } from '@mui/icons-material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 const categoryColors: { [key: string]: string } = {
   [LocationCategory.NotSet]: '#6B7280', // Gray
@@ -60,10 +63,20 @@ const LocationPopup = memo(
     onUnlike,
   }: LocationPopupProps) => {
     const { user } = useAuth();
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const { t } = useTranslation();
     const [likeCount, setLikeCount] = useState(location.likesCount || 0);
     const [isLiked, setIsLiked] = useState(location.isLikedByCurrentUser);
     const isOptimisticUpdate = useRef(false);
+    const [hasReported, setHasReported] = useState(false);
+    const [isReporting, setIsReporting] = useState(false);
+    const [reportMenuAnchor, setReportMenuAnchor] = useState<null | HTMLElement>(null);
+
+    const reportTypeLabels: Record<ReportType, string> = {
+      [ReportType.LocationDoesNotExist]: t('location.reportTypes.doesNotExist'),
+      [ReportType.MisleadingInformation]: t('location.reportTypes.misleading'),
+      [ReportType.InappropriateContent]: t('location.reportTypes.inappropriate'),
+      [ReportType.Duplicate]: t('location.reportTypes.duplicate'),
+    };
 
     // Use actual images from location or placeholder
     const images =
@@ -71,16 +84,6 @@ const LocationPopup = memo(
         ? location.imageUrls
         : [];
     const hasImages = images.length > 0;
-
-    const nextImage = () => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    };
-
-    const prevImage = () => {
-      setCurrentImageIndex((prev) =>
-        prev === 0 ? images.length - 1 : prev - 1
-      );
-    };
 
     const handleLikeToggle = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -107,13 +110,30 @@ const LocationPopup = memo(
     };
 
     useEffect(() => {
-      // Don't update if we're in the middle of an optimistic update
-      if (isOptimisticUpdate.current) {
-        return;
-      }
+      if (isOptimisticUpdate.current) return;
       setLikeCount(location.likesCount || 0);
       setIsLiked(location.isLikedByCurrentUser);
     }, [location.likesCount, location.isLikedByCurrentUser]);
+
+    const handleReportSelect = async (type: ReportType) => {
+      setReportMenuAnchor(null);
+      if (!user) return;
+      setIsReporting(true);
+      try {
+        await reportLocation(user.id, location.id, type);
+        setHasReported(true);
+        toast.success(t('location.reportSuccess'));
+      } catch (err) {
+        if (err instanceof Error && err.message === 'ALREADY_REPORTED') {
+          toast.error(t('location.alreadyReported'));
+          setHasReported(true);
+        } else {
+          toast.error(t('location.reportError'));
+        }
+      } finally {
+        setIsReporting(false);
+      }
+    };
 
     return (
       <Box
@@ -174,7 +194,7 @@ const LocationPopup = memo(
             {location.requiresReview && (
               <Chip
                 icon={<Warning sx={{ color: 'white !important' }} />}
-                label="Review Needed"
+                label={t('location.reviewNeeded')}
                 size="small"
                 sx={{
                   fontWeight: 'bold',
@@ -221,7 +241,7 @@ const LocationPopup = memo(
                       color="text.secondary"
                       sx={{ fontSize: '0.7rem' }}
                     >
-                      {location.owner ? 'Owner' : 'Creator'}
+                      {location.owner ? t('location.owner') : t('location.creator')}
                     </Typography>
                     <Typography variant="body2" fontWeight={600}>
                       {location.creator.username}
@@ -257,7 +277,7 @@ const LocationPopup = memo(
                         }}
                       >
                         <img src="/icons/target.png" style={{ width: 14, height: 14, marginRight: 4, verticalAlign: 'middle' }} alt="" />
-                        Part of Event:
+                        {t('location.partOfEvent')}
                       </Typography>
                       <Chip
                         label={location.event.name}
@@ -282,7 +302,7 @@ const LocationPopup = memo(
                           fontWeight: 500,
                         }}
                       >
-                        Match Confidence:{' '}
+                        {t('location.matchConfidence')}{' '}
                         {(location.eventAssignmentConfidence * 100).toFixed(0)}%
                       </Typography>
                     )}
@@ -292,7 +312,7 @@ const LocationPopup = memo(
                         sx={{ color: '#fbbf24', fontStyle: 'italic' }}
                       >
                         <img src="/icons/warning.png" style={{ width: 12, height: 12, marginRight: 4, verticalAlign: 'middle' }} alt="" />
-                        This event requires admin review
+                        {t('location.requiresAdminReview')}
                       </Typography>
                     )}
                   </Stack>
@@ -323,21 +343,54 @@ const LocationPopup = memo(
                 />
               </Stack>
 
-              {/* Like Button */}
-              <Button
-                fullWidth
-                size="small"
-                variant={isLiked ? 'contained' : 'outlined'}
-                color={isLiked ? 'error' : 'primary'}
-                startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
-                onClick={handleLikeToggle}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                }}
-              >
-                {isLiked ? 'Unlike' : 'Like'}
-              </Button>
+              {/* Like Button — hidden for own locations */}
+              {user?.id !== location.creator?.id && (
+                <Button
+                  fullWidth
+                  size="small"
+                  variant={isLiked ? 'contained' : 'outlined'}
+                  color={isLiked ? 'error' : 'primary'}
+                  startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
+                  onClick={handleLikeToggle}
+                  sx={{ textTransform: 'none', fontWeight: 600 }}
+                >
+                  {isLiked ? t('location.unlike') : t('location.like')}
+                </Button>
+              )}
+
+              {/* Report Button — hidden for own locations */}
+              {user && user.id !== location.creator?.id && (
+                <>
+                  <Button
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    startIcon={<Flag />}
+                    disabled={hasReported || isReporting}
+                    onClick={(e) => setReportMenuAnchor(e.currentTarget)}
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                  >
+                    {hasReported ? t('location.reported') : t('location.report')}
+                  </Button>
+                  <Menu
+                    anchorEl={reportMenuAnchor}
+                    open={Boolean(reportMenuAnchor)}
+                    onClose={() => setReportMenuAnchor(null)}
+                    PaperProps={{ sx: { bgcolor: '#1A1A2E', color: 'white' } }}
+                  >
+                    {(Object.values(ReportType).filter((v) => typeof v === 'number') as ReportType[]).map((type) => (
+                      <MenuItem
+                        key={type}
+                        onClick={() => handleReportSelect(type)}
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        {reportTypeLabels[type]}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </>
+              )}
             </Stack>
 
             {/* Comments Section */}
@@ -368,136 +421,35 @@ const LocationPopup = memo(
             )}
           </Box>
 
-          {/* Right Side - Image Carousel */}
-          <Box sx={{ width: 250, flexShrink: 0 }}>
-            <Card
-              sx={{
-                position: 'relative',
-                height: '100%',
-                minHeight: 320,
-                background: hasImages
-                  ? 'transparent'
-                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-              }}
-            >
-              {hasImages ? (
-                <>
-                  <CardMedia
-                    component="img"
-                    image={images[currentImageIndex]}
-                    alt={`${location.name} - Image ${currentImageIndex + 1}`}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                  />
-
-                  {/* Image counter badge */}
-                  {images.length > 1 && (
-                    <Chip
-                      label={`${currentImageIndex + 1}/${images.length}`}
-                      size="small"
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        bgcolor: 'rgba(0, 0, 0, 0.7)',
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                      }}
-                    />
-                  )}
-
-                  {images.length > 1 && (
-                    <>
-                      <IconButton
-                        onClick={prevImage}
-                        sx={{
-                          position: 'absolute',
-                          left: 8,
-                          bgcolor: 'rgba(255, 255, 255, 0.9)',
-                          '&:hover': { bgcolor: 'white' },
-                        }}
-                      >
-                        <NavigateBefore />
-                      </IconButton>
-
-                      <IconButton
-                        onClick={nextImage}
-                        sx={{
-                          position: 'absolute',
-                          right: 8,
-                          bgcolor: 'rgba(255, 255, 255, 0.9)',
-                          '&:hover': { bgcolor: 'white' },
-                        }}
-                      >
-                        <NavigateNext />
-                      </IconButton>
-
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        sx={{
-                          position: 'absolute',
-                          bottom: 12,
-                        }}
-                      >
-                        {images.map((_, index) => (
-                          <Box
-                            key={index}
-                            onClick={() => setCurrentImageIndex(index)}
-                            sx={{
-                              width: index === currentImageIndex ? 16 : 8,
-                              height: 8,
-                              borderRadius: 4,
-                              bgcolor:
-                                index === currentImageIndex
-                                  ? 'white'
-                                  : 'rgba(255, 255, 255, 0.5)',
-                              transition: 'all 0.3s',
-                              cursor: 'pointer',
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                    </>
-                  )}
-                </>
-              ) : (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}
-                >
-                  <ImageIcon
-                    sx={{
-                      fontSize: 64,
-                      color: 'white',
-                      opacity: 0.7,
-                    }}
-                  />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'white',
-                      opacity: 0.9,
-                      fontWeight: 500,
-                    }}
-                  >
-                    No images
-                  </Typography>
-                </Box>
-              )}
-            </Card>
+          {/* Right Side - Image Stack */}
+          <Box sx={{ width: 250, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 320 }}>
+            {hasImages ? (
+              <ImageStack
+                cards={images.map((url, i) => ({ id: i, img: url }))}
+                autoplayDelay={2000}
+                sensitivity={150}
+                cardDimensions={{ width: 220, height: 280 }}
+              />
+            ) : (
+              <Card
+                sx={{
+                  width: 220,
+                  height: 280,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                  borderRadius: 2,
+                }}
+              >
+                <ImageIcon sx={{ fontSize: 64, color: 'white', opacity: 0.7 }} />
+                <Typography variant="body2" sx={{ color: 'white', opacity: 0.9, fontWeight: 500 }}>
+                  No images
+                </Typography>
+              </Card>
+            )}
           </Box>
         </Box>
       </Box>

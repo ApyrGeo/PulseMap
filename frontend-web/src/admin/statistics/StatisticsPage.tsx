@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   fetchAIStatistics,
   AIStatistics,
@@ -19,6 +20,7 @@ import {
 import './StatisticsPage.css';
 
 const StatisticsPage = () => {
+  const { t } = useTranslation();
   const [statistics, setStatistics] = useState<AIStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ const StatisticsPage = () => {
         setStatistics(data);
         setError(null);
       } catch (err) {
-        setError('Failed to load statistics');
+        setError(t('adminStats.error'));
         console.error('Error loading statistics:', err);
       } finally {
         setLoading(false);
@@ -44,7 +46,7 @@ const StatisticsPage = () => {
   if (loading) {
     return (
       <div className="statistics-page">
-        <div className="statistics-loading">Loading statistics...</div>
+        <div className="statistics-loading">{t('adminStats.loading')}</div>
       </div>
     );
   }
@@ -52,7 +54,7 @@ const StatisticsPage = () => {
   if (error || !statistics) {
     return (
       <div className="statistics-page">
-        <div className="statistics-error">{error || 'No data available'}</div>
+        <div className="statistics-error">{error || t('adminStats.noData')}</div>
       </div>
     );
   }
@@ -62,52 +64,62 @@ const StatisticsPage = () => {
   // Prepare data for classification chart
   const classificationData = [
     {
-      name: 'Embedding Verifier',
+      name: t('adminStats.seriesEmbeddingVerifier'),
       value: statistics.classification.huggingFaceSuccess,
     },
-    { name: 'GPT Verifier', value: statistics.classification.openAISuccess },
+    { name: t('adminStats.seriesGptVerifier'), value: statistics.classification.openAISuccess },
     {
-      name: 'Keyword Fallback',
+      name: t('adminStats.seriesKeywordFallback'),
       value: statistics.classification.keywordFallback,
     },
   ];
 
   // Prepare data for matching chart
   const matchingData = [
-    { name: 'Embedding Matcher', value: statistics.matching.embeddingSuccess },
-    { name: 'GPT Matcher', value: statistics.matching.gptSuccess },
-    { name: 'Keyword Fallback', value: statistics.matching.keywordFallback },
+    { name: t('adminStats.seriesEmbeddingMatcher'), value: statistics.matching.embeddingSuccess },
+    { name: t('adminStats.seriesGptMatcher'), value: statistics.matching.gptSuccess },
+    { name: t('adminStats.seriesKeywordFallback'), value: statistics.matching.keywordFallback },
   ];
 
   // Prepare data for events chart
   const eventsData = [
     {
-      name: 'GPT Event Extractor',
+      name: t('adminStats.seriesGptEventExtractor'),
       value: statistics.events.gptEventExtractorSuccess,
     },
     {
-      name: 'Embedding Event Extractor',
+      name: t('adminStats.seriesEmbeddingEventExtractor'),
       value: statistics.events.embeddingEventExtractorSuccess,
     },
+  ];
+
+  // Prepare recommendations chart
+  const recommendationData = [
+    { name: t('adminStats.recAiSuccess'), value: statistics.recommendations.aiScoringSuccess },
+    { name: t('adminStats.recFallback'), value: statistics.recommendations.fallbackCalls },
   ];
 
   // Prepare comparison data
   const comparisonData = [
     {
-      category: 'Classification',
+      category: t('adminStats.catClassification'),
       total: statistics.classification.totalCalls,
     },
     {
-      category: 'Matching',
+      category: t('adminStats.catMatching'),
       total: statistics.matching.totalCalls,
     },
     {
-      category: 'Translation',
+      category: t('adminStats.catTranslation'),
       total: statistics.translation.translationsPerformed,
     },
     {
-      category: 'Event Clustering',
+      category: t('adminStats.catEventClustering'),
       total: statistics.events.eventClusteringRuns,
+    },
+    {
+      category: t('adminStats.catRecommendations'),
+      total: statistics.recommendations.requestsTotal,
     },
   ];
 
@@ -116,9 +128,9 @@ const StatisticsPage = () => {
       <div className="statistics-grid">
         {/* Classification Statistics */}
         <div className="statistics-card">
-          <h2 className="card-title">Classification Methods</h2>
+          <h2 className="card-title">{t('adminStats.classificationTitle')}</h2>
           <div className="card-stat">
-            <span className="stat-label">Total Calls:</span>
+            <span className="stat-label">{t('adminStats.totalCalls')}</span>
             <span className="stat-value">
               {statistics.classification.totalCalls}
             </span>
@@ -150,31 +162,24 @@ const StatisticsPage = () => {
           <div className="card-details">
             <div className="detail-row">
               <span style={{ color: COLORS[0] }}>●</span>
-              <span>
-                Embedding Matcher:{' '}
-                {statistics.classification.huggingFaceSuccess}
-              </span>
+              <span>{t('adminStats.seriesEmbeddingVerifier')}: {statistics.classification.huggingFaceSuccess}</span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[1] }}>●</span>
-              <span>
-                GPT Verifier: {statistics.classification.openAISuccess}
-              </span>
+              <span>{t('adminStats.seriesGptVerifier')}: {statistics.classification.openAISuccess}</span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[2] }}>●</span>
-              <span>
-                Keyword Fallback: {statistics.classification.keywordFallback}
-              </span>
+              <span>{t('adminStats.seriesKeywordFallback')}: {statistics.classification.keywordFallback}</span>
             </div>
           </div>
         </div>
 
         {/* Matching Statistics */}
         <div className="statistics-card">
-          <h2 className="card-title">Matching Methods</h2>
+          <h2 className="card-title">{t('adminStats.matchingTitle')}</h2>
           <div className="card-stat">
-            <span className="stat-label">Total Calls:</span>
+            <span className="stat-label">{t('adminStats.totalCalls')}</span>
             <span className="stat-value">{statistics.matching.totalCalls}</span>
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -204,26 +209,24 @@ const StatisticsPage = () => {
           <div className="card-details">
             <div className="detail-row">
               <span style={{ color: COLORS[0] }}>●</span>
-              <span>Embedding: {statistics.matching.embeddingSuccess}</span>
+              <span>{t('adminStats.seriesEmbeddingMatcher')}: {statistics.matching.embeddingSuccess}</span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[1] }}>●</span>
-              <span>GPT: {statistics.matching.gptSuccess}</span>
+              <span>{t('adminStats.seriesGptMatcher')}: {statistics.matching.gptSuccess}</span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[2] }}>●</span>
-              <span>
-                Keyword Fallback: {statistics.matching.keywordFallback}
-              </span>
+              <span>{t('adminStats.seriesKeywordFallback')}: {statistics.matching.keywordFallback}</span>
             </div>
           </div>
         </div>
 
         {/* Event Extraction Statistics */}
         <div className="statistics-card">
-          <h2 className="card-title">Event Extraction Methods</h2>
+          <h2 className="card-title">{t('adminStats.eventExtractionTitle')}</h2>
           <div className="card-stat">
-            <span className="stat-label">Clustering Runs:</span>
+            <span className="stat-label">{t('adminStats.clusteringRuns')}</span>
             <span className="stat-value">
               {statistics.events.eventClusteringRuns}
             </span>
@@ -255,23 +258,64 @@ const StatisticsPage = () => {
           <div className="card-details">
             <div className="detail-row">
               <span style={{ color: COLORS[0] }}>●</span>
-              <span>
-                GPT Extractor: {statistics.events.gptEventExtractorSuccess}
-              </span>
+              <span>{t('adminStats.seriesGptEventExtractor')}: {statistics.events.gptEventExtractorSuccess}</span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[1] }}>●</span>
-              <span>
-                Embedding Extractor:{' '}
-                {statistics.events.embeddingEventExtractorSuccess}
-              </span>
+              <span>{t('adminStats.seriesEmbeddingEventExtractor')}: {statistics.events.embeddingEventExtractorSuccess}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Recommendation Engine Statistics */}
+        <div className="statistics-card">
+          <h2 className="card-title">{t('adminStats.recommendationTitle')}</h2>
+          <div className="card-stat">
+            <span className="stat-label">{t('adminStats.totalCalls')}</span>
+            <span className="stat-value">{statistics.recommendations.requestsTotal}</span>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={recommendationData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {recommendationData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="card-details">
+            <div className="detail-row">
+              <span style={{ color: COLORS[0] }}>●</span>
+              <span>{t('adminStats.recAiSuccess')}: {statistics.recommendations.aiScoringSuccess}</span>
+            </div>
+            <div className="detail-row">
+              <span style={{ color: COLORS[1] }}>●</span>
+              <span>{t('adminStats.recFallback')}: {statistics.recommendations.fallbackCalls}</span>
+            </div>
+            {statistics.recommendations.requestsTotal > 0 && (
+              <div className="detail-row" style={{ marginTop: 8, color: '#8E8E8E' }}>
+                <span>{t('adminStats.recSuccessRate')}: </span>
+                <span style={{ color: '#10b981', fontWeight: 600 }}>
+                  {((statistics.recommendations.aiScoringSuccess / statistics.recommendations.requestsTotal) * 100).toFixed(1)}%
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Overall Comparison */}
         <div className="statistics-card wide">
-          <h2 className="card-title">Overall Activity Comparison</h2>
+          <h2 className="card-title">{t('adminStats.overallActivity')}</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={comparisonData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -279,7 +323,7 @@ const StatisticsPage = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="total" fill="#3b82f6" name="Total Calls" />
+              <Bar dataKey="total" fill="#3b82f6" name={t('adminStats.totalCalls')} />
             </BarChart>
           </ResponsiveContainer>
         </div>

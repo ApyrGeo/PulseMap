@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CategoryDTO, Location, LocationPutDTO } from '../Interfaces';
 import { fetchCategories } from '../services/CategoriesApiService';
 import { uploadMultipleImagesToAzure } from '../../services/AzureBlobService';
@@ -17,6 +18,7 @@ const EditLocationModal = ({
   onClose,
   onSubmit,
 }: EditLocationModalProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(location.name);
   const [description, setDescription] = useState(location.description || '');
   const [category, setCategory] = useState(location.category);
@@ -71,7 +73,7 @@ const EditLocationModal = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Edit Location</h2>
+          <h2 className="modal-title">{t('editLocation.title')}</h2>
           <button className="modal-close-button" onClick={onClose}>
             ×
           </button>
@@ -79,7 +81,7 @@ const EditLocationModal = ({
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Name *</label>
+            <label className="form-label">{t('editLocation.name')}</label>
             <input
               className="form-input"
               type="text"
@@ -90,7 +92,7 @@ const EditLocationModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Category *</label>
+            <label className="form-label">{t('editLocation.category')}</label>
             <select
               className="form-select"
               value={category}
@@ -106,7 +108,7 @@ const EditLocationModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Description</label>
+            <label className="form-label">{t('editLocation.description')}</label>
             <textarea
               className="form-textarea"
               value={description}
@@ -116,7 +118,7 @@ const EditLocationModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Images</label>
+            <label className="form-label">{t('editLocation.images')}</label>
             {imageUrls.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
                 {imageUrls.map((url, i) => (
@@ -165,7 +167,7 @@ const EditLocationModal = ({
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingImages}
             >
-              {isUploadingImages ? 'Uploading...' : '+ Add Photos'}
+              {isUploadingImages ? t('editLocation.uploading') : t('editLocation.addPhotos')}
             </button>
           </div>
 
@@ -175,10 +177,10 @@ const EditLocationModal = ({
               className="modal-button-cancel"
               onClick={onClose}
             >
-              Cancel
+              {t('editLocation.cancel')}
             </button>
             <button type="submit" className="modal-button-submit" disabled={isUploadingImages}>
-              Save Changes
+              {t('editLocation.save')}
             </button>
           </div>
         </form>

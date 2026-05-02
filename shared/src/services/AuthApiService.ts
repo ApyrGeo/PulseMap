@@ -22,6 +22,7 @@ export const registerUserAPI = async (registerRequest: RegisterRequest): Promise
     body: JSON.stringify(registerRequest),
   });
 
+  if (response.status === 409) throw new Error('USER_ALREADY_EXISTS');
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(errorText || 'Failed to register user');

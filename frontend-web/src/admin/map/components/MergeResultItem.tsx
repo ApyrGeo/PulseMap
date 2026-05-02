@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MergeResultItem } from '../services/AIApiService';
 import {
   Box,
@@ -17,6 +18,7 @@ const MergeResultItemComponent = ({
   result,
   onForceMerge,
 }: MergeResultItemComponentProps) => {
+  const { t } = useTranslation();
   const isPossibleDuplicate = result.matchResult === 'PossiblySameLocation';
 
   const getActionColor = (action: string) => {
@@ -67,7 +69,7 @@ const MergeResultItemComponent = ({
               }
               sx={{ ml: 'auto' }}
             >
-              Force Merge
+              {t('forceMerge.forceMergeBtn')}
             </Button>
           )}
         </Box>

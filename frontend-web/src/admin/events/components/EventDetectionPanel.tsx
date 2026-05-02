@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { analyzeAndClusterEvents, EventClusteringResultDTO } from '../services/EventsApiService';
 import './EventDetectionPanel.css';
 
 const EventDetectionPanel = () => {
+  const { t } = useTranslation();
   const [maxDistance, setMaxDistance] = useState(100);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EventClusteringResultDTO | null>(null);
@@ -17,7 +19,7 @@ const EventDetectionPanel = () => {
       const data = await analyzeAndClusterEvents(maxDistance);
       setResult(data);
     } catch (err) {
-      setError('Failed to analyze events. Please try again.');
+      setError(t('eventPanel.error'));
       console.error('Error analyzing events:', err);
     } finally {
       setLoading(false);
@@ -27,15 +29,15 @@ const EventDetectionPanel = () => {
   return (
     <div className="event-detection-panel">
       <div className="event-detection-header">
-        <h2>Event Detection & Clustering</h2>
+        <h2>{t('eventPanel.title')}</h2>
         <p className="event-detection-subtitle">
-          Analyze location patterns to detect and cluster events
+          {t('eventPanel.subtitle')}
         </p>
       </div>
 
       <div className="event-detection-controls">
         <div className="control-group">
-          <label htmlFor="maxDistance">Max Distance (meters)</label>
+          <label htmlFor="maxDistance">{t('eventPanel.maxDistance')}</label>
           <input
             id="maxDistance"
             type="number"
@@ -53,7 +55,7 @@ const EventDetectionPanel = () => {
           onClick={handleAnalyze}
           disabled={loading}
         >
-          {loading ? 'Analyzing...' : 'Detect Events'}
+          {loading ? t('eventPanel.analyzing') : t('eventPanel.detect')}
         </button>
       </div>
 
@@ -66,22 +68,22 @@ const EventDetectionPanel = () => {
       {result && (
         <div className="event-detection-results">
           <div className="result-summary">
-            <h3>Analysis Results</h3>
+            <h3>{t('eventPanel.resultsTitle')}</h3>
             <div className="summary-stats">
               <div className="stat-item">
-                <span className="stat-label">Events Created:</span>
+                <span className="stat-label">{t('eventPanel.eventsCreated')}</span>
                 <span className="stat-value">{result.eventsCreated.length}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Events Updated:</span>
+                <span className="stat-label">{t('eventPanel.eventsUpdated')}</span>
                 <span className="stat-value">{result.eventsUpdated.length}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Locations Assigned:</span>
+                <span className="stat-label">{t('eventPanel.locationsAssigned')}</span>
                 <span className="stat-value">{result.locationsAssigned}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Locations Ignored:</span>
+                <span className="stat-label">{t('eventPanel.locationsIgnored')}</span>
                 <span className="stat-value">{result.locationsIgnored}</span>
               </div>
             </div>
@@ -89,34 +91,34 @@ const EventDetectionPanel = () => {
 
           {(result.eventsCreated.length > 0 || result.eventsUpdated.length > 0) && (
             <div className="events-list">
-              <h4>Detected Events ({result.eventsCreated.length + result.eventsUpdated.length})</h4>
+              <h4>{t('eventPanel.detectedEvents', { count: result.eventsCreated.length + result.eventsUpdated.length })}</h4>
               <div className="events-grid">
                 {[...result.eventsCreated, ...result.eventsUpdated].map((event) => (
                   <div key={event.id} className="event-card">
                     <div className="event-header">
                       <span className="event-category">{event.name}</span>
                       {event.requiresReview && (
-                        <span className="event-badge review">Needs Review</span>
+                        <span className="event-badge review">{t('eventPanel.needsReview')}</span>
                       )}
                       {event.isExpired && (
-                        <span className="event-badge inactive">Expired</span>
+                        <span className="event-badge inactive">{t('eventPanel.expired')}</span>
                       )}
                     </div>
                     <div className="event-details">
                       <p>
-                        <strong>Center:</strong> {event.latitude.toFixed(6)}, {event.longitude.toFixed(6)}
+                        <strong>{t('eventPanel.center')}:</strong> {event.latitude.toFixed(6)}, {event.longitude.toFixed(6)}
                       </p>
                       <p>
-                        <strong>Confidence:</strong> {(event.confidenceScore * 100).toFixed(0)}%
+                        <strong>{t('eventPanel.confidence')}:</strong> {(event.confidenceScore * 100).toFixed(0)}%
                       </p>
                       <p>
-                        <strong>Locations:</strong> {event.locationsCount}
+                        <strong>{t('eventPanel.locations')}:</strong> {event.locationsCount}
                       </p>
                       <p className="event-date">
-                        <strong>Created:</strong> {new Date(event.createdAt).toLocaleString()}
+                        <strong>{t('eventPanel.created')}:</strong> {new Date(event.createdAt).toLocaleString()}
                       </p>
                       <p className="event-date">
-                        <strong>Expires:</strong> {new Date(event.expiresAt).toLocaleString()}
+                        <strong>{t('eventPanel.expires')}:</strong> {new Date(event.expiresAt).toLocaleString()}
                       </p>
                     </div>
                   </div>

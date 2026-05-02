@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,8 @@ import {
   ImageUploadInput,
   getApiUrl,
 } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
+import AnimatedCounter from './AnimatedCounter';
 import { useDeviceLocation } from '../contexts/LocationContext';
 
 interface ImageItem {
@@ -44,9 +46,9 @@ function buildGalleryPickerHTML(apiUrl: string, token: string): string {
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0F0F1A;font-family:sans-serif;gap:16px;}
-label{background:#FF6B35;color:#fff;padding:16px 36px;font-size:17px;border-radius:12px;cursor:pointer;display:inline-block;}
+label{background:#22C55E;color:#fff;padding:16px 36px;font-size:17px;border-radius:12px;cursor:pointer;display:inline-block;}
 p{color:#8E8E8E;font-size:13px;}
-#status{color:#FF6B35;font-size:13px;margin-top:8px;}
+#status{color:#22C55E;font-size:13px;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -98,8 +100,11 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
   const { addLocation } = useLocations();
   const { user, tokenService } = useAuth();
   const { userCoords } = useDeviceLocation();
+  const { t } = useTranslation();
 
+  const descriptionRef = useRef<TextInput>(null);
   const [coords, setCoords] = useState({ latitude, longitude });
+  const [mapVisible, setMapVisible] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -117,12 +122,18 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
   const [pickerHtml, setPickerHtml] = useState('');
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      setMapVisible(false);
+      return;
+    }
+    // Update coords and show map in the same batch — MapView mounts only after
+    // coords are correct, avoiding the blank-on-first-open issue.
     if (userCoords) {
       setCoords({ latitude: userCoords.latitude, longitude: userCoords.longitude });
     } else {
       setCoords({ latitude, longitude });
     }
+    setMapVisible(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -130,8 +141,9 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
     if (!visible) return;
     fetchCategories(tokenService)
       .then((cats) => {
-        setCategories(cats);
-        setCategory((cur) => cur || cats[0]?.name || '');
+        const filtered = cats.filter((c) => c.name !== 'Not Set');
+        setCategories(filtered);
+        setCategory((cur) => cur || filtered[0]?.name || '');
       })
       .catch(console.error);
   }, [visible, tokenService]);
@@ -237,13 +249,13 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
 
   const handleSubmit = useCallback(async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a location name');
+      Alert.alert(t('common.error'), t('addLocation.enterName'));
       return;
     }
     if (!user) return;
     const totalHours = days * 24 + hours;
     if (isOwned && totalHours === 0) {
-      Alert.alert('Error', 'Please set a duration for your owned location');
+      Alert.alert(t('common.error'), t('addLocation.setDuration'));
       return;
     }
     setLoading(true);
@@ -259,9 +271,10 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
         ownerId: isOwned ? user.id : undefined,
         imageUrls: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
       });
+      Alert.alert(t('common.success'), t('addLocation.addSuccess'));
       handleClose();
-    } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to add location');
+    } catch {
+      Alert.alert(t('common.error'), t('addLocation.addError'));
     } finally {
       setLoading(false);
     }
@@ -294,30 +307,38 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
           {/* Header */}
           <View style={styles.handle} />
           <View style={styles.header}>
-            <Text style={styles.title}>Add Location</Text>
+            <Text style={styles.title}>{t('addLocation.title')}</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={styles.closeBtn}>✕</Text>
             </TouchableOpacity>
           </View>
 
+          {!userCoords && (
+            <View style={styles.gpsBanner}>
+              <Text style={styles.gpsBannerText}>{t('addLocation.gpsBanner')}</Text>
+            </View>
+          )}
+
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* Mini map — tap to adjust pin */}
+            {/* Mini map — rendered only after coords are set to avoid blank on first open */}
             <View style={styles.miniMapWrap}>
-              <MapView
-                style={styles.miniMap}
-                initialRegion={{
-                  latitude: coords.latitude,
-                  longitude: coords.longitude,
-                  latitudeDelta: 0.001,
-                  longitudeDelta: 0.001,
-                }}
-                showsUserLocation
-                showsMyLocationButton={false}
-                onPress={(e) => setCoords(e.nativeEvent.coordinate)}
-              >
-                <Marker coordinate={coords} />
-              </MapView>
-              <Text style={styles.miniMapHint}>Tap map to adjust pin position</Text>
+              {mapVisible && (
+                <MapView
+                  style={styles.miniMap}
+                  initialRegion={{
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                    latitudeDelta: 0.001,
+                    longitudeDelta: 0.001,
+                  }}
+                  showsUserLocation
+                  showsMyLocationButton={false}
+                  onPress={(e) => setCoords(e.nativeEvent.coordinate)}
+                >
+                  <Marker coordinate={coords} />
+                </MapView>
+              )}
+              <Text style={styles.miniMapHint}>{t('addLocation.tapMapAdjust')}</Text>
               <Text style={styles.coordsText}>
                 {coords.latitude.toFixed(6)}, {coords.longitude.toFixed(6)}
               </Text>
@@ -328,24 +349,28 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
               <View style={[styles.checkbox, isOwned && styles.checkboxActive]}>
                 {isOwned && <Text style={styles.checkmark}>✓</Text>}
               </View>
-              <Text style={styles.ownedLabel}>Owned Location (My Business/Place)</Text>
+              <Text style={styles.ownedLabel}>{t('addLocation.ownedLocation')}</Text>
             </TouchableOpacity>
 
             {/* Name */}
-            <Text style={styles.label}>Name *</Text>
+            <Text style={styles.label}>{t('addLocation.name')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter location name"
+              placeholder={t('addLocation.namePlaceholder')}
               placeholderTextColor="#6B6B8A"
               value={name}
               onChangeText={setName}
+              returnKeyType="next"
+              onSubmitEditing={() => descriptionRef.current?.focus()}
+              blurOnSubmit={false}
             />
 
             {/* Description */}
-            <Text style={styles.label}>Description</Text>
+            <Text style={styles.label}>{t('addLocation.description')}</Text>
             <TextInput
+              ref={descriptionRef}
               style={[styles.input, styles.textArea]}
-              placeholder="Optional description (triggers AI category suggestion on blur)"
+              placeholder={t('addLocation.descriptionPlaceholder')}
               placeholderTextColor="#6B6B8A"
               value={description}
               onChangeText={(t) => {
@@ -355,18 +380,20 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                 setShowVagueWarning(false);
               }}
               onBlur={handleDescriptionBlur}
+              onSubmitEditing={handleDescriptionBlur}
               multiline
               numberOfLines={3}
+              blurOnSubmit={false}
             />
 
             {/* Category */}
-            <Text style={styles.label}>Category *</Text>
+            <Text style={styles.label}>{t('addLocation.category')}</Text>
             {isClassifying && (
-              <Text style={styles.hint}>Se generează potrivirea cea mai bună pentru descriere...</Text>
+              <Text style={styles.hint}>{t('addLocation.aiClassifying')}</Text>
             )}
             {!isClassifying && suggestedCategories.length > 0 && !showManualSelect && (
               <View>
-                <Text style={styles.hint}>Tag-uri sugerate:</Text>
+                <Text style={styles.hint}>{t('addLocation.aiSuggested')}</Text>
                 <View style={styles.chipRow}>
                   {suggestedCategories.map((cat) => (
                     <TouchableOpacity
@@ -381,16 +408,14 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                   ))}
                 </View>
                 <TouchableOpacity onPress={() => setShowManualSelect(true)}>
-                  <Text style={styles.manualLink}>Selectare manuală</Text>
+                  <Text style={styles.manualLink}>{t('addLocation.manualSelect')}</Text>
                 </TouchableOpacity>
               </View>
             )}
             {!isClassifying && (showManualSelect || suggestedCategories.length === 0) && (
               <View>
                 {showVagueWarning && (
-                  <Text style={styles.warning}>
-                    Descrierea este prea vagă. Încearcă să adaugi mai multe detalii sau selectează manual.
-                  </Text>
+                  <Text style={styles.warning}>{t('addLocation.descriptionVague')}</Text>
                 )}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.chipRow}>
@@ -411,9 +436,9 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
             )}
 
             {/* Images */}
-            <Text style={styles.label}>Images (optional)</Text>
+            <Text style={styles.label}>{t('addLocation.images')}</Text>
             <TouchableOpacity style={styles.imagePickBtn} onPress={handlePickImages}>
-              <Text style={styles.imagePickBtnText}>📷  Add Photos</Text>
+              <Text style={styles.imagePickBtnText}>{t('addLocation.addPhotos')}</Text>
             </TouchableOpacity>
             {uploadedImageUrls.length > 0 && (
               <ScrollView
@@ -438,10 +463,10 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
             {/* Duration — only for owned */}
             {isOwned && (
               <View style={styles.durationSection}>
-                <Text style={styles.label}>Duration *</Text>
+                <Text style={styles.label}>{t('addLocation.duration')}</Text>
                 <View style={styles.durationRow}>
                   <View style={styles.durationCol}>
-                    <Text style={styles.durationLabel}>Days</Text>
+                    <Text style={styles.durationLabel}>{t('addLocation.days')}</Text>
                     <View style={styles.stepper}>
                       <TouchableOpacity
                         style={styles.stepBtn}
@@ -449,7 +474,7 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                       >
                         <Text style={styles.stepBtnText}>−</Text>
                       </TouchableOpacity>
-                      <Text style={styles.stepValue}>{days}</Text>
+                      <AnimatedCounter value={days} fontSize={24} color="#22C55E" />
                       <TouchableOpacity
                         style={styles.stepBtn}
                         onPress={() => setDays((d) => Math.min(29, d + 1))}
@@ -459,7 +484,7 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                     </View>
                   </View>
                   <View style={styles.durationCol}>
-                    <Text style={styles.durationLabel}>Hours</Text>
+                    <Text style={styles.durationLabel}>{t('addLocation.hours')}</Text>
                     <View style={styles.stepper}>
                       <TouchableOpacity
                         style={styles.stepBtn}
@@ -467,7 +492,7 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                       >
                         <Text style={styles.stepBtnText}>−</Text>
                       </TouchableOpacity>
-                      <Text style={styles.stepValue}>{hours}</Text>
+                      <AnimatedCounter value={hours} fontSize={24} color="#22C55E" />
                       <TouchableOpacity
                         style={styles.stepBtn}
                         onPress={() => setHours((h) => Math.min(23, h + 1))}
@@ -500,7 +525,7 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.submitText}>
-                  {uploadedImageUrls.length > 0 ? 'Add Location with Photos' : 'Add Location'}
+                  {uploadedImageUrls.length > 0 ? t('addLocation.submitWithPhotos') : t('addLocation.submit')}
                 </Text>
               )}
             </TouchableOpacity>
@@ -558,6 +583,16 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   closeBtn: { color: '#8E8E8E', fontSize: 20 },
 
+  gpsBanner: {
+    backgroundColor: '#2D1F0A',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F59E0B44',
+  },
+  gpsBannerText: { color: '#F59E0B', fontSize: 13, textAlign: 'center' },
+
   miniMapWrap: {
     marginBottom: 16,
     borderRadius: 12,
@@ -575,7 +610,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F0F1A',
   },
   coordsText: {
-    color: '#FF6B35',
+    color: '#22C55E',
     fontSize: 11,
     textAlign: 'center',
     paddingBottom: 8,
@@ -603,9 +638,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxActive: { borderColor: '#FF6B35', backgroundColor: '#FF6B35' },
+  checkboxActive: { borderColor: '#22C55E', backgroundColor: '#22C55E' },
   checkmark: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  ownedLabel: { color: '#ccc', fontSize: 14 },
+  ownedLabel: { color: '#fff', fontSize: 14 },
 
   label: { color: '#8E8E8E', fontSize: 13, marginBottom: 6, marginTop: 12 },
   input: {
@@ -623,7 +658,7 @@ const styles = StyleSheet.create({
   hint: { color: '#8E8E8E', fontSize: 12, marginBottom: 8 },
   warning: { color: '#EF4444', fontSize: 12, marginBottom: 8 },
   manualLink: {
-    color: '#FF6B35',
+    color: '#22C55E',
     fontSize: 13,
     textDecorationLine: 'underline',
     marginTop: 6,
@@ -639,7 +674,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  chipActive: { backgroundColor: '#FF6B35', borderColor: '#FF6B35' },
+  chipActive: { backgroundColor: '#22C55E', borderColor: '#22C55E' },
   chipText: { color: '#8E8E8E', fontSize: 13 },
   chipTextActive: { color: '#fff', fontWeight: '600' },
 
@@ -652,7 +687,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  imagePickBtnText: { color: '#FF6B35', fontSize: 15 },
+  imagePickBtnText: { color: '#22C55E', fontSize: 15 },
   imagePreviewRow: { marginBottom: 8 },
   imagePreview: { position: 'relative', marginRight: 8 },
   previewImg: { width: 80, height: 80, borderRadius: 8 },
@@ -689,11 +724,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#2D2D44',
   },
-  stepBtnText: { color: '#FF6B35', fontSize: 22, fontWeight: '300' },
+  stepBtnText: { color: '#22C55E', fontSize: 22, fontWeight: '300' },
   stepValue: { color: '#fff', fontSize: 18, fontWeight: '600', minWidth: 36, textAlign: 'center' },
 
   submitBtn: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#22C55E',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -703,5 +738,5 @@ const styles = StyleSheet.create({
   submitText: { color: '#fff', fontWeight: '600', fontSize: 16 },
 
   pickerCancelBtn: { padding: 16 },
-  pickerCancelText: { color: '#FF6B35', fontSize: 16 },
+  pickerCancelText: { color: '#22C55E', fontSize: 16 },
 });

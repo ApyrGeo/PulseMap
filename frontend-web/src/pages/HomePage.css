@@ -1,0 +1,151 @@
+.home-page {
+  min-height: 100vh;
+  background: #0D0D1A;
+  color: #fff;
+  padding-bottom: 80px;
+}
+
+/* Hero */
+.home-hero {
+  text-align: center;
+  padding: 80px 24px 60px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+}
+
+.home-hero-logo {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.home-hero-pulse {
+  color: #22C55E;
+}
+
+.home-hero-map {
+  color: #fff;
+}
+
+.home-hero-tagline {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: #f0f0f0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.home-hero-subtitle {
+  font-size: 1rem;
+  color: #9ca3af;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Features */
+.home-features {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 24px 60px;
+}
+
+.home-feature-card {
+  background: #1A1A2E;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-radius: 14px;
+  padding: 28px 24px;
+  width: 220px;
+  text-align: center;
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.home-feature-card:hover {
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: translateY(-4px);
+}
+
+.home-feature-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.home-feature-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.home-feature-card p {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Gallery */
+.home-gallery {
+  padding: 0 24px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-gallery-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+/* CTA */
+.home-cta {
+  text-align: center;
+  padding: 60px 24px 0;
+}
+
+.home-cta h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 28px;
+  color: #fff;
+}
+
+.home-cta-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.home-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.home-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.home-btn--primary {
+  background: #22C55E;
+  color: #fff;
+}
+
+.home-btn--secondary {
+  background: transparent;
+  color: #22C55E;
+  border: 2px solid #22C55E;
+}

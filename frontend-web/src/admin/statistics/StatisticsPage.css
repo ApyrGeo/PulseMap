@@ -1,4 +1,4 @@
-.statistics-page {
+﻿.statistics-page {
   min-height: 100vh;
   background-color: #0F0F1A;
   padding: 2rem;
@@ -33,7 +33,7 @@
 
 .statistics-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   max-width: 1800px;
   margin: 0 auto;
@@ -84,7 +84,7 @@
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #FF6B35;
+  color: #22C55E;
 }
 
 .card-details {
@@ -130,7 +130,13 @@
   text-align: center;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1400px) {
+  .statistics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
   .statistics-grid {
     grid-template-columns: 1fr;
   }

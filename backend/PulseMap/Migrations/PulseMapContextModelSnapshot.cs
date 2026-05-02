@@ -89,6 +89,15 @@ namespace PulseMap.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
+                    b.Property<int>("RecommendationAiSuccess")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecommendationFallbackCalls")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecommendationRequestsTotal")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TotalClassificationCalls")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -122,6 +131,9 @@ namespace PulseMap.Migrations
                             KeywordMatcherFallback = 0,
                             LastUpdated = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             OpenAIClassifierSuccess = 0,
+                            RecommendationAiSuccess = 0,
+                            RecommendationFallbackCalls = 0,
+                            RecommendationRequestsTotal = 0,
                             TotalClassificationCalls = 0,
                             TotalMatchingCalls = 0,
                             TranslationsPerformed = 0
@@ -361,6 +373,11 @@ namespace PulseMap.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
+                    b.Property<int>("PreviousReportCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.HasKey("Id");
 
                     b.HasIndex("LocationId")
@@ -398,6 +415,11 @@ namespace PulseMap.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsExpired")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsStarred")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
@@ -502,6 +524,38 @@ namespace PulseMap.Migrations
                     b.HasDiscriminator<string>("MessageType").HasValue("Message");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("UserId", "LocationId")
+                        .IsUnique();
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.User", b =>
@@ -661,6 +715,25 @@ namespace PulseMap.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("PulseMap.Domain.Report", b =>
+                {
+                    b.HasOne("PulseMap.Domain.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PulseMap.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PulseMap.Domain.ResponseMessage", b =>

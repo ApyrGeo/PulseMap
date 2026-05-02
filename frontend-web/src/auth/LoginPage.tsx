@@ -1,30 +1,29 @@
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import './LoginPage.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState(false);
-
   const { loginUser } = useAuth();
+  const { t } = useTranslation();
 
   const handleLoginButton = async (
     e: React.MouseEvent<HTMLButtonElement> | React.FormEvent
   ) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error('Please enter email and password');
+      toast.error(t('auth.login.enterCredentials'));
       return;
     }
-
     setLoading(true);
     try {
       await loginUser(email, password);
-      toast.success('Logged in');
     } catch (error: any) {
-      toast.error('Login failed: ' + (error?.message ?? 'Unknown error'));
+      toast.error(t('auth.login.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -38,10 +37,10 @@ const LoginPage = () => {
         aria-labelledby="login-heading"
       >
         <h1 id="login-heading" className="login-heading">
-          Sign in to PulseMap
+          {t('auth.login.title')}
         </h1>
 
-        <label className="login-label">Email</label>
+        <label className="login-label">{t('auth.login.email')}</label>
         <input
           type="email"
           className="login-input"
@@ -52,11 +51,11 @@ const LoginPage = () => {
           required
         />
 
-        <label className="login-label">Password</label>
+        <label className="login-label">{t('auth.login.password')}</label>
         <input
           type="password"
           className="login-input"
-          placeholder="Your password"
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
@@ -69,13 +68,13 @@ const LoginPage = () => {
           disabled={loading}
           className="login-button"
         >
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? t('auth.login.submitting') : t('auth.login.submit')}
         </button>
 
         <div className="login-footer">
-          <span>Don't have an account? </span>
+          <span>{t('auth.login.noAccount')} </span>
           <a className="login-register-link" href="/register">
-            Register
+            {t('auth.login.register')}
           </a>
         </div>
       </form>
