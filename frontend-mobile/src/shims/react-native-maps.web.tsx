@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
+﻿import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { View, Text } from 'react-native';
 import {
   MapContainer,
@@ -32,8 +32,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const tearDropIcon = (category = 'Not Set', isExpired = false, isNearby = false) => {
-  const color = isExpired ? '#6B7280' : (CATEGORY_COLORS[category] ?? '#FF6B35');
-  const borderColor = isNearby ? '#FF6B35' : '#fff';
+  const color = isExpired ? '#6B7280' : (CATEGORY_COLORS[category] ?? '#22C55E');
+  const borderColor = isNearby ? '#22C55E' : '#fff';
   const size = isNearby ? 34 : 28;
   const cssClass = isNearby ? 'teardrop-marker-nearby' : 'teardrop-marker';
 
@@ -208,7 +208,7 @@ const MapView = forwardRef<MapViewRef, MapViewProps>(
             <Text style={{ color: '#8E8E8E', fontSize: 11, marginTop: 1 }}>
               active locations
             </Text>
-            <Text style={{ color: '#FF6B35', fontSize: 10, marginTop: 4 }}>
+            <Text style={{ color: '#22C55E', fontSize: 10, marginTop: 4 }}>
               Zoom in to see pins
             </Text>
           </View>

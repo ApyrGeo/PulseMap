@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+﻿import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,9 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
+import TipCard from '../components/TipCard';
 import { useDeviceLocation } from '../contexts/LocationContext';
 import {
   fetchRecommendedLocationsByBounds,
@@ -57,6 +59,7 @@ export default function RecommendationsScreen() {
   const { user, tokenService } = useAuth();
   const { interactedLocationIds } = useLocations();
   const { userCoords } = useDeviceLocation();
+  const { t } = useTranslation();
   const [recommendations, setRecommendations] = useState<LocationRecommendationDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -109,15 +112,16 @@ export default function RecommendationsScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Finding recommendations near you...</Text>
+        <ActivityIndicator size="large" color="#22C55E" />
+        <Text style={styles.loadingText}>{t('recommendations.loading')}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Recommended for you</Text>
+      <Text style={styles.header}>{t('recommendations.title')}</Text>
+      <TipCard message={t('tips.mobRecs')} />
       <FlatList
         data={recommendations}
         keyExtractor={(item) => item.id.toString()}
@@ -126,15 +130,13 @@ export default function RecommendationsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load(true)}
-            tintColor="#FF6B35"
+            tintColor="#22C55E"
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No recommendations yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Like some locations to improve your recommendations
-            </Text>
+            <Text style={styles.emptyTitle}>{t('recommendations.noRecommendations')}</Text>
+            <Text style={styles.emptySubtitle}>{t('recommendations.noRecommendationsHint')}</Text>
           </View>
         }
         contentContainerStyle={recommendations.length === 0 ? styles.emptyList : undefined}
@@ -152,6 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     padding: 20,
+    paddingTop: 52,
     paddingBottom: 12,
   },
   card: {
@@ -163,7 +166,7 @@ const styles = StyleSheet.create({
   },
   cardHeader: { marginBottom: 8 },
   cardTitleRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  cardCategory: { color: '#FF6B35', fontSize: 12, fontWeight: '600' },
+  cardCategory: { color: '#22C55E', fontSize: 12, fontWeight: '600' },
   cardScoreRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   cardScoreIcon: { width: 12, height: 12, tintColor: '#FFD700' },
   cardScore: { color: '#FFD700', fontSize: 12, fontWeight: '600' },

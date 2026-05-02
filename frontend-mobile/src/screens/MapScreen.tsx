@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -28,6 +28,8 @@ import { Icons } from '../utils/icons';
 import ProximityCardStack from '../components/ProximityCardStack';
 import AddLocationModal from '../components/AddLocationModal';
 import LocationDetailModal from '../components/LocationDetailModal';
+import TipCard from '../components/TipCard';
+import { useTranslation } from 'react-i18next';
 
 const ZOOM_NEIGHBORHOOD = 15;
 const ZOOM_EVENT = 12;   // 3 niveluri de zoom pentru events: 12, 13, 14
@@ -57,6 +59,7 @@ export default function MapScreen() {
   const { activeLocations, refreshLocations, interactedLocationIds, markAsInteracted } = useLocations();
   const { user, tokenService } = useAuth();
   const { userCoords } = useDeviceLocation();
+  const { t } = useTranslation();
   const mapRef = useRef<MapView>(null);
 
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -70,6 +73,7 @@ export default function MapScreen() {
   const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
 
   const pulseAnims = useRef<Record<number, Animated.Value>>({});
+  const prevActiveRef = useRef<Location[]>([]);
 
   // Exclude own locations from proximity detection — "Ai fost aici" nu apare pt creatorul locatiei
   // useMemo previne array nou la fiecare render (ar cauza infinite loop in useProximityDetection)
@@ -131,19 +135,42 @@ export default function MapScreen() {
     navigation.setParams({ focusLocationId: undefined, latitude: undefined, longitude: undefined });
   }, [route.params?.focusLocationId]);
 
-  // WS sync: re-filter activeLocations by bounds on WS push, only at neighborhood zoom
+  // WS sync: apply only the diff (added/removed/updated) to visibleLocations.
+  // Re-filtering all activeLocations by bounds would re-add locations loaded by
+  // refreshLocations that the user already scrolled away from.
   useEffect(() => {
+    const prev = prevActiveRef.current;
+    prevActiveRef.current = activeLocations;
+
     if (!lastBounds || currentZoom < ZOOM_NEIGHBORHOOD) return;
+
+    const prevMap = new Map(prev.map((l) => [l.id, l]));
+    const curMap = new Map(activeLocations.map((l) => [l.id, l]));
+
+    const added = activeLocations.filter((l) => !prevMap.has(l.id));
+    const removedIds = new Set([...prevMap.keys()].filter((id) => !curMap.has(id)));
+    const updated = activeLocations.filter((l) => prevMap.has(l.id) && prevMap.get(l.id) !== l);
+
+    if (added.length === 0 && removedIds.size === 0 && updated.length === 0) return;
+
     const b = lastBounds;
-    setVisibleLocations(
-      activeLocations.filter(
-        (loc) =>
-          loc.latitude >= b.minLat &&
-          loc.latitude <= b.maxLat &&
-          loc.longitude >= b.minLng &&
-          loc.longitude <= b.maxLng
-      )
+    const addedInBounds = added.filter(
+      (loc) =>
+        loc.latitude >= b.minLat &&
+        loc.latitude <= b.maxLat &&
+        loc.longitude >= b.minLng &&
+        loc.longitude <= b.maxLng
     );
+
+    setVisibleLocations((prevVis) => {
+      if (!prevVis) return prevVis;
+      let result = prevVis.filter((loc) => !removedIds.has(loc.id));
+      result = result.map((loc) => updated.find((u) => u.id === loc.id) ?? loc);
+      for (const loc of addedInBounds) {
+        if (!result.some((l) => l.id === loc.id)) result = [...result, loc];
+      }
+      return result;
+    });
   }, [activeLocations, lastBounds, currentZoom]);
 
   // Pulse animations for nearby markers
@@ -308,6 +335,7 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+      <TipCard message={t('tips.mobMapFab')} />
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -319,7 +347,7 @@ export default function MapScreen() {
       >
         {markersToShow.map((location) => {
           const isNearby = nearbyIds.has(location.id);
-          const color = CATEGORY_COLORS[location.category] ?? '#FF6B35';
+          const color = CATEGORY_COLORS[location.category] ?? '#22C55E';
           const pulseAnim = pulseAnims.current[location.id];
 
           return (
@@ -376,7 +404,7 @@ export default function MapScreen() {
 
       {!userCoords && (
         <View style={styles.gpsBanner}>
-          <Text style={styles.gpsBannerText}>📍 Activați GPS-ul pentru a folosi harta</Text>
+          <Text style={styles.gpsBannerText}>{t('addLocation.gpsBanner')}</Text>
         </View>
       )}
 
@@ -410,7 +438,7 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
   gpsBanner: {
     position: 'absolute',
-    top: 12,
+    top: 60,
     left: 16,
     right: 16,
     backgroundColor: '#2D1F0A',
@@ -451,8 +479,8 @@ const styles = StyleSheet.create({
   },
   recenterBtn: {
     position: 'absolute',
-    top: 60,
-    right: 16,
+    bottom: 28,
+    right: 20,
     backgroundColor: '#1A1A2E',
     width: 44,
     height: 44,
@@ -468,7 +496,7 @@ const styles = StyleSheet.create({
   recenterIcon: {
     width: 22,
     height: 22,
-    tintColor: '#FF6B35',
+    tintColor: '#22C55E',
   },
   fab: {
     position: 'absolute',
@@ -477,7 +505,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#22C55E',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

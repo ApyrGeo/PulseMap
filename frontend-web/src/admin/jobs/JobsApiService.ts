@@ -15,3 +15,4 @@ export const triggerCheckExpiredLocations = () => triggerJob('check-expired-loca
 export const triggerCheckExpiredEvents = () => triggerJob('check-expired-events');
 export const triggerExtendDurationByLikes = () => triggerJob('extend-duration-by-likes');
 export const triggerCheckMergeDuplicates = () => triggerJob('check-merge-duplicate-locations');
+export const triggerAnalyzeAndClusterEvents = () => triggerJob('analyze-and-cluster-events');

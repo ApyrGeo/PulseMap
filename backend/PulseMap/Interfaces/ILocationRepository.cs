@@ -19,4 +19,5 @@ public interface ILocationRepository
     Task<List<Location>> GetStarredLocationsAsync();
     Task ToggleStarAsync(int locationId);
     Task SaveChangesAsync();
+    Task<List<Location>> GetLocationsWithImagesAsync(int count = 50);
 }

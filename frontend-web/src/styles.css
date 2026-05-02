@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+﻿@import 'tailwindcss';
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
 
@@ -8,7 +8,7 @@
   --bg-secondary: #1A1A2E;
   --bg-surface: #16213E;
   --border-color: #2D2D44;
-  --accent: #FF6B35;
+  --accent: #22C55E;
   --text-primary: #ffffff;
   --text-secondary: #8E8E8E;
 }

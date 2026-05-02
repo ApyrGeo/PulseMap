@@ -24,6 +24,11 @@ public class AIStatistics
     // Event Clustering Stats
     public int EventClusteringRuns { get; set; }
 
+    // Recommendation Stats
+    public int RecommendationRequestsTotal { get; set; }
+    public int RecommendationAiSuccess { get; set; }
+    public int RecommendationFallbackCalls { get; set; }
+
     // Timestamps
     public DateTime LastUpdated { get; set; }
 

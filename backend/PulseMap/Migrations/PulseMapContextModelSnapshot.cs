@@ -89,6 +89,15 @@ namespace PulseMap.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
+                    b.Property<int>("RecommendationAiSuccess")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecommendationFallbackCalls")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecommendationRequestsTotal")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TotalClassificationCalls")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -122,6 +131,9 @@ namespace PulseMap.Migrations
                             KeywordMatcherFallback = 0,
                             LastUpdated = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             OpenAIClassifierSuccess = 0,
+                            RecommendationAiSuccess = 0,
+                            RecommendationFallbackCalls = 0,
+                            RecommendationRequestsTotal = 0,
                             TotalClassificationCalls = 0,
                             TotalMatchingCalls = 0,
                             TranslationsPerformed = 0

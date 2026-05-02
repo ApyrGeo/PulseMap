@@ -1,4 +1,4 @@
-.login-page {
+﻿.login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -51,7 +51,7 @@
 }
 
 .login-input:focus {
-  border-color: #FF6B35;
+  border-color: #22C55E;
 }
 
 .login-button {
@@ -65,12 +65,12 @@
 }
 
 .login-button:not(:disabled) {
-  background-color: #FF6B35;
+  background-color: #22C55E;
   color: white;
 }
 
 .login-button:not(:disabled):hover {
-  background-color: #e55a25;
+  background-color: #16A34A;
 }
 
 .login-button:disabled {
@@ -87,7 +87,7 @@
 }
 
 .login-register-link {
-  color: #FF6B35;
+  color: #22C55E;
 }
 
 .login-register-link:hover {

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { RegisterRequest, Role } from './Interfaces';
-import './LoginPage.css'; // Reuse the same styles
+import './LoginPage.css';
 
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState<string>('');
@@ -16,10 +17,11 @@ const RegisterPage = () => {
 
   const { registerUser } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const validateForm = (): boolean => {
     if (!firstName || !lastName || !username || !email || !password) {
-      toast.error('All fields are required');
+      toast.error(t('auth.register.fillAll'));
       return false;
     }
 
@@ -38,21 +40,19 @@ const RegisterPage = () => {
       return false;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email address');
+      toast.error(t('auth.register.invalidEmail'));
       return false;
     }
 
-    // Password validation
     if (password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
+      toast.error(t('auth.register.passwordTooShort'));
       return false;
     }
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('auth.register.passwordMismatch'));
       return false;
     }
 
@@ -80,13 +80,13 @@ const RegisterPage = () => {
       };
 
       await registerUser(registerRequest);
-      toast.success('Registration successful! Please login.');
+      toast.success(t('auth.register.success'));
       navigate('/login');
     } catch (error: unknown) {
       if (error instanceof Error && error.message === 'USER_ALREADY_EXISTS') {
-        toast.error('Adresă de email deja folosită');
+        toast.error(t('auth.register.emailExists'));
       } else {
-        toast.error('Înregistrare eșuată. Verificați datele și încercați din nou.');
+        toast.error(t('auth.register.failed'));
       }
     } finally {
       setLoading(false);
@@ -101,10 +101,10 @@ const RegisterPage = () => {
         aria-labelledby="register-heading"
       >
         <h1 id="register-heading" className="login-heading">
-          Create your PulseMap account
+          {t('auth.register.title')}
         </h1>
 
-        <label className="login-label">First Name</label>
+        <label className="login-label">{t('auth.register.firstName')}</label>
         <input
           type="text"
           className="login-input"
@@ -116,7 +116,7 @@ const RegisterPage = () => {
           maxLength={50}
         />
 
-        <label className="login-label">Last Name</label>
+        <label className="login-label">{t('auth.register.lastName')}</label>
         <input
           type="text"
           className="login-input"
@@ -128,7 +128,7 @@ const RegisterPage = () => {
           maxLength={50}
         />
 
-        <label className="login-label">Username</label>
+        <label className="login-label">{t('auth.register.username')}</label>
         <input
           type="text"
           className="login-input"
@@ -140,7 +140,7 @@ const RegisterPage = () => {
           maxLength={50}
         />
 
-        <label className="login-label">Email</label>
+        <label className="login-label">{t('auth.register.email')}</label>
         <input
           type="email"
           className="login-input"
@@ -151,11 +151,11 @@ const RegisterPage = () => {
           required
         />
 
-        <label className="login-label">Password</label>
+        <label className="login-label">{t('auth.register.password')}</label>
         <input
           type="password"
           className="login-input"
-          placeholder="At least 8 characters"
+          placeholder={t('auth.register.passwordPlaceholder')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
@@ -163,11 +163,11 @@ const RegisterPage = () => {
           minLength={8}
         />
 
-        <label className="login-label">Confirm Password</label>
+        <label className="login-label">{t('auth.register.confirmPassword')}</label>
         <input
           type="password"
           className="login-input"
-          placeholder="Re-enter your password"
+          placeholder={t('auth.register.confirmPassword')}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
@@ -181,13 +181,13 @@ const RegisterPage = () => {
           disabled={loading}
           className="login-button"
         >
-          {loading ? 'Creating account...' : 'Create account'}
+          {loading ? t('auth.register.submitting') : t('auth.register.submit')}
         </button>
 
         <div className="login-footer">
-          <span>Already have an account? </span>
+          <span>{t('auth.register.hasAccount')} </span>
           <a className="login-register-link" href="/login">
-            Sign in
+            {t('auth.register.signIn')}
           </a>
         </div>
       </form>

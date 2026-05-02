@@ -1,0 +1,175 @@
+{
+  "tabs": {
+    "map": "Hartă",
+    "recommendations": "Recomandate",
+    "myLocations": "Ale mele",
+    "statistics": "Statistici",
+    "settings": "Setări"
+  },
+  "auth": {
+    "login": {
+      "subtitle": "Autentifică-te pentru a continua",
+      "email": "Email",
+      "password": "Parolă",
+      "submit": "Autentifică-te",
+      "noAccount": "Nu ai cont? Înregistrează-te",
+      "fillAll": "Completează toate câmpurile",
+      "invalidCredentials": "Email sau parolă greșite",
+      "adminBlocked": "Date de autentificare invalide"
+    },
+    "register": {
+      "title": "Creează cont",
+      "firstName": "Prenume",
+      "lastName": "Nume",
+      "username": "Utilizator",
+      "email": "Email",
+      "password": "Parolă",
+      "submit": "Creează cont",
+      "hasAccount": "Ai deja cont? Autentifică-te",
+      "fillAll": "Completați toate câmpurile",
+      "success": "Cont creat! Autentificați-vă.",
+      "emailExists": "Utilizatorul există deja",
+      "failed": "Înregistrare eșuată. Încercați din nou."
+    }
+  },
+  "location": {
+    "like": "Like",
+    "unlike": "Nu mai place",
+    "report": "Raportează",
+    "reported": "Raportat",
+    "reportTitle": "Raportează locația",
+    "reportTypes": {
+      "doesNotExist": "Locația nu există",
+      "misleading": "Informație înșelătoare",
+      "inappropriate": "Conținut necorespunzător",
+      "duplicate": "Locație duplicată"
+    },
+    "reportSuccess": "Raportul a fost trimis.",
+    "alreadyReported": "Ai raportat deja această locație.",
+    "reportError": "Eroare la trimiterea raportului.",
+    "commentPlaceholder": "Adaugă un comentariu...",
+    "send": "Trimite",
+    "commentError": "Eroare la trimiterea comentariului",
+    "thankYou": "Mulțumim",
+    "alreadyReportedTitle": "Raport existent",
+    "partOfEvent": "Face parte din eveniment",
+    "createdBy": "Creat de",
+    "expires": "Expiră",
+    "commentsCount": "Comentarii ({{count}})",
+    "cancel": "Anulează"
+  },
+  "common": {
+    "error": "Eroare",
+    "success": "Succes"
+  },
+  "addLocation": {
+    "title": "Adaugă locație",
+    "name": "Nume *",
+    "namePlaceholder": "Introdu numele locației",
+    "description": "Descriere",
+    "descriptionPlaceholder": "Descriere opțională (declanșează sugestie categorie AI)",
+    "category": "Categorie *",
+    "images": "Imagini (opțional)",
+    "addPhotos": "📷  Adaugă fotografii",
+    "duration": "Durată *",
+    "days": "Zile",
+    "hours": "Ore",
+    "ownedLocation": "Locație proprie (Afacerea/Locul meu)",
+    "submit": "Adaugă locație",
+    "submitWithPhotos": "Adaugă locație cu fotografii",
+    "gpsBanner": "📍 Activați GPS-ul pentru a plasa corect locația",
+    "tapMapAdjust": "Apasă pe hartă pentru a ajusta pinul",
+    "aiClassifying": "Se generează potrivirea cea mai bună pentru descriere...",
+    "aiSuggested": "Tag-uri sugerate:",
+    "manualSelect": "Selectare manuală",
+    "descriptionVague": "Descrierea este prea vagă. Încearcă să adaugi mai multe detalii sau selectează manual.",
+    "addSuccess": "Locația a fost adăugată!",
+    "addError": "Eroare la adăugarea locației",
+    "enterName": "Introduceți un nume pentru locație",
+    "setDuration": "Introduceți o durată pentru locația proprie"
+  },
+  "proximity": {
+    "nearby": "Ești în apropiere",
+    "visited": "Am fost aici",
+    "ignore": "Ignoră",
+    "notExist": "⚑ Nu există"
+  },
+  "myLocations": {
+    "title": "Locațiile mele",
+    "filterAll": "Toate",
+    "filterActive": "Active",
+    "filterExpired": "Expirate",
+    "filterReview": "Review",
+    "ownedBadge": "Proprie",
+    "reviewBadge": "Review",
+    "statusActive": "Activ",
+    "statusExpired": "Expirat",
+    "eventPending": "Atribuire eveniment în așteptare",
+    "event": "Eveniment",
+    "confidence": "Confirmare",
+    "approve": "✓  Aprobă",
+    "reject": "✕  Respinge",
+    "noLocations": "Nicio locație",
+    "approveSuccess": "Aprobat cu succes",
+    "rejectSuccess": "Respins cu succes",
+    "approveError": "Eroare la aprobare",
+    "rejectError": "Eroare la respingere"
+  },
+  "recommendations": {
+    "title": "Recomandate pentru tine",
+    "loading": "Se caută recomandări în zonă...",
+    "noRecommendations": "Nicio recomandare disponibilă",
+    "noRecommendationsHint": "Dă like la câteva locații pentru a îmbunătăți recomandările"
+  },
+  "statistics": {
+    "title": "Statistici",
+    "myStats": "Statisticile mele",
+    "leaderboard": "Clasament",
+    "hotSpots": "Hot Spots",
+    "visited": "Vizitat",
+    "proximityTap": "Aproape",
+    "noInteractions": "Nicio interacțiune",
+    "noInteractionsHint": "Deplasează-te lângă locații și confirmă vizitele pentru a le vedea aici",
+    "noData": "Fără date",
+    "visits": "vizite"
+  },
+  "settings": {
+    "title": "Setări",
+    "account": "Cont",
+    "username": "Utilizator",
+    "role": "Rol",
+    "language": "Limbă",
+    "logout": "Deconectare"
+  },
+  "language": {
+    "ro": "Română",
+    "en": "Engleză"
+  },
+  "tutorial": {
+    "step1Title": "Bun venit pe PulseMap",
+    "step1Desc": "Descoperă și distribuie locații în timp real.",
+    "step2Title": "Explorează harta",
+    "step2Desc": "Mărește harta pentru a vedea markere. Apasă + pentru a adăuga o locație.",
+    "step3Title": "Aprecieri și recomandări",
+    "step3Desc": "Apreciază locații pentru a antrena motorul AI de recomandări.",
+    "step4Title": "Confirmarea vizitei",
+    "step4Desc": "Când ești în apropierea unei locații, confirmă vizita pentru a câștiga puncte.",
+    "step5Title": "Ești pregătit!",
+    "step5Desc": "Începe să explorezi harta și descoperă ce se întâmplă în jurul tău.",
+    "skip": "Sari",
+    "next": "Următor",
+    "finish": "Începe explorarea"
+  },
+  "tips": {
+    "mobMapFab": "Apasă + pentru a adăuga o locație la poziția GPS curentă.",
+    "mobRecs": "Apreciază locații pe hartă pentru a îmbunătăți recomandările.",
+    "mobMyLocations": "Gestionează toate locațiile postate de tine aici."
+  },
+  "settingsExtended": {
+    "tips": "Sfaturi și indicații",
+    "tipsOn": "Sfaturile sunt activate",
+    "tipsOff": "Sfaturile sunt dezactivate",
+    "resetTutorial": "Reafișează tutorialul",
+    "resetTutorialDone": "Tutorialul va fi afișat la următoarea autentificare"
+  }
+}

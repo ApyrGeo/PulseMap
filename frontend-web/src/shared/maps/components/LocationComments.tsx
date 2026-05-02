@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Message, SimplifiedUser } from '../Interfaces';
 import './LocationComments.css';
 
@@ -15,6 +16,7 @@ const LocationComments = ({
   onAddComment,
   onAddResponse,
 }: LocationCommentsProps) => {
+  const { t } = useTranslation();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -50,7 +52,7 @@ const LocationComments = ({
 
   return (
     <div className="comments-container">
-      <h4 className="comments-title">Comments ({comments.length})</h4>
+      <h4 className="comments-title">{t('comments.title', { count: comments.length })}</h4>
 
       <form onSubmit={handleSubmitComment} className="comment-form">
         <div className="comment-input-container">
@@ -58,11 +60,11 @@ const LocationComments = ({
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
+            placeholder={t('comments.placeholder')}
             className="comment-input"
           />
           <button type="submit" className="comment-submit-button">
-            Send
+            {t('comments.send')}
           </button>
         </div>
       </form>
@@ -89,7 +91,7 @@ const LocationComments = ({
                   onClick={() => setReplyingTo(message.id)}
                   className="comment-reply-button"
                 >
-                  Reply
+                  {t('comments.reply')}
                 </button>
               </div>
             </div>
@@ -124,7 +126,7 @@ const LocationComments = ({
                     type="text"
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="Write a reply..."
+                    placeholder={t('comments.replyPlaceholder')}
                     className="reply-input"
                     autoFocus
                   />
@@ -132,7 +134,7 @@ const LocationComments = ({
                     onClick={(e) => handleSubmitReply(message.id, e)}
                     className="reply-submit-button"
                   >
-                    Reply
+                    {t('comments.reply')}
                   </button>
                   <button
                     onClick={() => {
@@ -141,7 +143,7 @@ const LocationComments = ({
                     }}
                     className="reply-cancel-button"
                   >
-                    Cancel
+                    {t('comments.cancel')}
                   </button>
                 </div>
               </div>
@@ -151,7 +153,7 @@ const LocationComments = ({
 
         {comments.length === 0 && (
           <p className="comments-empty">
-            No comments yet. Be the first to comment!
+            {t('comments.empty')}
           </p>
         )}
       </div>

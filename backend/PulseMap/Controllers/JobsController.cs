@@ -43,4 +43,12 @@ public class JobsController(IBackgroundJobClient backgroundJobClient) : Controll
         _backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckAndMergeDuplicateLocations());
         return Ok(new { jobId = "check-merge-duplicate-locations" });
     }
+
+    [HttpPost("analyze-and-cluster-events")]
+    [ProducesResponseType(200)]
+    public IActionResult TriggerAnalyzeAndClusterEvents()
+    {
+        _backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.AnalyzeAndClusterEvents(100));
+        return Ok(new { jobId = "analyze-and-cluster-events" });
+    }
 }

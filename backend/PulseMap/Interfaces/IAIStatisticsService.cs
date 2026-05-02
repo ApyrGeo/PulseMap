@@ -18,5 +18,9 @@ public interface IAIStatisticsService
     Task IncrementEmbeddingEventExtractorAsync();
     Task IncrementEventClusteringRunAsync();
 
+    Task IncrementRecommendationAiAsync();
+    Task IncrementRecommendationFallbackAsync();
+    Task IncrementRecommendationRequestAsync();
+
     Task<AIStatistics> GetStatisticsAsync();
 }

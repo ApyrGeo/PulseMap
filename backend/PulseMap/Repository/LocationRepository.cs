@@ -182,4 +182,17 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
             ?? throw new KeyNotFoundException($"Location {locationId} not found");
         location.IsStarred = !location.IsStarred;
     }
+
+    public async Task<List<Location>> GetLocationsWithImagesAsync(int count = 50)
+    {
+        return await _context.Locations
+            .Where(l => l.Images.Any() && !l.IsExpired)
+            .Include(l => l.Images)
+            .Include(l => l.Likes)
+            .Include(l => l.Creator)
+            .OrderByDescending(l => l.Likes.Count)
+            .ThenByDescending(l => l.Id)
+            .Take(count)
+            .ToListAsync();
+    }
 }

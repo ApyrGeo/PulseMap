@@ -1,4 +1,5 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Location, LocationPutDTO } from '../../../shared/maps/Interfaces';
 import EditLocationModal from '../../../shared/maps/components/EditLocationModal';
 import {
@@ -42,6 +43,7 @@ const LocationsListView = ({
   onConfirmEvent,
   onRejectEvent,
 }: LocationsListViewProps) => {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'active' | 'expired' | 'review'>('all');
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
@@ -77,22 +79,22 @@ const LocationsListView = ({
     
     try {
       await onUpdate(editingLocation.id, data);
-      toast.success('Location updated successfully!');
+      toast.success(t('ownerLocations.updateSuccess'));
       setEditingLocation(null);
     } catch (error) {
-      toast.error('Failed to update location');
+      toast.error(t('ownerLocations.updateError'));
       console.error(error);
     }
   };
 
   const handleDelete = async (locationId: number) => {
-    if (!window.confirm('Are you sure you want to delete this location?')) return;
-    
+    if (!window.confirm(t('ownerLocations.deleteConfirm'))) return;
+
     try {
       await onDelete(locationId);
-      toast.success('Location deleted successfully!');
+      toast.success(t('ownerLocations.deleteSuccess'));
     } catch (error) {
-      toast.error('Failed to delete location');
+      toast.error(t('ownerLocations.deleteError'));
       console.error(error);
     }
   };
@@ -100,21 +102,21 @@ const LocationsListView = ({
   const handleConfirmEvent = async (locationId: number) => {
     try {
       await onConfirmEvent(locationId);
-      toast.success('Event confirmed successfully!');
+      toast.success(t('ownerLocations.confirmSuccess'));
     } catch (error) {
-      toast.error('Failed to confirm event');
+      toast.error(t('ownerLocations.confirmError'));
       console.error(error);
     }
   };
 
   const handleRejectEvent = async (locationId: number) => {
-    if (!window.confirm('Are you sure you want to reject this event?')) return;
-    
+    if (!window.confirm(t('ownerLocations.rejectConfirm'))) return;
+
     try {
       await onRejectEvent(locationId);
-      toast.success('Event rejected successfully!');
+      toast.success(t('ownerLocations.rejectSuccess'));
     } catch (error) {
-      toast.error('Failed to reject event');
+      toast.error(t('ownerLocations.rejectError'));
       console.error(error);
     }
   };
@@ -136,21 +138,21 @@ const LocationsListView = ({
       {/* Header with filters */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ mb: 2, fontWeight: 600, color: '#fff' }}>
-          My Locations ({myLocations.length})
+          {t('ownerLocations.title', { count: myLocations.length })}
         </Typography>
 
         <Stack direction="row" spacing={1} flexWrap="wrap">
           <Chip
-            label={`All (${myLocations.length})`}
+            label={`${t('ownerLocations.filterAll')} (${myLocations.length})`}
             onClick={() => setFilter('all')}
             sx={{
-              backgroundColor: filter === 'all' ? '#FF6B35' : '#2D2D44',
+              backgroundColor: filter === 'all' ? '#22C55E' : '#2D2D44',
               color: '#fff',
-              '&:hover': { backgroundColor: filter === 'all' ? '#E55A25' : '#3D3D54' },
+              '&:hover': { backgroundColor: filter === 'all' ? '#16A34A' : '#3D3D54' },
             }}
           />
           <Chip
-            label={`Active (${myLocations.filter((l) => !l.isExpired).length})`}
+            label={`${t('ownerLocations.filterActive')} (${myLocations.filter((l) => !l.isExpired).length})`}
             onClick={() => setFilter('active')}
             sx={{
               backgroundColor: filter === 'active' ? '#10B981' : '#2D2D44',
@@ -159,7 +161,7 @@ const LocationsListView = ({
             }}
           />
           <Chip
-            label={`Expired (${myLocations.filter((l) => l.isExpired).length})`}
+            label={`${t('ownerLocations.filterExpired')} (${myLocations.filter((l) => l.isExpired).length})`}
             onClick={() => setFilter('expired')}
             sx={{
               backgroundColor: filter === 'expired' ? '#EF4444' : '#2D2D44',
@@ -168,7 +170,7 @@ const LocationsListView = ({
             }}
           />
           <Chip
-            label={`Needs Review (${myLocations.filter((l) => l.requiresReview).length})`}
+            label={`${t('ownerLocations.filterReview')} (${myLocations.filter((l) => l.requiresReview).length})`}
             onClick={() => setFilter('review')}
             icon={<Warning />}
             sx={{
@@ -194,7 +196,7 @@ const LocationsListView = ({
           }}
           icon={<EmojiEvents />}
         >
-          You own: <strong>{ownedLocation.name}</strong> - This is your permanent location
+          {t('ownerLocations.filterAll')} — <strong>{ownedLocation.name}</strong> — {t('ownerLocations.owned')}
         </Alert>
       )}
 
@@ -209,7 +211,7 @@ const LocationsListView = ({
             '& .MuiAlert-icon': { color: '#3b82f6' },
           }}
         >
-          No locations found with the current filter.
+          {t('ownerLocations.noLocations')}
         </Alert>
       ) : (
         <Stack spacing={2}>
@@ -246,7 +248,7 @@ const LocationsListView = ({
                       {location.owner?.id === currentUserId && (
                         <Chip
                           icon={<EmojiEvents />}
-                          label="Owned"
+                          label={t('ownerLocations.owned')}
                           color="warning"
                           size="small"
                         />
@@ -288,14 +290,14 @@ const LocationsListView = ({
                         icon={<Warning />}
                       >
                         <Typography variant="body2" sx={{ fontWeight: 600, color: '#F59E0B' }}>
-                          Event Assignment Pending Review
+                          {t('ownerLocations.eventPending')}
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#F59E0B' }}>
-                          Event: <strong>{location.event.name}</strong>
+                          {t('ownerLocations.event')}: <strong>{location.event.name}</strong>
                         </Typography>
                         {location.eventAssignmentConfidence !== undefined && (
                           <Typography variant="body2" sx={{ color: '#F59E0B' }}>
-                            Confidence: <strong>{(location.eventAssignmentConfidence * 100).toFixed(1)}%</strong>
+                            {t('ownerLocations.confidence')}: <strong>{(location.eventAssignmentConfidence * 100).toFixed(1)}%</strong>
                           </Typography>
                         )}
                       </Alert>
@@ -322,7 +324,7 @@ const LocationsListView = ({
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Timer fontSize="small" sx={{ color: '#8E8E8E' }} />
                         <Typography variant="caption" sx={{ color: '#ccc' }}>
-                          Expires: {formatDate(location.expiresAt)}
+                          {t('ownerLocations.expires')}: {formatDate(location.expiresAt)}
                         </Typography>
                       </Box>
                     </Box>
@@ -338,7 +340,7 @@ const LocationsListView = ({
                           onClick={() => handleConfirmEvent(location.id)}
                           sx={{ backgroundColor: '#10B981', '&:hover': { backgroundColor: '#059669' } }}
                         >
-                          Approve
+                          {t('ownerLocations.approve')}
                         </Button>
                         <Button
                           variant="outlined"
@@ -347,7 +349,7 @@ const LocationsListView = ({
                           onClick={() => handleRejectEvent(location.id)}
                           sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { borderColor: '#DC2626', backgroundColor: '#2D1B1B' } }}
                         >
-                          Reject
+                          {t('ownerLocations.reject')}
                         </Button>
                       </>
                     )}
@@ -358,7 +360,7 @@ const LocationsListView = ({
                       onClick={() => setEditingLocation(location)}
                       sx={{ borderColor: '#3b82f6', color: '#3b82f6', '&:hover': { borderColor: '#2563eb', backgroundColor: '#0F1824' } }}
                     >
-                      Edit
+                      {t('ownerLocations.edit')}
                     </Button>
                     <Button
                       variant="outlined"
@@ -368,7 +370,7 @@ const LocationsListView = ({
                       disabled={location.owner?.id === currentUserId}
                       sx={{ borderColor: '#EF4444', color: '#EF4444', '&:hover': { borderColor: '#DC2626', backgroundColor: '#2D1B1B' }, '&.Mui-disabled': { borderColor: '#2D2D44', color: '#4D4D64' } }}
                     >
-                      Delete
+                      {t('ownerLocations.delete')}
                     </Button>
                   </Box>
                 </Box>

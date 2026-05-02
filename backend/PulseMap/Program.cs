@@ -422,7 +422,6 @@ if (builder.Configuration["HangFire:Running"] == "True")
         // Run when app starts
         backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredLocations());
         backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.CheckExpiredEvents());
-        backgroundJobClient.Enqueue<LocationBackGroundService>(x => x.ExtendLocationDurationByLikeCounts());
 
         // Run every minute
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
@@ -445,6 +444,12 @@ if (builder.Configuration["HangFire:Running"] == "True")
             "check-merge-duplicate-locations",
             x => x.CheckAndMergeDuplicateLocations(),
             Cron.Daily);
+
+        // Analyze and cluster events every 6 hours
+        recurringJobManager.AddOrUpdate<LocationBackGroundService>(
+            "analyze-and-cluster-events",
+            x => x.AnalyzeAndClusterEvents(100),
+            Cron.HourInterval(6));
     }
 }
 

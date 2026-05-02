@@ -18,7 +18,8 @@ public class LocationService(
     IInteractionRepository interactionRepository,
     IMapper mapper,
     IValidatorFactory validatorFactory,
-    IWebSocketNotificationService webSocketNotificationService) : ILocationService
+    IWebSocketNotificationService webSocketNotificationService,
+    IAIStatisticsService aiStatisticsService) : ILocationService
 {
     private readonly ILocationRepository _locationRepository = locationRepository;
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
@@ -28,6 +29,7 @@ public class LocationService(
     private readonly IInteractionRepository _interactionRepository = interactionRepository;
     private readonly IMapper _mapper = mapper;
     private readonly IValidatorFactory _validator = validatorFactory;
+    private readonly IAIStatisticsService _aiStatisticsService = aiStatisticsService;
     private readonly IWebSocketNotificationService _webSocketNotificationService = webSocketNotificationService;
     private readonly ILog _logger = LogManager.GetLogger(typeof(LocationService));
 
@@ -275,6 +277,9 @@ public class LocationService(
         var user = await _userRepository.GetUserByIdAsync(userId) ??
             throw new NotFoundException("User does not exist");
 
+        if (location.CreatorId == userId)
+            throw new InvalidOperationException("You cannot like your own location.");
+
         var wasLiked = location.Likes.Any(u => u.Id == user.Id);
         if (wasLiked)
         {
@@ -414,9 +419,16 @@ public class LocationService(
             .Take(30)
             .ToList();
 
+        await _aiStatisticsService.IncrementRecommendationRequestAsync();
+
         var aiSimilarityScores = await _recommendationAiScorer.ScoreCandidatesByProfileAsync(
             combinedDescriptions,
             recommendationCandidates.Select(c => (c.Id, c.Description ?? string.Empty)).ToList());
+
+        if (aiSimilarityScores.Count > 0)
+            await _aiStatisticsService.IncrementRecommendationAiAsync();
+        else
+            await _aiStatisticsService.IncrementRecommendationFallbackAsync();
 
         var recommendations = recommendationCandidates
             .Select(location =>
@@ -738,6 +750,20 @@ public class LocationService(
         await _locationRepository.SaveChangesAsync();
         _logger.InfoFormat("Extended {0} starred locations by 1 day", starred.Count);
         return starred;
+    }
+
+    public async Task<List<FeaturedLocationDTO>> GetFeaturedLocationsAsync(int count = 15)
+    {
+        var locations = await _locationRepository.GetLocationsWithImagesAsync(count * 3);
+        return locations
+            .Take(count)
+            .Select(l => new FeaturedLocationDTO(
+                l.Id,
+                l.Name,
+                l.Images.OrderBy(img => img.Order).Select(img => img.Url).ToList(),
+                l.Likes.Count,
+                l.Creator?.UserName))
+            .ToList();
     }
 }
 

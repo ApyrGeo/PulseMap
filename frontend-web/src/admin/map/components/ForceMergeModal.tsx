@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Location } from '../../../shared/maps/Interfaces';
 import { fetchLocations } from '../../../shared/maps/services/LocationsApiService';
 import { ForceMergeRequest } from '../services/AIApiService';
@@ -66,6 +67,7 @@ const ForceMergeModal = ({
 }: ForceMergeModalProps) => {
   const [location1, setLocation1] = useState<Location | null>(null);
   const [location2, setLocation2] = useState<Location | null>(null);
+  const { t } = useTranslation();
   const [selectedKeep, setSelectedKeep] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +88,7 @@ const ForceMergeModal = ({
       setLocation1(loc1 || null);
       setLocation2(loc2 || null);
     } catch (err) {
-      setError('Failed to load location details');
+      setError(t('forceMerge.loadError'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -103,7 +105,7 @@ const ForceMergeModal = ({
       });
       onClose();
     } catch (err) {
-      setError('Failed to merge locations');
+      setError(t('forceMerge.mergeError'));
       console.error(err);
     }
   };
@@ -117,7 +119,7 @@ const ForceMergeModal = ({
         <Card variant="outlined" sx={{ opacity: 0.6 }}>
           <CardContent>
             <Typography color="text.secondary">
-              Location ID: {locationId} (not found)
+              {t('forceMerge.notFound', { id: locationId })}
             </Typography>
           </CardContent>
         </Card>
@@ -147,8 +149,8 @@ const ForceMergeModal = ({
             </Typography>
           )}
           <Typography variant="caption" color="text.secondary">
-            Creator: {location.creator.username} | Likes: {location.likesCount}{' '}
-            | Messages: {location.messages?.length || 0}
+            {t('forceMerge.creator')}: {location.creator.username} | {t('forceMerge.likes')}: {location.likesCount}{' '}
+            | {t('forceMerge.messages')}: {location.messages?.length || 0}
           </Typography>
           <Typography variant="caption" display="block" color="text.secondary">
             Location ID: {location.id} | {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
@@ -161,7 +163,7 @@ const ForceMergeModal = ({
 
   return (
     <Dialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Force Merge Locations</DialogTitle>
+      <DialogTitle>{t('forceMerge.title')}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -169,13 +171,11 @@ const ForceMergeModal = ({
           </Alert>
         )}
         {loading ? (
-          <Typography>Loading location details...</Typography>
+          <Typography>{t('forceMerge.loading')}</Typography>
         ) : (
           <>
             <Typography variant="body2" sx={{ mb: 2 }}>
-              Select which location to keep. The other location will be removed
-              and its data (messages, likes) will be merged into the kept
-              location.
+              {t('forceMerge.description')}
             </Typography>
             <RadioGroup value={selectedKeep}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -197,14 +197,14 @@ const ForceMergeModal = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>{t('forceMerge.cancel')}</Button>
         <Button
           onClick={handleConfirm}
           variant="contained"
           color="error"
           disabled={!selectedKeep || loading}
         >
-          Confirm Merge
+          {t('forceMerge.confirm')}
         </Button>
       </DialogActions>
     </Dialog>

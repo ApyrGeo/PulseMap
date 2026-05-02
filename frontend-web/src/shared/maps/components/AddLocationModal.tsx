@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CategoryDTO, LocationPostDTO } from '../Interfaces';
 import { classifyLocation } from '../services/LocationsApiService';
 import { useAuth } from '../../../auth/AuthProvider';
 import { uploadMultipleImagesToAzure } from '../../services/AzureBlobService';
 import { fetchCategories } from '../services/CategoriesApiService';
+import Counter from '../../components/Counter/Counter';
 import './LocationModal.css';
 
 interface AddLocationModalProps {
@@ -24,6 +26,7 @@ const AddLocationModal = ({
   hasOwnedLocation = false,
 }: AddLocationModalProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('');
@@ -55,10 +58,12 @@ const AddLocationModal = ({
     })();
   }, [isOpen]);
 
-  const categories = availableCategories.map((cat) => ({
-    value: cat.name,
-    label: cat.name,
-  }));
+  const categories = availableCategories
+    .filter((cat) => cat.name !== 'Not Set')
+    .map((cat) => ({
+      value: cat.name,
+      label: cat.name,
+    }));
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const dayOptions = Array.from({ length: 30 }, (_, i) => i);
@@ -82,25 +87,21 @@ const AddLocationModal = ({
     const totalHours = days * 24 + hours;
 
     if (isOwned && totalHours === 0) {
-      alert('Please specify at least some duration (hours or days)');
+      alert(t('addLocation.setDuration'));
       return;
     }
 
-    if (!user) {
-      alert('User is not authenticated');
-      return;
-    }
+    if (!user) return;
 
     let imageUrls: string[] = [];
 
-    // Upload images to Azure if any are selected
     if (selectedImages.length > 0) {
       setIsUploadingImages(true);
       try {
         const uploadResults = await uploadMultipleImagesToAzure(selectedImages);
         imageUrls = uploadResults.map((result) => result.url);
       } catch {
-        alert('Failed to upload images. Please try again.');
+        alert(t('addLocation.uploadError'));
         setIsUploadingImages(false);
         return;
       }
@@ -132,7 +133,7 @@ const AddLocationModal = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Add New Location</h2>
+          <h2 className="modal-title">{t('addLocation.title')}</h2>
           <button className="modal-close-button" onClick={onClose}>
             ×
           </button>
@@ -141,7 +142,7 @@ const AddLocationModal = ({
         <form onSubmit={handleSubmit}>
           {/* Toggle for Owned Location */}
           <div className="form-group">
-            <label className="form-label">Location Type</label>
+            <label className="form-label">{t('addLocation.locationType')}</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <label
                 style={{
@@ -155,48 +156,30 @@ const AddLocationModal = ({
                   type="checkbox"
                   checked={isOwned}
                   onChange={(e) => {
-                    console.log('Checkbox clicked!');
-                    console.log('Checked:', e.target.checked);
-                    console.log('hasOwnedLocation:', hasOwnedLocation);
-
-                    // Check if user is trying to enable owned mode but already has one
                     if (e.target.checked && hasOwnedLocation) {
-                      console.log(
-                        'Showing alert - user already has owned location'
-                      );
-                      alert(
-                        'You already have an active owned location. You can only have one owned location at a time.'
-                      );
+                      alert(t('addLocation.alreadyOwned'));
                       setIsOwned(false);
                       return;
                     }
                     setIsOwned(e.target.checked);
                   }}
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    cursor: 'pointer',
-                  }}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
                 <span style={{ color: '#1f2937' }}>
-                  Owned Location (My Business/Place)
+                  {t('addLocation.ownedLocation')}
                 </span>
               </label>
             </div>
             {isOwned && !hasOwnedLocation && (
-              <p
-                className="duration-info"
-                style={{ color: '#3b82f6', marginTop: '4px' }}
-              >
+              <p className="duration-info" style={{ color: '#3b82f6', marginTop: '4px' }}>
                 <img src="/icons/info.png" style={{ width: 13, height: 13, verticalAlign: 'middle', marginRight: 4 }} alt="" />
-                Owned locations are for your business or place. You can set
-                custom duration.
+                {t('addLocation.ownedInfo')}
               </p>
             )}
           </div>
 
           <div className="form-group">
-            <label className="form-label">Latitude</label>
+            <label className="form-label">{t('addLocation.latitude')}</label>
             <input
               className="form-input"
               type="text"
@@ -206,7 +189,7 @@ const AddLocationModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Longitude</label>
+            <label className="form-label">{t('addLocation.longitude')}</label>
             <input
               className="form-input"
               type="text"
@@ -216,19 +199,19 @@ const AddLocationModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Name *</label>
+            <label className="form-label">{t('addLocation.name')}</label>
             <input
               className="form-input"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Enter location name"
+              placeholder={t('addLocation.namePlaceholder')}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Description</label>
+            <label className="form-label">{t('addLocation.description')}</label>
             <textarea
               className="form-textarea"
               value={description}
@@ -270,23 +253,21 @@ const AddLocationModal = ({
                   setIsClassifying(false);
                 }
               }}
-              placeholder="Optional description"
+              placeholder={t('addLocation.descriptionPlaceholder')}
               rows={3}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Category *</label>
+            <label className="form-label">{t('addLocation.category')}</label>
             {isClassifying && (
-              <p className="duration-info">
-                Se generează potrivirea cea mai bună pentru descriere...
-              </p>
+              <p className="duration-info">{t('addLocation.aiClassifying')}</p>
             )}
             {!isClassifying &&
               suggestedCategories.length > 0 &&
               !showManualSelect && (
                 <div>
-                  <p className="duration-info">Tag-uri sugerate:</p>
+                  <p className="duration-info">{t('addLocation.aiSuggested')}</p>
                   <div
                     style={{
                       display: 'flex',
@@ -334,7 +315,7 @@ const AddLocationModal = ({
                       padding: 0,
                     }}
                   >
-                    Selectare manuală
+                    {t('addLocation.manualSelect')}
                   </button>
                 </div>
               )}
@@ -357,8 +338,7 @@ const AddLocationModal = ({
                 </select>
                 {showUncategorizedWarning && (
                   <p className="duration-info" style={{ color: '#b91c1c' }}>
-                    Descrierea este prea vagă. Încearcă să adaugi mai multe
-                    detalii sau selectează manual categoria.
+                    {t('addLocation.descriptionVague')}
                   </p>
                 )}
               </div>
@@ -367,7 +347,7 @@ const AddLocationModal = ({
 
           {/* Image Upload Section */}
           <div className="form-group">
-            <label className="form-label">Images (Optional)</label>
+            <label className="form-label">{t('addLocation.images')}</label>
             <input
               type="file"
               accept="image/*"
@@ -436,35 +416,23 @@ const AddLocationModal = ({
 
           {isOwned && (
             <div className="form-group">
-              <label className="form-label">Duration *</label>
+              <label className="form-label">{t('addLocation.duration')}</label>
               <div className="duration-controls">
-                <div>
-                  <label className="duration-label">Days</label>
-                  <select
-                    className="form-select"
-                    value={days}
-                    onChange={(e) => setDays(Number(e.target.value))}
-                  >
-                    {dayOptions.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
+                <div className="counter-group">
+                  <label className="duration-label">{t('addLocation.days')}</label>
+                  <div className="counter-row">
+                    <button type="button" className="counter-btn" onClick={() => setDays((d) => Math.max(0, d - 1))}>−</button>
+                    <Counter value={days} fontSize={28} textColor="#22C55E" fontWeight={700} />
+                    <button type="button" className="counter-btn" onClick={() => setDays((d) => Math.min(29, d + 1))}>+</button>
+                  </div>
                 </div>
-                <div>
-                  <label className="duration-label">Hours</label>
-                  <select
-                    className="form-select"
-                    value={hours}
-                    onChange={(e) => setHours(Number(e.target.value))}
-                  >
-                    {hourOptions.map((hour) => (
-                      <option key={hour} value={hour}>
-                        {hour}
-                      </option>
-                    ))}
-                  </select>
+                <div className="counter-group">
+                  <label className="duration-label">{t('addLocation.hours')}</label>
+                  <div className="counter-row">
+                    <button type="button" className="counter-btn" onClick={() => setHours((h) => Math.max(0, h - 1))}>−</button>
+                    <Counter value={hours} fontSize={28} textColor="#22C55E" fontWeight={700} />
+                    <button type="button" className="counter-btn" onClick={() => setHours((h) => Math.min(23, h + 1))}>+</button>
+                  </div>
                 </div>
               </div>
               <p className="duration-info">
@@ -490,7 +458,7 @@ const AddLocationModal = ({
               className="modal-button-submit"
               disabled={isUploadingImages}
             >
-              {isUploadingImages ? 'Uploading Images...' : 'Add Location'}
+              {isUploadingImages ? t('addLocation.submitting') : t('addLocation.submit')}
             </button>
           </div>
         </form>

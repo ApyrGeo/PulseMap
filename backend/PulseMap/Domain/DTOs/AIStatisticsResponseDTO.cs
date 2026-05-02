@@ -35,4 +35,13 @@ public class AIStatisticsResponseDTO
         public int EmbeddingEventExtractorSuccess { get; set; }
         public int EventClusteringRuns { get; set; }
     }
+
+    public RecommendationStats Recommendations { get; set; } = new();
+
+    public class RecommendationStats
+    {
+        public int RequestsTotal { get; set; }
+        public int AiScoringSuccess { get; set; }
+        public int FallbackCalls { get; set; }
+    }
 }

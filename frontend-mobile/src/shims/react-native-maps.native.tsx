@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   forwardRef,
   useImperativeHandle,
   useRef,
@@ -120,8 +120,8 @@ function postRN(data){
 }
 
 function tearDropIcon(category,isExpired,isNearby){
-  var color=isExpired?'#6B7280':(CATEGORY_COLORS[category]||'#FF6B35');
-  var border=isNearby?'#FF6B35':'#fff';
+  var color=isExpired?'#6B7280':(CATEGORY_COLORS[category]||'#22C55E');
+  var border=isNearby?'#22C55E':'#fff';
   var size=isNearby?34:28;
   var dot=Math.round(size*0.29);
   var html='<div style="width:'+size+'px;height:'+size+'px;background:'+color+

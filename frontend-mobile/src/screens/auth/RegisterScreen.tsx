@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth, Role } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 
 export default function RegisterScreen({ navigation }: any) {
   const { registerUser } = useAuth();
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -24,20 +26,20 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleRegister = async () => {
     if (!firstName || !lastName || !username || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Eroare', t('auth.register.fillAll'));
       return;
     }
     setLoading(true);
     try {
       await registerUser({ firstName, lastName, username, email, password, role: Role.User });
-      Alert.alert('Success', 'Account created! Please sign in.', [
+      Alert.alert('Succes', t('auth.register.success'), [
         { text: 'OK', onPress: () => navigation.navigate('Login') },
       ]);
     } catch (e: any) {
       if (e?.message === 'USER_ALREADY_EXISTS') {
-        Alert.alert('Eroare', 'Utilizatorul există deja');
+        Alert.alert('Eroare', t('auth.register.emailExists'));
       } else {
-        Alert.alert('Eroare', 'Înregistrare eșuată. Încercați din nou.');
+        Alert.alert('Eroare', t('auth.register.failed'));
       }
     } finally {
       setLoading(false);
@@ -50,7 +52,7 @@ export default function RegisterScreen({ navigation }: any) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.title}>{t('auth.register.title')}</Text>
 
         {[
           { label: 'First Name', value: firstName, setter: setFirstName },
@@ -83,12 +85,12 @@ export default function RegisterScreen({ navigation }: any) {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Create Account</Text>
+            <Text style={styles.buttonText}>{t('auth.register.submit')}</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.link}>Already have an account? Sign in</Text>
+          <Text style={styles.link}>{t('auth.register.hasAccount')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#22C55E',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#22C55E',
     borderRadius: 10,
     padding: 16,
     alignItems: 'center',
@@ -126,5 +128,5 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  link: { color: '#FF6B35', textAlign: 'center', fontSize: 14 },
+  link: { color: '#22C55E', textAlign: 'center', fontSize: 14 },
 });

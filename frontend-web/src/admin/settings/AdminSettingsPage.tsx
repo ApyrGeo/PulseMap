@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
+﻿import { FormEvent, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CategoryDTO, CategoryPostDTO, Location } from '../../shared/maps/Interfaces';
 import {
   addCategory,
@@ -20,6 +21,7 @@ import {
   triggerCheckExpiredEvents,
   triggerExtendDurationByLikes,
   triggerCheckMergeDuplicates,
+  triggerAnalyzeAndClusterEvents,
 } from '../jobs/JobsApiService';
 import MergeResultItemComponent from '../map/components/MergeResultItem';
 import ForceMergeModal from '../map/components/ForceMergeModal';
@@ -38,6 +40,7 @@ import {
 } from '@mui/material';
 
 const AdminSettingsPage = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
 
   // Categories state
@@ -70,9 +73,9 @@ const AdminSettingsPage = () => {
     setJobMessage(null);
     try {
       await fn();
-      setJobMessage(`✓ Job "${jobId}" enqueued — se va executa în câteva secunde.`);
+      setJobMessage(`✓ ${t('adminSettings.jobEnqueued', { id: jobId })}`);
     } catch {
-      setJobMessage(`✗ Eroare la pornirea job-ului "${jobId}".`);
+      setJobMessage(`✗ ${t('adminSettings.jobFailed', { id: jobId })}`);
     } finally {
       setJobLoading(null);
     }
@@ -97,7 +100,7 @@ const AdminSettingsPage = () => {
       await loadStarredLocations();
     } catch (error) {
       console.error('Seeder failed', error);
-      setSeederError('Seeder-ul a eșuat. Încearcați din nou.');
+      setSeederError(t('adminSettings.seederFailed'));
     } finally {
       setSeederLoading(false);
     }
@@ -136,7 +139,7 @@ const AdminSettingsPage = () => {
       await loadCategories();
     } catch (error) {
       console.error('Failed to add category', error);
-      alert('Failed to add category. Please try again.');
+      alert(t('adminSettings.addCategoryError'));
     } finally {
       setIsSaving(false);
     }
@@ -213,7 +216,7 @@ const AdminSettingsPage = () => {
   return (
     <div style={{ maxWidth: 960, margin: '0 auto' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 16, color: '#fff' }}>
-        Settings
+        {t('adminSettings.title')}
       </h1>
 
       <Box sx={{ borderBottom: 1, borderColor: '#2D2D44', mb: 3 }}>
@@ -222,14 +225,14 @@ const AdminSettingsPage = () => {
           onChange={(_, v: number) => setActiveTab(v)}
           sx={{
             '& .MuiTab-root': { color: '#8E8E8E', textTransform: 'none', fontWeight: 600 },
-            '& .Mui-selected': { color: '#FF6B35 !important' },
-            '& .MuiTabs-indicator': { backgroundColor: '#FF6B35' },
+            '& .Mui-selected': { color: '#22C55E !important' },
+            '& .MuiTabs-indicator': { backgroundColor: '#22C55E' },
           }}
         >
-          <Tab label="Categorii" />
-          <Tab label="Deduplicare" />
-          <Tab label="Seeder" />
-          <Tab label="Jobs" />
+          <Tab label={t('adminSettings.tabCategories')} />
+          <Tab label={t('adminSettings.tabDeduplicate')} />
+          <Tab label={t('adminSettings.tabSeeder')} />
+          <Tab label={t('adminSettings.tabJobs')} />
         </Tabs>
       </Box>
 
@@ -237,14 +240,14 @@ const AdminSettingsPage = () => {
         <>
           <section style={sectionStyle}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 12, color: '#fff' }}>
-              Categories
+              {t('adminSettings.categoriesTitle')}
             </h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <input
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="New category name"
+                placeholder={t('adminSettings.categoryPlaceholder')}
                 required
                 style={inputStyle}
               />
@@ -255,7 +258,7 @@ const AdminSettingsPage = () => {
                   border: 'none',
                   borderRadius: 8,
                   padding: '10px 18px',
-                  backgroundColor: '#FF6B35',
+                  backgroundColor: '#22C55E',
                   color: '#fff',
                   fontWeight: 600,
                   fontSize: '0.875rem',
@@ -263,28 +266,28 @@ const AdminSettingsPage = () => {
                   opacity: isSaving ? 0.6 : 1,
                 }}
               >
-                {isSaving ? 'Adding...' : 'Add Category'}
+                {isSaving ? t('adminSettings.adding') : t('adminSettings.addCategory')}
               </button>
             </form>
           </section>
 
           <section style={{ ...sectionStyle, marginBottom: 0 }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 12, color: '#fff' }}>
-              Existing Categories
+              {t('adminSettings.existingCategories')}
             </h2>
             {isLoading ? (
-              <p style={{ margin: 0, color: '#8E8E8E' }}>Loading categories...</p>
+              <p style={{ margin: 0, color: '#8E8E8E' }}>{t('adminSettings.loadingCategories')}</p>
             ) : categories.length === 0 ? (
-              <p style={{ margin: 0, color: '#8E8E8E' }}>No categories found.</p>
+              <p style={{ margin: 0, color: '#8E8E8E' }}>{t('adminSettings.noCategories')}</p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th style={thStyle}>Name</th>
-                      <th style={thStyle}>Slug</th>
-                      <th style={thStyle}>Active</th>
-                      <th style={thStyle}>Order</th>
+                      <th style={thStyle}>{t('adminSettings.colName')}</th>
+                      <th style={thStyle}>{t('adminSettings.colSlug')}</th>
+                      <th style={thStyle}>{t('adminSettings.colActive')}</th>
+                      <th style={thStyle}>{t('adminSettings.colOrder')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -297,7 +300,7 @@ const AdminSettingsPage = () => {
                             color: category.isActive ? '#10B981' : '#8E8E8E',
                             fontWeight: 600,
                           }}>
-                            {category.isActive ? 'Yes' : 'No'}
+                            {category.isActive ? t('adminSettings.yes') : t('adminSettings.no')}
                           </span>
                         </td>
                         <td style={tdStyle}>{category.sortOrder}</td>
@@ -317,11 +320,11 @@ const AdminSettingsPage = () => {
 
           <Paper sx={{ p: 3, mb: 3, mt: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
             <Typography variant="h6" sx={{ mb: 2, color: '#fff' }}>
-              Check and Merge Duplicates
+              {t('adminSettings.checkMergeTitle')}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <TextField
-                label="Max Distance (meters)"
+                label={t('adminSettings.maxDistance')}
                 type="number"
                 value={maxDistance}
                 onChange={(e) => setMaxDistance(Number(e.target.value))}
@@ -351,7 +354,7 @@ const AdminSettingsPage = () => {
                   '&.Mui-disabled': { backgroundColor: '#2D2D44', color: '#8E8E8E' },
                 }}
               >
-                {mergeLoading ? 'Checking...' : 'Check & Merge Duplicates'}
+                {mergeLoading ? t('adminSettings.checking') : t('adminSettings.checkMerge')}
               </Button>
             </Box>
           </Paper>
@@ -374,7 +377,7 @@ const AdminSettingsPage = () => {
           {results && (
             <Paper sx={{ p: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
               <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>
-                Results
+                {t('adminSettings.results')}
               </Typography>
               <Alert
                 severity="info"
@@ -404,7 +407,7 @@ const AdminSettingsPage = () => {
                 </>
               ) : (
                 <Typography variant="body2" sx={{ color: '#8E8E8E' }}>
-                  No results to display.
+                  {t('adminSettings.noResults')}
                 </Typography>
               )}
             </Paper>
@@ -426,20 +429,20 @@ const AdminSettingsPage = () => {
         <Box>
           <Paper sx={{ p: 3, mb: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
             <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>
-              Seeder Locații Starred
+              {t('adminSettings.seederTitle')}
             </Typography>
             <Typography variant="body2" sx={{ mb: 2, color: '#8E8E8E' }}>
-              Recreează locațiile marcate cu ★ și redetectează event-urile.
+              {t('adminSettings.seederDesc')}
             </Typography>
 
             {starredLocations.length === 0 ? (
               <Alert severity="info" sx={{ mb: 2, backgroundColor: '#0F1F18', border: '1px solid #10B981', color: '#10B981', '& .MuiAlert-icon': { color: '#10B981' } }}>
-                Nicio locație starred. Marchează locații expirate de pe hartă folosind butonul ★.
+                {t('adminSettings.noStarred')}
               </Alert>
             ) : (
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" sx={{ mb: 1, color: '#B0B0B0' }}>
-                  {starredLocations.length} locație(i) starred:
+                  {t('adminSettings.starredCount', { count: starredLocations.length })}
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {starredLocations.map((loc) => (
@@ -467,7 +470,7 @@ const AdminSettingsPage = () => {
                 '&.Mui-disabled': { backgroundColor: '#2D2D44', color: '#8E8E8E' },
               }}
             >
-              {seederLoading ? 'Se rulează...' : 'Run Seeder'}
+              {seederLoading ? t('adminSettings.running') : t('adminSettings.runSeeder')}
             </Button>
           </Paper>
 
@@ -479,7 +482,7 @@ const AdminSettingsPage = () => {
 
           {seedResult && (
             <Alert severity="success" sx={{ backgroundColor: '#0F1F18', border: '1px solid #10B981', color: '#10B981', '& .MuiAlert-icon': { color: '#10B981' } }}>
-              {seedResult.locationsSeeded} locații extinse · {seedResult.eventsCreated} events noi · {seedResult.eventsUpdated} events reactivate
+              {t('adminSettings.seederResult', { seeded: seedResult.locationsSeeded, events: seedResult.eventsCreated, updated: seedResult.eventsUpdated })}
             </Alert>
           )}
         </Box>
@@ -489,41 +492,48 @@ const AdminSettingsPage = () => {
         <Box>
           <Paper sx={{ p: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
             <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>
-              Rulare manuală Hangfire Jobs
+              {t('adminSettings.jobsTitle')}
             </Typography>
             <Typography variant="body2" sx={{ mb: 3, color: '#8E8E8E' }}>
-              Fiecare job este adăugat în coada Hangfire și se execută imediat.
+              {t('adminSettings.jobsDesc')}
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[
                 {
                   id: 'check-expired-locations',
-                  label: 'Check Expired Locations',
-                  desc: 'Marchează ca expirate locațiile cu ExpiresAt în trecut.',
+                  label: t('adminSettings.jobExpiredLocations'),
+                  desc: t('adminSettings.jobExpiredLocationsDesc'),
                   fn: triggerCheckExpiredLocations,
                   color: '#EF4444',
                 },
                 {
                   id: 'check-expired-events',
-                  label: 'Check Expired Events',
-                  desc: 'Expiră event-urile fără locații active.',
+                  label: t('adminSettings.jobExpiredEvents'),
+                  desc: t('adminSettings.jobExpiredEventsDesc'),
                   fn: triggerCheckExpiredEvents,
                   color: '#F59E0B',
                 },
                 {
                   id: 'extend-duration-by-likes',
-                  label: 'Extend Duration by Likes',
-                  desc: 'Recalculează durata locațiilor pe baza like-urilor și rapoartelor.',
+                  label: t('adminSettings.jobExtendDuration'),
+                  desc: t('adminSettings.jobExtendDurationDesc'),
                   fn: triggerExtendDurationByLikes,
                   color: '#10B981',
                 },
                 {
                   id: 'check-merge-duplicate-locations',
-                  label: 'Check & Merge Duplicates',
-                  desc: 'Detectează și merge-uiește locațiile duplicate.',
+                  label: t('adminSettings.jobMergeDuplicates'),
+                  desc: t('adminSettings.jobMergeDuplicatesDesc'),
                   fn: triggerCheckMergeDuplicates,
                   color: '#3B82F6',
+                },
+                {
+                  id: 'analyze-and-cluster-events',
+                  label: t('adminSettings.jobAnalyzeEvents'),
+                  desc: t('adminSettings.jobAnalyzeEventsDesc'),
+                  fn: triggerAnalyzeAndClusterEvents,
+                  color: '#A855F7',
                 },
               ].map(({ id, label, desc, fn, color }) => (
                 <Box
@@ -563,7 +573,7 @@ const AdminSettingsPage = () => {
                       '&.Mui-disabled': { borderColor: '#2D2D44', color: '#8E8E8E' },
                     }}
                   >
-                    {jobLoading === id ? 'Se trimite...' : 'Run'}
+                    {jobLoading === id ? t('adminSettings.jobRunning') : t('adminSettings.run')}
                   </Button>
                 </Box>
               ))}

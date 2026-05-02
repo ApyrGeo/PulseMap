@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+﻿import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Location } from '@pulse-map/shared';
+import { useTranslation } from 'react-i18next';
 import { Icons } from '../utils/icons';
 
 const { width } = Dimensions.get('window');
@@ -34,6 +35,7 @@ function ProximityCard({
   onDismiss: (l: Location) => void;
   onReport: (l: Location) => void;
 }) {
+  const { t } = useTranslation();
   const opacity = useRef(new Animated.Value(1)).current;
 
   const animateAndCall = (cb: () => void) => {
@@ -62,7 +64,7 @@ function ProximityCard({
       <View style={styles.cardContent}>
         <View style={styles.nearbyLabelRow}>
           <Image source={Icons.location} style={styles.nearbyIcon} />
-          <Text style={styles.nearbyLabel}>Ești în apropiere</Text>
+          <Text style={styles.nearbyLabel}>{t('proximity.nearby')}</Text>
         </View>
         <Text style={styles.locationName}>{location.name}</Text>
         {location.category ? (
@@ -74,7 +76,7 @@ function ProximityCard({
           style={styles.confirmBtn}
           onPress={() => animateAndCall(() => onConfirm(location))}
         >
-          <Text style={styles.confirmText}>Am fost aici</Text>
+          <Text style={styles.confirmText}>{t('proximity.visited')}</Text>
         </TouchableOpacity>
 
         {/* Secondary actions — two small buttons in a row */}
@@ -83,13 +85,13 @@ function ProximityCard({
             style={[styles.smallBtn, styles.dismissBtn]}
             onPress={() => animateAndCall(() => onDismiss(location))}
           >
-            <Text style={styles.dismissText}>Ignoră</Text>
+            <Text style={styles.dismissText}>{t('proximity.ignore')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.smallBtn, styles.reportBtn]}
             onPress={() => animateAndCall(() => onReport(location))}
           >
-            <Text style={styles.reportText}>⚑ Nu există</Text>
+            <Text style={styles.reportText}>{t('proximity.notExist')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1A2E',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#FF6B35',
+    borderColor: '#22C55E',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -156,13 +158,13 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 4,
   },
-  nearbyIcon: { width: 14, height: 14, tintColor: '#FF6B35' },
-  nearbyLabel: { fontSize: 12, color: '#FF6B35', fontWeight: '600' },
+  nearbyIcon: { width: 14, height: 14, tintColor: '#22C55E' },
+  nearbyLabel: { fontSize: 12, color: '#22C55E', fontWeight: '600' },
   locationName: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 2 },
   category: { fontSize: 13, color: '#8E8E8E', marginBottom: 10 },
 
   confirmBtn: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#22C55E',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',

@@ -24,4 +24,5 @@ public interface ILocationService
     Task<LocationResponseDTO> ToggleStarAsync(int locationId);
     Task<List<LocationResponseDTO>> GetStarredLocationsAsync();
     Task<List<Location>> SeedStarredLocationsAsync();
+    Task<List<FeaturedLocationDTO>> GetFeaturedLocationsAsync(int count = 15);
 }

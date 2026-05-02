@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   checkAndMergeDuplicates,
   forceMergeLocations,
@@ -20,6 +21,7 @@ import {
 } from '@mui/material';
 
 const AdminEventsPage = () => {
+  const { t } = useTranslation();
   const [maxDistance, setMaxDistance] = useState<number>(20);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<CheckMergeResponse | null>(null);
@@ -40,7 +42,7 @@ const AdminEventsPage = () => {
       const response = await checkAndMergeDuplicates(maxDistance);
       setResults(response);
     } catch (err) {
-      setError('Failed to check and merge duplicates');
+      setError(t('adminSettings.checkMergeTitle'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -71,11 +73,11 @@ const AdminEventsPage = () => {
 
       <Paper sx={{ p: 3, mb: 3, mt: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
         <Typography variant="h6" sx={{ mb: 2, color: '#fff' }}>
-          Check and Merge Duplicates
+          {t('adminSettings.checkMergeTitle')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <TextField
-            label="Max Distance (meters)"
+            label={t('adminSettings.maxDistance')}
             type="number"
             value={maxDistance}
             onChange={(e) => setMaxDistance(Number(e.target.value))}
@@ -105,7 +107,7 @@ const AdminEventsPage = () => {
               '&.Mui-disabled': { backgroundColor: '#2D2D44', color: '#8E8E8E' },
             }}
           >
-            {loading ? 'Checking...' : 'Check & Merge Duplicates'}
+            {loading ? t('adminSettings.checking') : t('adminSettings.checkMerge')}
           </Button>
         </Box>
       </Paper>
@@ -128,7 +130,7 @@ const AdminEventsPage = () => {
       {results && (
         <Paper sx={{ p: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
           <Typography variant="h6" sx={{ mb: 1, color: '#fff' }}>
-            Results
+            {t('adminSettings.results')}
           </Typography>
           <Alert
             severity="info"
@@ -158,7 +160,7 @@ const AdminEventsPage = () => {
             </>
           ) : (
             <Typography variant="body2" sx={{ color: '#8E8E8E' }}>
-              No results to display.
+              {t('adminSettings.noResults')}
             </Typography>
           )}
         </Paper>

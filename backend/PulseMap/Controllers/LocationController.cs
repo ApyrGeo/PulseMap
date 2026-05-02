@@ -151,8 +151,15 @@ public class LocationController(ILocationService locationService, IAuthorization
     [ProducesResponseType(401)]
     public async Task<ActionResult<LocationResponseDTO>> LikeLocation([FromRoute] int locationId, [FromQuery] int userId)
     {
-        var updatedLocation = await _locationService.LikeLocationAsync(locationId, userId);
-        return Ok(updatedLocation);
+        try
+        {
+            var updatedLocation = await _locationService.LikeLocationAsync(locationId, userId);
+            return Ok(updatedLocation);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("needs-review")]
@@ -212,6 +219,15 @@ public class LocationController(ILocationService locationService, IAuthorization
     public async Task<ActionResult<LocationResponseDTO>> ToggleStar(int id)
     {
         var result = await _locationService.ToggleStarAsync(id);
+        return Ok(result);
+    }
+
+    [HttpGet("featured")]
+    [AllowAnonymous]
+    [ProducesResponseType(200)]
+    public async Task<ActionResult<List<FeaturedLocationDTO>>> GetFeatured([FromQuery] int count = 15)
+    {
+        var result = await _locationService.GetFeaturedLocationsAsync(count);
         return Ok(result);
     }
 
