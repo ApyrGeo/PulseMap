@@ -21,11 +21,13 @@ const Stack = ({
   cardDimensions = { width: 220, height: 260 },
 }: StackProps) => {
   const [stack, setStack] = useState<StackCard[]>([...cards]);
+  const [exitX, setExitX] = useState(0);
   const dragX = useMotionValue(0);
   const rotate = useTransform(dragX, [-sensitivity, sensitivity], [-18, 18]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const advance = () => {
+  const advance = (direction: number) => {
+    setExitX(direction * 600);
     setStack((prev) => {
       if (prev.length <= 1) return prev;
       const [first, ...rest] = prev;
@@ -36,7 +38,7 @@ const Stack = ({
 
   useEffect(() => {
     if (autoplayDelay > 0) {
-      intervalRef.current = setInterval(advance, autoplayDelay);
+      intervalRef.current = setInterval(() => advance(-1), autoplayDelay);
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [autoplayDelay]);
@@ -44,13 +46,14 @@ const Stack = ({
   const resetInterval = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (autoplayDelay > 0) {
-      intervalRef.current = setInterval(advance, autoplayDelay);
+      intervalRef.current = setInterval(() => advance(-1), autoplayDelay);
     }
   };
 
   const handleDragEnd = (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const dir = info.offset.x >= 0 ? 1 : -1;
     if (Math.abs(info.offset.x) > sensitivity || Math.abs(info.velocity.x) > 300) {
-      advance();
+      advance(dir);
       resetInterval();
     } else {
       animate(dragX, 0, { type: 'spring', stiffness: 300, damping: 30 });
@@ -75,6 +78,7 @@ const Stack = ({
                 y: i * 8,
                 x: isTop ? dragX : 0,
               }}
+              exit={isTop ? { x: exitX, opacity: 0, transition: { duration: 0.25 } } : undefined}
               drag={isTop ? 'x' : false}
               dragMomentum={false}
               onDragEnd={isTop ? handleDragEnd : undefined}
