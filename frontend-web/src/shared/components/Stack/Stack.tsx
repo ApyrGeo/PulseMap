@@ -17,7 +17,7 @@ interface StackProps {
 const Stack = ({
   cards,
   autoplayDelay = 2000,
-  sensitivity = 150,
+  sensitivity = 40,
   cardDimensions = { width: 220, height: 260 },
 }: StackProps) => {
   const [stack, setStack] = useState<StackCard[]>([...cards]);
@@ -74,6 +74,7 @@ const Stack = ({
               }}
               drag={isTop ? 'x' : false}
               dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={1}
               onDragEnd={isTop ? handleDragEnd : undefined}
               whileDrag={{ cursor: 'grabbing' }}
             >
