@@ -443,7 +443,7 @@ if (builder.Configuration["HangFire:Running"] == "True")
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
             "check-merge-duplicate-locations",
             x => x.CheckAndMergeDuplicateLocations(),
-            Cron.Daily);
+            Cron.HourInterval(6));
 
         // Analyze and cluster events every 6 hours
         recurringJobManager.AddOrUpdate<LocationBackGroundService>(
