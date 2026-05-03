@@ -13,7 +13,7 @@ const UserNavigationBar = () => {
 
   const handleLogout = () => {
     logoutUser();
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const currentLang = i18nInstance.language === 'ro' ? 'ro' : 'en';

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform, AnimatePresence, animate } from 'framer-motion';
 import './Stack.css';
 
 interface StackCard {
@@ -31,6 +31,7 @@ const Stack = ({
       const [first, ...rest] = prev;
       return [...rest, first];
     });
+    dragX.set(0);
   };
 
   useEffect(() => {
@@ -47,10 +48,12 @@ const Stack = ({
     }
   };
 
-  const handleDragEnd = (_: unknown, info: { offset: { x: number } }) => {
-    if (Math.abs(info.offset.x) > sensitivity) {
+  const handleDragEnd = (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
+    if (Math.abs(info.offset.x) > sensitivity || Math.abs(info.velocity.x) > 300) {
       advance();
       resetInterval();
+    } else {
+      animate(dragX, 0, { type: 'spring', stiffness: 300, damping: 30 });
     }
   };
 
@@ -73,8 +76,7 @@ const Stack = ({
                 x: isTop ? dragX : 0,
               }}
               drag={isTop ? 'x' : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
+              dragMomentum={false}
               onDragEnd={isTop ? handleDragEnd : undefined}
               whileDrag={{ cursor: 'grabbing' }}
             >
