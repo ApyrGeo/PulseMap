@@ -592,6 +592,17 @@ public class LocationService(
             }
         }
 
+        // Transfer images from removeLocation to keepLocation
+        if (removeLocation.Images != null && removeLocation.Images.Any())
+        {
+            _logger.InfoFormat("Transferring {0} images from location {1} to {2}", removeLocation.Images.Count, removeLocationId, keepLocationId);
+
+            foreach (var image in removeLocation.Images)
+            {
+                image.LocationId = keepLocationId;
+            }
+        }
+
         // Delete the redundant location
         await _locationRepository.DeleteLocationAsync(removeLocation);
         await _locationRepository.SaveChangesAsync();
