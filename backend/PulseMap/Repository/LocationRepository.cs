@@ -16,6 +16,7 @@ public class LocationRepository(PulseMapContext context) : ILocationRepository
             .Include(l => l.Category)
             .Include(l => l.Event)
             .Include(l => l.Images)
+            .Include(l => l.LikeStatus)
             .FirstOrDefaultAsync(l => l.Id == id);
 
         if (location == null) return null;
