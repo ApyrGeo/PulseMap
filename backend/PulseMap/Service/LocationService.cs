@@ -243,12 +243,21 @@ public class LocationService(
 
         location.IsExpired = false;
         location.ExpiresAt = DateTime.UtcNow.AddHours(1);
-        location.LikeStatus = new LikeStatus
+
+        if (location.LikeStatus != null)
         {
-            LastChecked = DateTime.UtcNow,
-            Location = location,
-            PreviousLikeCount = location.Likes.Count
-        };
+            location.LikeStatus.LastChecked = DateTime.UtcNow;
+            location.LikeStatus.PreviousLikeCount = location.Likes.Count;
+        }
+        else
+        {
+            location.LikeStatus = new LikeStatus
+            {
+                LastChecked = DateTime.UtcNow,
+                Location = location,
+                PreviousLikeCount = location.Likes.Count
+            };
+        }
         await _locationRepository.SaveChangesAsync();
 
         // Filter out ResponseMessage from Comments

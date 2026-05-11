@@ -144,3 +144,4 @@ appsettings.Development.json
 /backend/PulseMap/Logs/*
 
 CLAUDE.md
+/backend/PulseMap/ClassDiagram.cd
