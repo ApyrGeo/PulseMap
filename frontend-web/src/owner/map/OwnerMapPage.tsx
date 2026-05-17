@@ -19,7 +19,7 @@ const OwnerMapPage = () => {
   if (!user) return null;
 
   return (
-    <div className="locations-page">
+    <div className="locations-page" style={{ padding: '1.5rem' }}>
       <div style={{ marginBottom: 12 }}>
         <TipCard id="user-my-locations" message={t('tips.userMyLocations')} />
       </div>

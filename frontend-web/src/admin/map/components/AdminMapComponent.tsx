@@ -29,7 +29,7 @@ const AdminMapComponent = () => {
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
   const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
-  const [currentZoom, setCurrentZoom] = useState(15);
+  const [currentZoom, setCurrentZoom] = useState(7);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -209,7 +209,7 @@ const AdminMapComponent = () => {
 
   return (
     <div className="locations-page">
-      <div className="locations-map-container">
+      <div className="locations-map-container" style={{ height: '100%', boxSizing: 'border-box' }}>
         <LeafletMap
           locations={visibleLocations}
           events={visibleEvents}

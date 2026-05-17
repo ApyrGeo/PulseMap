@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 import { Role } from '../../auth/Interfaces';
 import { useTranslation } from 'react-i18next';
@@ -10,34 +10,38 @@ const UserNavigationBar = () => {
   const { isAuthenticated, user, logoutUser } = useAuth();
   const navigate = useNavigate();
   const { t, i18n: i18nInstance } = useTranslation();
+  const { pathname } = useLocation();
 
   const handleLogout = () => {
     logoutUser();
     navigate('/', { replace: true });
   };
 
-  const currentLang = i18nInstance.language === 'ro' ? 'ro' : 'en';
+  const isAdmin = user?.role === Role.Admin;
+
+  const linkClass = (path: string) =>
+    `navigation-link${pathname === path ? ' navigation-link--active' : ''}`;
 
   return (
-    <nav className="navigation-bar">
+    <nav className="navigation-bar navigation-bar--glass">
       <div className="navigation-container">
         <Link to="/" className="navigation-logo">
           PulseMap
         </Link>
 
-        <div className="navigation-links">
+        <div className="navigation-center">
           {isAuthenticated && (
-            <Link to="/map" className="navigation-link">
+            <Link to={isAdmin ? '/admin/map' : '/map'} className={linkClass(isAdmin ? '/admin/map' : '/map')}>
               {t('nav.map')}
             </Link>
           )}
 
           {isAuthenticated && user?.role === Role.User && (
             <>
-              <Link to="/owner/map" className="navigation-link">
+              <Link to="/owner/map" className={linkClass('/owner/map')}>
                 {t('nav.myLocations')}
               </Link>
-              <Link to="/user/statistics" className="navigation-link">
+              <Link to="/user/statistics" className={linkClass('/user/statistics')}>
                 {t('nav.statistics')}
               </Link>
             </>
@@ -45,15 +49,17 @@ const UserNavigationBar = () => {
 
           {isAuthenticated && user?.role === Role.Admin && (
             <>
-              <Link to="/admin/statistics" className="navigation-link">
+              <Link to="/admin/statistics" className={linkClass('/admin/statistics')}>
                 {t('nav.statistics')}
               </Link>
-              <Link to="/admin/settings" className="navigation-link">
+              <Link to="/admin/settings" className={linkClass('/admin/settings')}>
                 {t('nav.settings')}
               </Link>
             </>
           )}
+        </div>
 
+        <div className="navigation-actions">
           <BubbleMenu
             logo={<span className="lang-globe">🌐</span>}
             menuBg="#1A1A2E"

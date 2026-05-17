@@ -108,22 +108,24 @@
     "noRecommendations": "No recommendations in this area yet.",
     "zoomIn": "Please zoom in more to be more precise with the placement",
     "likeError": "You can't like more than once",
-    "unlikeError": "Error removing like"
+    "unlikeError": "Error removing like",
+    "locationsVisible": "locations visible",
+    "locationsInArea": "locations in area",
+    "eventsVisible": "events visible",
+    "eventsInArea": "events in area (zoom in to see)",
+    "aiMatchedReason": "AI matched this location to your liked-location profile"
   },
   "statistics": {
     "title": "Statistics",
     "myStats": "My Stats",
     "leaderboard": "Leaderboard",
     "hotSpots": "Hot Spots",
-    "totalVisits": "Total Visits",
-    "confirmed": "Confirmed",
-    "proximityTaps": "Proximity Taps",
-    "noInteractions": "No interactions yet",
+    "locationsVisited": "Locations Visited",
+    "locationsUploaded": "Locations Uploaded",
+    "noInteractions": "No visited locations yet",
     "noInteractionsHint": "Walk near locations and confirm your visits to see them here",
-    "yourRank": "Your rank: #{{rank}} with {{count}} interactions",
+    "yourRank": "Your rank: #{{rank}} with {{count}} visits",
     "visits": "visits",
-    "confirmedVisit": "Confirmed visit",
-    "proximityTap": "Proximity tap",
     "noHotSpots": "No hot spots data yet"
   },
   "comments": {

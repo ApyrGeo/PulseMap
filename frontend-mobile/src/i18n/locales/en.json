@@ -1,7 +1,7 @@
 {
   "tabs": {
     "map": "Map",
-    "recommendations": "For you",
+    "recommendations": "Recommended",
     "myLocations": "Mine",
     "statistics": "Stats",
     "settings": "Settings"
@@ -56,7 +56,9 @@
     "createdBy": "Created by",
     "expires": "Expires",
     "commentsCount": "Comments ({{count}})",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "markVisited": "Mark as Visited",
+    "visited": "Visited"
   },
   "common": {
     "error": "Error",
@@ -126,6 +128,8 @@
     "myStats": "My Stats",
     "leaderboard": "Leaderboard",
     "hotSpots": "Hot Spots",
+    "locationsVisited": "Locations Visited",
+    "locationsUploaded": "Locations Uploaded",
     "visited": "Visited",
     "proximityTap": "Proximity tap",
     "noInteractions": "No interactions yet",

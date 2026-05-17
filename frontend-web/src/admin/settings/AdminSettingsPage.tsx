@@ -37,6 +37,11 @@ import {
   Divider,
   Tabs,
   Tab,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from '@mui/material';
 
 const AdminSettingsPage = () => {
@@ -177,42 +182,6 @@ const AdminSettingsPage = () => {
     }
   };
 
-  const sectionStyle: React.CSSProperties = {
-    border: '1px solid #2D2D44',
-    borderRadius: 10,
-    padding: 16,
-    backgroundColor: '#1A1A2E',
-    marginBottom: 16,
-  };
-
-  const inputStyle: React.CSSProperties = {
-    flex: 1,
-    border: '1px solid #2D2D44',
-    borderRadius: 8,
-    padding: '10px 12px',
-    backgroundColor: '#0F0F1A',
-    color: '#fff',
-    fontSize: '0.9rem',
-    outline: 'none',
-  };
-
-  const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    padding: '8px 6px',
-    color: '#8E8E8E',
-    fontSize: '0.8rem',
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  };
-
-  const tdStyle: React.CSSProperties = {
-    padding: '10px 6px',
-    borderTop: '1px solid #2D2D44',
-    color: '#fff',
-    fontSize: '0.875rem',
-  };
-
   return (
     <div style={{ maxWidth: 960, margin: '0 auto' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 16, color: '#fff' }}>
@@ -238,79 +207,85 @@ const AdminSettingsPage = () => {
 
       {activeTab === 0 && (
         <>
-          <section style={sectionStyle}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 12, color: '#fff' }}>
+          <Paper sx={{ p: 3, mb: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#fff' }}>
               {t('adminSettings.categoriesTitle')}
-            </h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <input
-                type="text"
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+              <TextField
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 placeholder={t('adminSettings.categoryPlaceholder')}
                 required
-                style={inputStyle}
+                size="small"
+                sx={{
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#0F0F1A',
+                    color: '#fff',
+                    '& fieldset': { borderColor: '#2D2D44' },
+                    '&:hover fieldset': { borderColor: '#4D4D64' },
+                    '&.Mui-focused fieldset': { borderColor: '#22C55E' },
+                  },
+                  '& input': { color: '#fff' },
+                  '& input::placeholder': { color: '#8E8E8E', opacity: 1 },
+                }}
               />
-              <button
+              <Button
                 type="submit"
+                variant="contained"
                 disabled={isSaving}
-                style={{
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 18px',
+                startIcon={isSaving ? <CircularProgress size={18} /> : null}
+                sx={{
                   backgroundColor: '#22C55E',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  cursor: isSaving ? 'not-allowed' : 'pointer',
-                  opacity: isSaving ? 0.6 : 1,
+                  textTransform: 'none',
+                  '&:hover': { backgroundColor: '#16A34A' },
+                  '&.Mui-disabled': { backgroundColor: '#2D2D44', color: '#8E8E8E' },
                 }}
               >
                 {isSaving ? t('adminSettings.adding') : t('adminSettings.addCategory')}
-              </button>
-            </form>
-          </section>
+              </Button>
+            </Box>
+          </Paper>
 
-          <section style={{ ...sectionStyle, marginBottom: 0 }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 12, color: '#fff' }}>
+          <Paper sx={{ p: 3, backgroundColor: '#1A1A2E', border: '1px solid #2D2D44' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#fff' }}>
               {t('adminSettings.existingCategories')}
-            </h2>
+            </Typography>
             {isLoading ? (
-              <p style={{ margin: 0, color: '#8E8E8E' }}>{t('adminSettings.loadingCategories')}</p>
+              <Typography variant="body2" sx={{ color: '#8E8E8E' }}>{t('adminSettings.loadingCategories')}</Typography>
             ) : categories.length === 0 ? (
-              <p style={{ margin: 0, color: '#8E8E8E' }}>{t('adminSettings.noCategories')}</p>
+              <Typography variant="body2" sx={{ color: '#8E8E8E' }}>{t('adminSettings.noCategories')}</Typography>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={thStyle}>{t('adminSettings.colName')}</th>
-                      <th style={thStyle}>{t('adminSettings.colSlug')}</th>
-                      <th style={thStyle}>{t('adminSettings.colActive')}</th>
-                      <th style={thStyle}>{t('adminSettings.colOrder')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <Box sx={{ overflowX: 'auto' }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      {[t('adminSettings.colName'), t('adminSettings.colSlug'), t('adminSettings.colActive'), t('adminSettings.colOrder')].map((col) => (
+                        <TableCell key={col} sx={{ color: '#8E8E8E', fontWeight: 600, borderColor: '#2D2D44', fontSize: '0.8rem' }}>
+                          {col}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
                     {categories.map((category) => (
-                      <tr key={category.id}>
-                        <td style={tdStyle}>{category.name}</td>
-                        <td style={tdStyle}>{category.slug}</td>
-                        <td style={tdStyle}>
-                          <span style={{
-                            color: category.isActive ? '#10B981' : '#8E8E8E',
-                            fontWeight: 600,
-                          }}>
+                      <TableRow key={category.id}>
+                        <TableCell sx={{ color: '#fff', borderColor: '#2D2D44' }}>{category.name}</TableCell>
+                        <TableCell sx={{ color: '#fff', borderColor: '#2D2D44' }}>{category.slug}</TableCell>
+                        <TableCell sx={{ borderColor: '#2D2D44' }}>
+                          <Typography variant="body2" sx={{ color: category.isActive ? '#10B981' : '#8E8E8E', fontWeight: 600 }}>
                             {category.isActive ? t('adminSettings.yes') : t('adminSettings.no')}
-                          </span>
-                        </td>
-                        <td style={tdStyle}>{category.sortOrder}</td>
-                      </tr>
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ color: '#fff', borderColor: '#2D2D44' }}>{category.sortOrder}</TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </TableBody>
+                </Table>
+              </Box>
             )}
-          </section>
+          </Paper>
         </>
       )}
 
@@ -350,6 +325,7 @@ const AdminSettingsPage = () => {
                 startIcon={mergeLoading ? <CircularProgress size={20} /> : null}
                 sx={{
                   backgroundColor: '#3b82f6',
+                  textTransform: 'none',
                   '&:hover': { backgroundColor: '#2563eb' },
                   '&.Mui-disabled': { backgroundColor: '#2D2D44', color: '#8E8E8E' },
                 }}

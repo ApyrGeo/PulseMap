@@ -8,7 +8,8 @@ import {
   useMapEvents,
   useMap,
 } from 'react-leaflet';
-import { useEffect, useRef, memo, useCallback } from 'react';
+import { useEffect, useRef, memo, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import './MarkerCluster.css';
@@ -97,7 +98,7 @@ const getMarkerIcon = (
   const borderColor = hasOwner ? '#000' : '#fff';
 
   const html = `
-    <div class="teardrop-marker" style="
+    <div class="teardrop-marker marker-zoom-in" style="
       width: 30px;
       height: 30px;
       background-color: ${color};
@@ -169,7 +170,7 @@ const getEventIcon = (category: string, locationsCount: number) => {
       border-radius: 50%;
       box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
       position: relative;
-      animation: event-pulse 2s ease-in-out infinite;
+      animation: event-marker-entry 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both, event-pulse 2s ease-in-out 0.45s infinite;
       cursor: pointer;
     ">
       <div style="
@@ -311,6 +312,7 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
           fillOpacity: 0.35,
           weight: 3,
           dashArray: '5, 10',
+          className: 'event-circle-enter',
         }}
       />
       <Marker
@@ -503,7 +505,17 @@ const AnimatedMarker = memo(
         position={[location.latitude, location.longitude]}
         icon={icon}
         eventHandlers={{
-          popupopen: () => animatePopupOpen(markerRef.current),
+          popupopen: () => {
+            animatePopupOpen(markerRef.current);
+            const el = markerRef.current?.getElement();
+            el?.classList.add('marker-popup-active');
+            el?.querySelector<HTMLElement>('.teardrop-marker')?.classList.add('marker-teardrop-pulse');
+          },
+          popupclose: () => {
+            const el = markerRef.current?.getElement();
+            el?.classList.remove('marker-popup-active');
+            el?.querySelector<HTMLElement>('.teardrop-marker')?.classList.remove('marker-teardrop-pulse');
+          },
           ...(onContextMenu
             ? {
                 contextmenu: (e: L.LeafletMouseEvent) => {
@@ -516,7 +528,7 @@ const AnimatedMarker = memo(
         }}
       >
         {isAdmin ? (
-          <Popup>
+          <Popup closeButton={false}>
             <AdminLocationPopup location={location} />
           </Popup>
         ) : (
@@ -524,7 +536,7 @@ const AnimatedMarker = memo(
           onAddResponse &&
           onLike &&
           onUnlike && (
-            <Popup key={`popup-${location.id}`}>
+            <Popup key={`popup-${location.id}`} closeButton={false}>
               <LocationPopup
                 location={location}
                 onAddComment={onAddComment}
@@ -683,6 +695,7 @@ const LeafletMap = ({
   focusLocationId,
   focusRequestKey,
 }: LeafletMapProps) => {
+  const { t } = useTranslation();
   const markerRefs = useRef<Map<number, L.Marker>>(new Map());
   const clusterGroupRef = useRef<any>(null);
 
@@ -695,7 +708,7 @@ const LeafletMap = ({
   const center: [number, number] =
     locations.length > 0
       ? [locations[0].latitude, locations[0].longitude]
-      : [46.76073058700941, 23.571628332138065];
+      : [45.9421, 25.1211];
 
   const shouldBeColored = (location: Location) => {
     if (isAdmin) {
@@ -713,6 +726,58 @@ const LeafletMap = ({
     currentZoom < ZOOM_THRESHOLDS.NEIGHBORHOOD;
   const shouldShowCountOnly = currentZoom < ZOOM_THRESHOLDS.CITY;
 
+  // Delayed render states — kept true during exit animation, then set false
+  const [markersRendered, setMarkersRendered] = useState(shouldShowMarkers);
+  const [eventsRendered, setEventsRendered] = useState(shouldShowEvents);
+  const prevMarkersRef = useRef(shouldShowMarkers);
+  const prevEventsRef = useRef(shouldShowEvents);
+  const markersExitTimer = useRef<ReturnType<typeof setTimeout>>();
+  const eventsExitTimer = useRef<ReturnType<typeof setTimeout>>();
+  const EXIT_MS = 350;
+
+  useEffect(() => {
+    const prev = prevMarkersRef.current;
+    prevMarkersRef.current = shouldShowMarkers;
+    if (prev && !shouldShowMarkers) {
+      // Zoom out — animate markers out, then unmount
+      markerRefs.current.forEach((marker) => {
+        const inner = marker.getElement()?.querySelector<HTMLElement>('.teardrop-marker');
+        if (inner) inner.style.animation = 'marker-zoom-out 0.35s ease-in both';
+      });
+      clearTimeout(markersExitTimer.current);
+      markersExitTimer.current = setTimeout(() => setMarkersRendered(false), EXIT_MS);
+    } else if (!prev && shouldShowMarkers) {
+      clearTimeout(markersExitTimer.current);
+      setMarkersRendered(true);
+    }
+  }, [shouldShowMarkers]);
+
+  useEffect(() => {
+    const prev = prevEventsRef.current;
+    prevEventsRef.current = shouldShowEvents;
+    if (prev && !shouldShowEvents) {
+      // Zoom in past threshold — animate events out, then unmount
+      document.querySelectorAll<HTMLElement>('.event-marker').forEach((el) => {
+        el.style.animation = 'event-marker-exit 0.35s ease-in both';
+      });
+      document.querySelectorAll<HTMLElement>('.event-circle-enter').forEach((el) => {
+        el.style.animation = 'event-circle-fade-out 0.35s ease-in both';
+      });
+      clearTimeout(eventsExitTimer.current);
+      eventsExitTimer.current = setTimeout(() => setEventsRendered(false), EXIT_MS);
+    } else if (!prev && shouldShowEvents) {
+      clearTimeout(eventsExitTimer.current);
+      setEventsRendered(true);
+    }
+  }, [shouldShowEvents]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(markersExitTimer.current);
+      clearTimeout(eventsExitTimer.current);
+    };
+  }, []);
+
   // Determine color based on location count
   const getColorByCount = (count: number) => {
     if (count < 10) return '#22c55e'; // green
@@ -724,8 +789,8 @@ const LeafletMap = ({
   return (
     <MapContainer
       center={center}
-      zoom={15}
-      style={{ height: '90vh', width: '100%' }}
+      zoom={7}
+      style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
         attribution="&copy; OpenStreetMap, &copy; CARTO"
@@ -735,7 +800,7 @@ const LeafletMap = ({
         subdomains={['a', 'b', 'c', 'd']}
       />
 
-      {shouldShowMarkers && (
+      {markersRendered && (
         <MarkerClusterGroup
           ref={clusterGroupRef}
           chunkedLoading
@@ -773,7 +838,7 @@ const LeafletMap = ({
         </MarkerClusterGroup>
       )}
 
-      {shouldShowEvents &&
+      {eventsRendered &&
         events.length > 0 &&
         events.map((event) => (
           <EventMarker
@@ -811,7 +876,7 @@ const LeafletMap = ({
             {locations.length}
           </div>
           <div style={{ fontSize: '12px', color: '#8E8E8E' }}>
-            {shouldShowMarkers ? 'locations visible' : 'locations in area'}
+            {shouldShowMarkers ? t('map.locationsVisible') : t('map.locationsInArea')}
           </div>
           {events.length > 0 && (
             <>
@@ -828,9 +893,7 @@ const LeafletMap = ({
               <div
                 style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}
               >
-                {shouldShowEvents
-                  ? 'events visible'
-                  : 'events in area (zoom in to 7+ to see)'}
+                {shouldShowEvents ? t('map.eventsVisible') : t('map.eventsInArea')}
               </div>
             </>
           )}

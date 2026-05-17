@@ -1,8 +1,8 @@
 /* Shared styles for location pages */
 .locations-page {
-  min-height: 100vh;
+  height: 100%;
   background-color: #0F0F1A;
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .locations-header {
@@ -26,4 +26,6 @@
   border: 1px solid #2D2D44;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   padding: 1rem;
+  height: 100%;
+  box-sizing: border-box;
 }

@@ -165,7 +165,7 @@ const AddLocationModal = ({
                   }}
                   style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
-                <span style={{ color: '#1f2937' }}>
+                <span style={{ color: '#ffffff' }}>
                   {t('addLocation.ownedLocation')}
                 </span>
               </label>

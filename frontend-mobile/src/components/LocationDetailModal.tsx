@@ -58,6 +58,8 @@ function formatExpiry(expiresAt: Date | string): string {
 interface Props {
   location: Location;
   onClose: () => void;
+  isNearby?: boolean;
+  onVisit?: () => void;
 }
 
 const { height: SCREEN_H } = Dimensions.get('window');
@@ -65,7 +67,7 @@ const { height: SCREEN_H } = Dimensions.get('window');
 const HALF_H  = SCREEN_H * 0.52;   // initial: just over half-screen
 const FULL_H  = SCREEN_H * 0.90;   // expanded: 90% — stays well below camera/status bar
 
-export default function LocationDetailModal({ location, onClose }: Props) {
+export default function LocationDetailModal({ location, onClose, isNearby, onVisit }: Props) {
   const { user, tokenService } = useAuth();
   const { likeLocation } = useLocations();
   const { t } = useTranslation();
@@ -78,6 +80,7 @@ export default function LocationDetailModal({ location, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasReported, setHasReported] = useState(false);
+  const [hasVisited, setHasVisited] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -277,6 +280,21 @@ export default function LocationDetailModal({ location, onClose }: Props) {
               </View>
             </View>
 
+            {isNearby && !hasVisited && user && user.id !== location.creator?.id && (
+              <TouchableOpacity
+                style={styles.visitBtn}
+                onPress={() => { setHasVisited(true); onVisit?.(); }}
+              >
+                <Text style={styles.visitBtnText}>✓ {t('location.markVisited')}</Text>
+              </TouchableOpacity>
+            )}
+
+            {isNearby && hasVisited && (
+              <View style={styles.visitedBadge}>
+                <Text style={styles.visitedBadgeText}>✓ {t('location.visited')}</Text>
+              </View>
+            )}
+
             {user?.id !== location.creator?.id && (
               <TouchableOpacity style={styles.likeBtn} onPress={handleLike}>
                 <Image source={liked ? Icons.heart_filled : Icons.heart_empty} style={styles.likeIcon} />
@@ -450,6 +468,20 @@ const styles = StyleSheet.create({
   metaItem: { flex: 1 },
   metaLabel: { color: '#8E8E8E', fontSize: 11, marginBottom: 2 },
   metaValue: { color: '#fff', fontSize: 13, fontWeight: '500' },
+
+  visitBtn: {
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#052E16', borderRadius: 10, padding: 14,
+    marginBottom: 12, borderWidth: 1, borderColor: '#22C55E55',
+  },
+  visitBtnText: { color: '#22C55E', fontSize: 15, fontWeight: '700', letterSpacing: 0.3 },
+  visitedBadge: {
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#052E16', borderRadius: 10, padding: 12,
+    marginBottom: 12, borderWidth: 1, borderColor: '#22C55E33',
+    opacity: 0.7,
+  },
+  visitedBadgeText: { color: '#22C55E', fontSize: 14, fontWeight: '600' },
 
   likeBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

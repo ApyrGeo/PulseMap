@@ -23,23 +23,21 @@ export function useProximityDetection(
   initialInteractedIds: number[] = []
 ) {
   const [nearbyLocations, setNearbyLocations] = useState<Location[]>([]);
-  const interactedIds = useRef<Set<number>>(new Set(initialInteractedIds));
+  // Locations confirmed/visited — removed from nearby entirely
+  const confirmedIds = useRef<Set<number>>(new Set(initialInteractedIds));
+  // Locations dismissed from card stack — still nearby (pulse + visit button)
+  const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (initialInteractedIds.length > 0) {
-      initialInteractedIds.forEach((id) => interactedIds.current.add(id));
+      initialInteractedIds.forEach((id) => confirmedIds.current.add(id));
     }
   }, [initialInteractedIds]);
-
-  const markInteracted = useCallback((locationId: number) => {
-    interactedIds.current.add(locationId);
-    setNearbyLocations((prev) => prev.filter((l) => l.id !== locationId));
-  }, []);
 
   useEffect(() => {
     if (!userCoords) return;
     const nearby = locations.filter((loc) => {
-      if (interactedIds.current.has(loc.id)) return false;
+      if (confirmedIds.current.has(loc.id)) return false;
       if (loc.isExpired) return false;
       return haversineDistance(
         userCoords.latitude, userCoords.longitude,
@@ -49,7 +47,19 @@ export function useProximityDetection(
     setNearbyLocations(nearby);
   }, [userCoords, locations]);
 
-  return { nearbyLocations, markInteracted };
+  // Dismiss from card stack only — location stays in nearbyLocations (pulse + modal button)
+  const markDismissed = useCallback((locationId: number) => {
+    setDismissedIds((prev) => new Set([...prev, locationId]));
+  }, []);
+
+  // Confirmed visited — remove from nearbyLocations entirely
+  const markInteracted = useCallback((locationId: number) => {
+    confirmedIds.current.add(locationId);
+    setDismissedIds((prev) => { const next = new Set(prev); next.delete(locationId); return next; });
+    setNearbyLocations((prev) => prev.filter((l) => l.id !== locationId));
+  }, []);
+
+  return { nearbyLocations, dismissedIds, markDismissed, markInteracted };
 }
 
 export { haversineDistance, PROXIMITY_THRESHOLD_METERS };
