@@ -106,6 +106,7 @@
     "recommendedForYou": "Recommended for you",
     "loading": "Loading…",
     "noRecommendations": "No recommendations in this area yet.",
+    "zoomInForRecommendations": "Zoom in to see recommendations for this area.",
     "zoomIn": "Please zoom in more to be more precise with the placement",
     "likeError": "You can't like more than once",
     "unlikeError": "Error removing like",
