@@ -141,7 +141,7 @@ const UserMapComponent = () => {
         // Use server response immediately to populate visible locations
         setVisibleLocations(data);
 
-        if (user?.id) {
+        if (user?.id && zoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD) {
           setIsLoadingRecommendations(true);
           const recommendations = await fetchRecommendedLocationsByBounds(
             bounds,
@@ -149,6 +149,9 @@ const UserMapComponent = () => {
             8
           );
           setRecommendedLocations(recommendations);
+          setIsLoadingRecommendations(false);
+        } else if (zoom < ZOOM_THRESHOLDS.NEIGHBORHOOD) {
+          setRecommendedLocations([]);
           setIsLoadingRecommendations(false);
         }
 
@@ -348,7 +351,13 @@ const UserMapComponent = () => {
               <p style={{ margin: 0, color: '#8E8E8E' }}>{t('map.loading')}</p>
             )}
 
-            {!isLoadingRecommendations && recommendedLocations.length === 0 && (
+            {!isLoadingRecommendations && currentZoom < ZOOM_THRESHOLDS.NEIGHBORHOOD && (
+              <p style={{ margin: 0, color: '#8E8E8E' }}>
+                {t('map.zoomInForRecommendations')}
+              </p>
+            )}
+
+            {!isLoadingRecommendations && currentZoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD && recommendedLocations.length === 0 && (
               <p style={{ margin: 0, color: '#8E8E8E' }}>
                 {t('map.noRecommendations')}
               </p>

@@ -8,7 +8,7 @@ import {
   useMapEvents,
   useMap,
 } from 'react-leaflet';
-import { useEffect, useRef, memo, useCallback, useState } from 'react';
+import { useEffect, useRef, memo, useCallback, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
@@ -292,6 +292,12 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
       ? calculateEventRadius(event.latitude, event.longitude, event.locations)
       : 100; // Default 100m if no locations
 
+  // Memoize icon so Leaflet doesn't replace the DOM element (and reset animation) on every render
+  const icon = useMemo(
+    () => getEventIcon(event.name, event.locationsCount),
+    [event.name, event.locationsCount]
+  );
+
   const handleClick = () => {
     // Zoom into the event area
     map.setView(
@@ -317,7 +323,7 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
       />
       <Marker
         position={[event.latitude, event.longitude]}
-        icon={getEventIcon(event.name, event.locationsCount)}
+        icon={icon}
         eventHandlers={{
           click: handleClick,
         }}
