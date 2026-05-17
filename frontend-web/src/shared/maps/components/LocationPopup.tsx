@@ -11,6 +11,8 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { reportLocation, ReportType } from '../services/ReportApiService';
 import ImageStack from '../../components/Stack/Stack';
+import { useMap } from 'react-leaflet';
+import './LocationPopup.css';
 import {
   Box,
   Typography,
@@ -20,6 +22,7 @@ import {
   Card,
   Divider,
   Stack,
+  IconButton,
 } from '@mui/material';
 import {
   Favorite,
@@ -28,6 +31,7 @@ import {
   Warning,
   Image as ImageIcon,
   Flag,
+  Close,
 } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -62,6 +66,7 @@ const LocationPopup = memo(
     onLike,
     onUnlike,
   }: LocationPopupProps) => {
+    const map = useMap();
     const { user } = useAuth();
     const { t } = useTranslation();
     const [likeCount, setLikeCount] = useState(location.likesCount || 0);
@@ -135,286 +140,141 @@ const LocationPopup = memo(
       }
     };
 
-    return (
-      <Box
-        sx={{
-          minWidth: 550,
-          maxWidth: 650,
-          bgcolor: '#1A1A2E',
-          borderRadius: 2,
-          overflow: 'hidden',
-        }}
-      >
-        {/* Header with gradient background */}
-        <Box
-          sx={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            p: 2.5,
-            position: 'relative',
-          }}
-        >
-          {/* Category Badge - positioned on the left */}
-          {location.category && (
-            <Chip
-              label={location.category}
-              size="small"
-              sx={{
-                position: 'absolute',
-                top: 12,
-                left: 12,
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                backgroundColor: categoryColors[location.category] || '#6B7280',
-                color: 'white',
-              }}
-            />
-          )}
+    const catColor = categoryColors[location.category] ?? '#6B7280';
 
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1.5,
-            }}
-          >
-            <Typography
-              variant="h5"
-              component="h3"
-              sx={{
-                fontWeight: 700,
-                color: 'white',
-                textAlign: 'center',
-              }}
-            >
+    return (
+      <Box sx={{ minWidth: 550, maxWidth: 650, bgcolor: '#1A1A2E', borderRadius: 2, overflow: 'hidden' }}>
+
+        {/* Header — category color background */}
+        <Box sx={{ backgroundColor: catColor, px: 2.5, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {location.name}
             </Typography>
-
-            {/* Requires Review indicator */}
-            {location.requiresReview && (
-              <Chip
-                icon={<Warning sx={{ color: 'white !important' }} />}
-                label={t('location.reviewNeeded')}
-                size="small"
-                sx={{
-                  fontWeight: 'bold',
-                  bgcolor: 'rgba(255, 193, 7, 0.9)',
-                  color: 'white',
-                }}
-              />
-            )}
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)', fontWeight: 500, letterSpacing: 0.4 }}>
+              {location.category}
+            </Typography>
           </Box>
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+            {location.requiresReview && (
+              <Chip icon={<Warning sx={{ color: 'white !important', fontSize: '0.9rem !important' }} />} label={t('location.reviewNeeded')} size="small"
+                sx={{ bgcolor: 'rgba(255,193,7,0.85)', color: 'white', fontWeight: 700, fontSize: '0.7rem' }} />
+            )}
+            {/* Like counter */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(0,0,0,0.25)', borderRadius: 99, px: 1.2, py: 0.4 }}>
+              {isLiked ? <Favorite sx={{ fontSize: 14, color: '#fff' }} /> : <FavoriteBorder sx={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }} />}
+              <Typography sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 700 }}>{likeCount}</Typography>
+            </Box>
+            {/* Close button */}
+            <IconButton
+              size="small"
+              onClick={() => map.closePopup()}
+              sx={{ color: 'rgba(255,255,255,0.8)', bgcolor: 'rgba(0,0,0,0.25)', p: 0.4, '&:hover': { bgcolor: 'rgba(0,0,0,0.45)', color: 'white' } }}
+            >
+              <Close sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Stack>
         </Box>
 
         {/* Main Content */}
         <Box sx={{ display: 'flex', gap: 2, p: 2 }}>
-          {/* Left Side - Info & Comments */}
-          <Box
-            sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}
-          >
-            {/* Description */}
-            {location.description && (
-              <Typography variant="body2" sx={{ mb: 1, color: '#ccc' }}>
-                {location.description}
-              </Typography>
-            )}
 
-            {/* Compact Info Section */}
-            <Stack spacing={1} sx={{ mb: 1 }}>
-              {/* Creator */}
+          {/* Left Side */}
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+
+            {/* Creator + Expiry row */}
+            <Stack direction="row" spacing={1.5} alignItems="center">
               {location.creator && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Avatar
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      bgcolor: 'primary.main',
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                    }}
-                  >
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1 }}>
+                  <Avatar sx={{ width: 28, height: 28, bgcolor: catColor, fontSize: '0.8rem', fontWeight: 700 }}>
                     {location.creator.username.charAt(0).toUpperCase()}
                   </Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontSize: '0.7rem' }}
-                    >
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#8E8E8E', fontSize: '0.65rem', display: 'block', lineHeight: 1 }}>
                       {location.owner ? t('location.owner') : t('location.creator')}
                     </Typography>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600, fontSize: '0.8rem' }}>
                       {location.creator.username}
                     </Typography>
                   </Box>
                 </Stack>
               )}
+              <Chip icon={<AccessTime sx={{ fontSize: '0.85rem !important' }} />}
+                label={new Date(location.expiresAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                size="small" variant="outlined"
+                sx={{ fontSize: '0.7rem', borderColor: '#2D2D44', color: '#8E8E8E', '& .MuiChip-icon': { color: '#8E8E8E' } }}
+              />
+            </Stack>
 
-              {/* Event Info */}
-              {location.event && (
-                <Box
-                  sx={{
-                    p: 1.5,
-                    bgcolor: location.event.requiresReview
-                      ? '#2D1F0A'
-                      : '#0A2D1A',
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: location.event.requiresReview
-                      ? '#f59e0b'
-                      : '#10b981',
-                  }}
-                >
-                  <Stack spacing={0.5}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography
-                        variant="body2"
-                        fontWeight={600}
-                        sx={{
-                          color: location.event.requiresReview
-                            ? '#fbbf24'
-                            : '#34d399',
-                        }}
-                      >
-                        <img src="/icons/target.png" style={{ width: 14, height: 14, marginRight: 4, verticalAlign: 'middle' }} alt="" />
-                        {t('location.partOfEvent')}
-                      </Typography>
-                      <Chip
-                        label={location.event.name}
-                        size="small"
-                        sx={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          bgcolor: location.event.requiresReview
-                            ? '#f59e0b'
-                            : '#10b981',
-                          color: 'white',
-                        }}
-                      />
-                    </Stack>
-                    {location.eventAssignmentConfidence && (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: location.event.requiresReview
-                            ? '#fbbf24'
-                            : '#34d399',
-                          fontWeight: 500,
-                        }}
-                      >
-                        {t('location.matchConfidence')}{' '}
-                        {(location.eventAssignmentConfidence * 100).toFixed(0)}%
-                      </Typography>
-                    )}
-                    {location.event.requiresReview && (
-                      <Typography
-                        variant="caption"
-                        sx={{ color: '#fbbf24', fontStyle: 'italic' }}
-                      >
-                        <img src="/icons/warning.png" style={{ width: 12, height: 12, marginRight: 4, verticalAlign: 'middle' }} alt="" />
-                        {t('location.requiresAdminReview')}
-                      </Typography>
-                    )}
-                  </Stack>
-                </Box>
-              )}
+            {/* Description */}
+            {location.description && (
+              <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.82rem', lineHeight: 1.5, p: 1.2, bgcolor: '#0F0F1A', borderRadius: 1, border: '1px solid #2D2D44' }}>
+                {location.description}
+              </Typography>
+            )}
 
-              {/* Expires & Likes in one row */}
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Chip
-                  icon={<AccessTime />}
-                  label={new Date(location.expiresAt).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                  size="small"
-                  color="error"
-                  variant="outlined"
-                  sx={{ fontSize: '0.75rem' }}
-                />
-                <Chip
-                  label={`${likeCount} ${likeCount === 1 ? 'like' : 'likes'}`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  sx={{ fontSize: '0.75rem' }}
-                />
-              </Stack>
+            {/* Event badge */}
+            {location.event && (
+              <Box sx={{ p: 1.2, bgcolor: location.event.requiresReview ? '#2D1F0A' : '#0A2D1A', borderRadius: 1, border: 1, borderColor: location.event.requiresReview ? '#f59e0b' : '#10b981' }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <img src="/icons/target.png" style={{ width: 13, height: 13 }} alt="" />
+                  <Typography variant="caption" sx={{ color: location.event.requiresReview ? '#fbbf24' : '#34d399', fontWeight: 600 }}>
+                    {t('location.partOfEvent')}
+                  </Typography>
+                  <Chip label={location.event.name} size="small"
+                    sx={{ fontSize: '0.7rem', fontWeight: 700, bgcolor: location.event.requiresReview ? '#f59e0b' : '#10b981', color: 'white' }} />
+                </Stack>
+                {location.eventAssignmentConfidence && (
+                  <Typography variant="caption" sx={{ color: location.event.requiresReview ? '#fbbf24' : '#34d399', mt: 0.5, display: 'block' }}>
+                    {t('location.matchConfidence')} {(location.eventAssignmentConfidence * 100).toFixed(0)}%
+                  </Typography>
+                )}
+              </Box>
+            )}
 
-              {/* Like Button — hidden for own locations */}
-              {user?.id !== location.creator?.id && (
-                <Button
-                  fullWidth
-                  size="small"
-                  variant={isLiked ? 'contained' : 'outlined'}
-                  color={isLiked ? 'error' : 'primary'}
+            {/* Actions */}
+            {user && user.id !== location.creator?.id && (
+              <Stack direction="row" spacing={1}>
+                <Button size="small" variant={isLiked ? 'contained' : 'outlined'}
                   startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
                   onClick={handleLikeToggle}
-                  sx={{ textTransform: 'none', fontWeight: 600 }}
-                >
+                  sx={{ flex: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem',
+                    ...(isLiked
+                      ? { bgcolor: '#ef4444', borderColor: '#ef4444', color: 'white', '&:hover': { bgcolor: '#dc2626' } }
+                      : { borderColor: '#2D2D44', color: '#ccc', '&:hover': { borderColor: '#ef4444', color: '#ef4444' } })
+                  }}>
                   {isLiked ? t('location.unlike') : t('location.like')}
                 </Button>
-              )}
-
-              {/* Report Button — hidden for own locations */}
-              {user && user.id !== location.creator?.id && (
                 <>
-                  <Button
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    color="warning"
-                    startIcon={<Flag />}
+                  <Button size="small" variant="outlined" startIcon={<Flag />}
                     disabled={hasReported || isReporting}
                     onClick={(e) => setReportMenuAnchor(e.currentTarget)}
-                    sx={{ textTransform: 'none', fontWeight: 600 }}
-                  >
+                    sx={{ flex: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', borderColor: '#2D2D44', color: hasReported ? '#8E8E8E' : '#F59E0B', '&:hover': { borderColor: '#F59E0B' } }}>
                     {hasReported ? t('location.reported') : t('location.report')}
                   </Button>
-                  <Menu
-                    anchorEl={reportMenuAnchor}
-                    open={Boolean(reportMenuAnchor)}
-                    onClose={() => setReportMenuAnchor(null)}
-                    PaperProps={{ sx: { bgcolor: '#1A1A2E', color: 'white' } }}
-                  >
+                  <Menu anchorEl={reportMenuAnchor} open={Boolean(reportMenuAnchor)} onClose={() => setReportMenuAnchor(null)}
+                    PaperProps={{ sx: { bgcolor: '#1A1A2E', color: 'white', border: '1px solid #2D2D44' } }}>
                     {(Object.values(ReportType).filter((v) => typeof v === 'number') as ReportType[]).map((type) => (
-                      <MenuItem
-                        key={type}
-                        onClick={() => handleReportSelect(type)}
-                        sx={{ fontSize: '0.875rem' }}
-                      >
+                      <MenuItem key={type} onClick={() => handleReportSelect(type)} sx={{ fontSize: '0.875rem' }}>
                         {reportTypeLabels[type]}
                       </MenuItem>
                     ))}
                   </Menu>
                 </>
-              )}
-            </Stack>
+              </Stack>
+            )}
 
-            {/* Comments Section */}
+            {/* Comments */}
             {user && (
               <>
-                <Divider sx={{ my: 1, borderColor: '#2D2D44' }} />
-                <Box sx={{ maxHeight: 250, overflowY: 'auto' }}>
+                <Divider sx={{ borderColor: '#2D2D44' }} />
+                <Box sx={{ maxHeight: 220, overflowY: 'auto' }}>
                   <LocationComments
                     comments={location.messages}
                     currentUser={location.creator}
-                    onAddComment={(content) =>
-                      onAddComment({
-                        locationId: location.id,
-                        content,
-                        senderId: user.id,
-                      })
-                    }
-                    onAddResponse={(messageId, content) =>
-                      onAddResponse({
-                        messageId,
-                        content,
-                        senderId: user.id,
-                      })
-                    }
+                    onAddComment={(content) => onAddComment({ locationId: location.id, content, senderId: user.id })}
+                    onAddResponse={(messageId, content) => onAddResponse({ messageId, content, senderId: user.id })}
                   />
                 </Box>
               </>
@@ -424,30 +284,12 @@ const LocationPopup = memo(
           {/* Right Side - Image Stack */}
           <Box sx={{ width: 250, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 320 }}>
             {hasImages ? (
-              <ImageStack
-                cards={images.map((url, i) => ({ id: i, img: url }))}
-                autoplayDelay={2000}
-                sensitivity={150}
-                cardDimensions={{ width: 220, height: 280 }}
-              />
+              <ImageStack cards={images.map((url, i) => ({ id: i, img: url }))} autoplayDelay={2000} sensitivity={150} cardDimensions={{ width: 220, height: 280 }} />
             ) : (
-              <Card
-                sx={{
-                  width: 220,
-                  height: 280,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 1,
-                  borderRadius: 2,
-                }}
-              >
-                <ImageIcon sx={{ fontSize: 64, color: 'white', opacity: 0.7 }} />
-                <Typography variant="body2" sx={{ color: 'white', opacity: 0.9, fontWeight: 500 }}>
-                  No images
-                </Typography>
+              <Card sx={{ width: 220, height: 280, backgroundColor: catColor + '33', border: `1px solid ${catColor}55`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, borderRadius: 2 }}>
+                <ImageIcon sx={{ fontSize: 64, color: catColor, opacity: 0.6 }} />
+                <Typography variant="body2" sx={{ color: '#8E8E8E', fontWeight: 500 }}>No images</Typography>
               </Card>
             )}
           </Box>

@@ -5,6 +5,7 @@ import {
   fetchMyInteractions,
   fetchLeaderboard,
   fetchTopLocations,
+  fetchUserLocationCount,
   InteractionRecord,
   UserInteractionStats,
   LocationInteractionStats,
@@ -24,7 +25,7 @@ import {
   EmojiEvents,
   Place,
   CheckCircle,
-  TouchApp,
+  CloudUpload,
 } from '@mui/icons-material';
 
 const DARK = {
@@ -38,47 +39,50 @@ const DARK = {
 
 const medalIcons = ['/icons/medal_gold.png', '/icons/medal_silver.png', '/icons/medal_bronze.png'];
 
-function MyStatsTab({
-  userId,
-}: {
-  userId: number;
-}) {
+function MyStatsTab({ userId }: { userId: number }) {
   const { t } = useTranslation();
   const [interactions, setInteractions] = useState<InteractionRecord[]>([]);
+  const [uploadedCount, setUploadedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMyInteractions(userId)
-      .then(setInteractions)
+    Promise.all([
+      fetchMyInteractions(userId),
+      fetchUserLocationCount(userId),
+    ])
+      .then(([interactionsData, count]) => {
+        setInteractions(interactionsData);
+        setUploadedCount(count);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const confirmed = interactions.filter((i) => i.type === 0).length;
-  const taps = interactions.filter((i) => i.type === 1).length;
+  const visitedCount = interactions.filter((i) => i.type === 0).length;
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}><CircularProgress sx={{ color: DARK.accent }} /></Box>;
 
   return (
     <Box>
       {/* Summary row */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
-        {[
-          { label: t('statistics.totalVisits'), value: interactions.length, icon: '/icons/location.png' },
-          { label: t('statistics.confirmed'), value: confirmed, icon: '/icons/check.png' },
-          { label: t('statistics.proximityTaps'), value: taps, icon: '/icons/tap.png' },
-        ].map((stat) => (
-          <Card key={stat.label} sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <img src={stat.icon} style={{ width: 28, height: 28 }} alt="" />
-              <Typography variant="h4" sx={{ color: DARK.accent, fontWeight: 700 }}>{stat.value}</Typography>
-              <Typography variant="body2" sx={{ color: DARK.muted }}>{stat.label}</Typography>
-            </CardContent>
-          </Card>
-        ))}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mb: 3 }}>
+        <Card sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
+          <CardContent sx={{ textAlign: 'center' }}>
+            <CheckCircle sx={{ color: DARK.accent, fontSize: 28, mb: 0.5 }} />
+            <Typography variant="h4" sx={{ color: DARK.accent, fontWeight: 700 }}>{visitedCount}</Typography>
+            <Typography variant="body2" sx={{ color: DARK.muted }}>{t('statistics.locationsVisited')}</Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
+          <CardContent sx={{ textAlign: 'center' }}>
+            <CloudUpload sx={{ color: DARK.accent, fontSize: 28, mb: 0.5 }} />
+            <Typography variant="h4" sx={{ color: DARK.accent, fontWeight: 700 }}>{uploadedCount}</Typography>
+            <Typography variant="body2" sx={{ color: DARK.muted }}>{t('statistics.locationsUploaded')}</Typography>
+          </CardContent>
+        </Card>
       </Box>
 
-      {/* Interaction list */}
+      {/* Visited locations list */}
       {interactions.length === 0 ? (
         <Card sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
           <CardContent sx={{ textAlign: 'center', py: 5 }}>
@@ -88,19 +92,12 @@ function MyStatsTab({
         </Card>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {interactions.map((item) => (
+          {interactions.filter((i) => i.type === 0).map((item) => (
             <Card key={item.id} sx={{ backgroundColor: DARK.surface, border: `1px solid ${DARK.border}` }}>
               <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: '12px !important' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  {item.type === 0
-                    ? <CheckCircle sx={{ color: '#4CAF50', fontSize: 20 }} />
-                    : <TouchApp sx={{ color: DARK.accent, fontSize: 20 }} />}
-                  <Box>
-                    <Typography sx={{ color: DARK.text, fontWeight: 600, fontSize: 14 }}>{item.locationName}</Typography>
-                    <Typography sx={{ color: DARK.muted, fontSize: 12 }}>
-                      {item.type === 0 ? t('statistics.confirmedVisit') : t('statistics.proximityTap')}
-                    </Typography>
-                  </Box>
+                  <CheckCircle sx={{ color: '#4CAF50', fontSize: 20 }} />
+                  <Typography sx={{ color: DARK.text, fontWeight: 600, fontSize: 14 }}>{item.locationName}</Typography>
                 </Box>
                 <Typography sx={{ color: DARK.muted, fontSize: 12 }}>
                   {new Date(item.interactedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

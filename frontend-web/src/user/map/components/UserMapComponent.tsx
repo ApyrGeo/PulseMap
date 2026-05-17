@@ -46,7 +46,7 @@ const UserMapComponent = () => {
 
   const [visibleLocations, setVisibleLocations] = useState<Location[]>([]);
   const [visibleEvents, setVisibleEvents] = useState<EventResponseDTO[]>([]);
-  const [currentZoom, setCurrentZoom] = useState(15);
+  const [currentZoom, setCurrentZoom] = useState(7);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [clickedCoords, setClickedCoords] = useState<{
     lat: number;
@@ -267,14 +267,14 @@ const UserMapComponent = () => {
             display: 'grid',
             gridTemplateColumns: '1fr 320px',
             gap: '12px',
-            alignItems: 'start',
+            height: '100%',
           }}
         >
-          <div>
-            <div style={{ width: 260, marginBottom: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ width: 260, marginBottom: 8, flexShrink: 0 }}>
               <Autocomplete
                 size="small"
-                options={['None', ...categories.map((c) => c.name)]}
+                options={['None', ...categories.filter((c) => c.name !== 'Not Set').map((c) => c.name)]}
                 value={selectedType ?? 'None'}
                 onChange={(_, value) =>
                   setSelectedType(value === 'None' ? null : value)
@@ -311,20 +311,22 @@ const UserMapComponent = () => {
               />
             </div>
 
-            <LeafletMap
-              locations={visibleLocations}
-              events={visibleEvents}
-              onMapClick={handleMapClick}
-              onAddComment={handleAddComment}
-              onAddResponse={handleAddResponse}
-              onLike={handleLike}
-              onUnlike={handleUnlike}
-              onBoundsChange={handleBoundsChange}
-              currentZoom={currentZoom}
-              animationStates={animationStates}
-              focusLocationId={focusedRecommendationId}
-              focusRequestKey={focusRequestKey}
-            />
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <LeafletMap
+                locations={visibleLocations}
+                events={visibleEvents}
+                onMapClick={handleMapClick}
+                onAddComment={handleAddComment}
+                onAddResponse={handleAddResponse}
+                onLike={handleLike}
+                onUnlike={handleUnlike}
+                onBoundsChange={handleBoundsChange}
+                currentZoom={currentZoom}
+                animationStates={animationStates}
+                focusLocationId={focusedRecommendationId}
+                focusRequestKey={focusRequestKey}
+              />
+            </div>
           </div>
 
           <aside
@@ -333,8 +335,8 @@ const UserMapComponent = () => {
               borderRadius: '10px',
               padding: '12px',
               backgroundColor: '#1A1A2E',
-              minHeight: '240px',
-              maxHeight: 'calc(100vh - 220px)',
+              height: '100%',
+              boxSizing: 'border-box',
               overflowY: 'auto',
             }}
           >
@@ -432,7 +434,7 @@ const UserMapComponent = () => {
                       lineHeight: 1.35,
                     }}
                   >
-                    {rec.reason}
+                    {t('map.aiMatchedReason')}
                   </div>
                 </button>
               ))}

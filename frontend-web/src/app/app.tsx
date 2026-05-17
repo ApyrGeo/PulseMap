@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LocationsProvider } from '../shared/maps/providers/LocationsProvider';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
 import OwnerMapPage from '../owner/map/OwnerMapPage';
@@ -34,14 +34,23 @@ export function App() {
 
 function Layout() {
   const { isAuthenticated } = useAuth();
+  const { pathname } = useLocation();
+  const isMapRoute = pathname === '/map' || pathname === '/admin/map';
+
   return (
-    <>
+    <div className={isMapRoute ? 'flex flex-col h-screen overflow-hidden' : ''}>
       <NavigationBar />
       {isAuthenticated && <TutorialModal />}
-      <div className="container mx-auto px-4 py-6">
-        <AppRoutes />
-      </div>
-    </>
+      {isMapRoute ? (
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <AppRoutes />
+        </div>
+      ) : (
+        <div className="container mx-auto px-4 py-6">
+          <AppRoutes />
+        </div>
+      )}
+    </div>
   );
 }
 

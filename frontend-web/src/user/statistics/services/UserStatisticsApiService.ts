@@ -45,3 +45,16 @@ export const fetchTopLocations = async (take = 20): Promise<LocationInteractionS
   if (!response.ok) throw new Error('Failed to fetch top locations');
   return response.json();
 };
+
+export const fetchUserLocationCount = async (userId: number): Promise<number> => {
+  const response = await fetch(`${BASE_API_URL}/Location?active=false&userId=${userId}`, {
+    headers: { ...TokenService.getAuthHeader() },
+  });
+  if (!response.ok) throw new Error('Failed to fetch user locations');
+  const data = await response.json();
+  if (!Array.isArray(data)) return 0;
+  return data.filter(
+    (loc: { creator?: { id: number }; owner?: { id: number } }) =>
+      loc.creator?.id === userId || loc.owner?.id === userId
+  ).length;
+};

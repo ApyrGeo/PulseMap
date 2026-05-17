@@ -84,12 +84,12 @@ const StatisticsPage = () => {
   // Prepare data for events chart
   const eventsData = [
     {
-      name: t('adminStats.seriesGptEventExtractor'),
-      value: statistics.events.gptEventExtractorSuccess,
-    },
-    {
       name: t('adminStats.seriesEmbeddingEventExtractor'),
       value: statistics.events.embeddingEventExtractorSuccess,
+    },
+    {
+      name: t('adminStats.seriesGptEventExtractor'),
+      value: statistics.events.gptEventExtractorSuccess,
     },
   ];
 
@@ -116,10 +116,6 @@ const StatisticsPage = () => {
     {
       category: t('adminStats.catEventClustering'),
       total: statistics.events.eventClusteringRuns,
-    },
-    {
-      category: t('adminStats.catRecommendations'),
-      total: statistics.recommendations.requestsTotal,
     },
   ];
 
@@ -258,11 +254,11 @@ const StatisticsPage = () => {
           <div className="card-details">
             <div className="detail-row">
               <span style={{ color: COLORS[0] }}>●</span>
-              <span>{t('adminStats.seriesGptEventExtractor')}: {statistics.events.gptEventExtractorSuccess}</span>
+              <span>{t('adminStats.seriesEmbeddingEventExtractor')}: {statistics.events.embeddingEventExtractorSuccess}</span>
             </div>
             <div className="detail-row">
               <span style={{ color: COLORS[1] }}>●</span>
-              <span>{t('adminStats.seriesEmbeddingEventExtractor')}: {statistics.events.embeddingEventExtractorSuccess}</span>
+              <span>{t('adminStats.seriesGptEventExtractor')}: {statistics.events.gptEventExtractorSuccess}</span>
             </div>
           </div>
         </div>
@@ -302,14 +298,6 @@ const StatisticsPage = () => {
               <span style={{ color: COLORS[1] }}>●</span>
               <span>{t('adminStats.recFallback')}: {statistics.recommendations.fallbackCalls}</span>
             </div>
-            {statistics.recommendations.requestsTotal > 0 && (
-              <div className="detail-row" style={{ marginTop: 8, color: '#8E8E8E' }}>
-                <span>{t('adminStats.recSuccessRate')}: </span>
-                <span style={{ color: '#10b981', fontWeight: 600 }}>
-                  {((statistics.recommendations.aiScoringSuccess / statistics.recommendations.requestsTotal) * 100).toFixed(1)}%
-                </span>
-              </div>
-            )}
           </div>
         </div>
 

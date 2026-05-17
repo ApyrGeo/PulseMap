@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {
   useAuth,
+  fetchLocations,
   getUserInteractions,
   fetchLeaderboard,
   fetchTopLocations,
@@ -26,21 +27,45 @@ type Tab = 'my' | 'leaderboard' | 'locations';
 
 function MyStatsTab({
   interactions,
+  uploadedCount,
   loading,
   onRefresh,
   refreshing,
 }: {
   interactions: InteractionResponseDTO[];
+  uploadedCount: number;
   loading: boolean;
   onRefresh: () => void;
   refreshing: boolean;
 }) {
   const { t } = useTranslation();
-  if (loading) return <ActivityIndicator style={styles.loader} size="large" color="#22C55E" />;
+
+  const visitedCount = interactions.filter((i) => i.type === InteractionType.Confirmed).length;
+
+  const header = (
+    <View style={styles.summaryRow}>
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryValue}>{visitedCount}</Text>
+        <Text style={styles.summaryLabel}>{t('statistics.locationsVisited')}</Text>
+      </View>
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryValue}>{uploadedCount}</Text>
+        <Text style={styles.summaryLabel}>{t('statistics.locationsUploaded')}</Text>
+      </View>
+    </View>
+  );
+
+  if (loading) return (
+    <>
+      {header}
+      <ActivityIndicator style={styles.loader} size="large" color="#22C55E" />
+    </>
+  );
 
   return (
     <FlatList
-      data={interactions}
+      data={interactions.filter((i) => i.type === InteractionType.Confirmed)}
+      ListHeaderComponent={header}
       keyExtractor={(item) => item.id.toString()}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22C55E" />
@@ -164,6 +189,7 @@ export default function StatisticsScreen() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('my');
   const [myInteractions, setMyInteractions] = useState<InteractionResponseDTO[]>([]);
+  const [uploadedCount, setUploadedCount] = useState(0);
   const [leaderboard, setLeaderboard] = useState<UserInteractionStatsDTO[]>([]);
   const [topLocations, setTopLocations] = useState<LocationInteractionStatsDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -174,8 +200,16 @@ export default function StatisticsScreen() {
     isRefresh ? setRefreshing(true) : setLoading(true);
     try {
       if (tab === 'my') {
-        const data = await getUserInteractions(tokenService, user.id);
-        setMyInteractions(data);
+        const [interactions, allLocs] = await Promise.all([
+          getUserInteractions(tokenService, user.id),
+          fetchLocations(tokenService, false, user.id),
+        ]);
+        setMyInteractions(interactions);
+        setUploadedCount(
+          allLocs.filter(
+            (loc) => loc.creator?.id === user.id || loc.owner?.id === user.id
+          ).length
+        );
       } else if (tab === 'leaderboard') {
         const data = await fetchLeaderboard(20);
         setLeaderboard(data);
@@ -222,6 +256,7 @@ export default function StatisticsScreen() {
       {activeTab === 'my' && (
         <MyStatsTab
           interactions={myInteractions}
+          uploadedCount={uploadedCount}
           loading={loading}
           onRefresh={() => loadData('my', true)}
           refreshing={refreshing}
@@ -288,6 +323,32 @@ const styles = StyleSheet.create({
   userInfo: { flex: 1 },
   username: { color: '#8E8E8E', fontSize: 12 },
   interactionCount: { color: '#22C55E', fontWeight: '700', fontSize: 15 },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: '#1A1A2E',
+    borderRadius: 14,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2D2D44',
+  },
+  summaryValue: {
+    color: '#22C55E',
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  summaryLabel: {
+    color: '#8E8E8E',
+    fontSize: 12,
+    textAlign: 'center',
+  },
   empty: { alignItems: 'center', padding: 40 },
   emptyList: { flex: 1, justifyContent: 'center' },
   emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 8 },

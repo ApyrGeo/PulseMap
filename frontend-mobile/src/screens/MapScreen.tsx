@@ -87,7 +87,7 @@ export default function MapScreen() {
     [interactedLocationIds]
   );
 
-  const { nearbyLocations, markInteracted } = useProximityDetection(
+  const { nearbyLocations, dismissedIds, markDismissed, markInteracted } = useProximityDetection(
     locationsForProximity,
     userCoords,
     interactedIdsArray
@@ -217,9 +217,9 @@ export default function MapScreen() {
 
   const handleDismissCard = useCallback(
     (location: Location) => {
-      markInteracted(location.id);
+      markDismissed(location.id);
     },
-    [markInteracted]
+    [markDismissed]
   );
 
   const handleReportCard = useCallback(
@@ -240,26 +240,30 @@ export default function MapScreen() {
     [user, tokenService, markInteracted]
   );
 
-  const handleMarkerPress = useCallback(
+  const handleVisitFromModal = useCallback(
     async (location: Location) => {
-      const isNearby = nearbyLocations.some((l) => l.id === location.id);
-      if (isNearby && user) {
-        try {
-          await recordInteraction(tokenService, {
-            userId: user.id,
-            locationId: location.id,
-            type: InteractionType.ProximityTap,
-          });
-        } catch {
-          // 409 = already interacted
-        } finally {
-          markInteracted(location.id);
-          markAsInteracted(location.id);
-        }
+      if (!user) return;
+      try {
+        await recordInteraction(tokenService, {
+          userId: user.id,
+          locationId: location.id,
+          type: InteractionType.Confirmed,
+        });
+      } catch {
+        // 409 = already interacted
+      } finally {
+        markInteracted(location.id);
+        markAsInteracted(location.id);
       }
+    },
+    [user, tokenService, markInteracted, markAsInteracted]
+  );
+
+  const handleMarkerPress = useCallback(
+    (location: Location) => {
       setSelectedLocation(location);
     },
-    [nearbyLocations, user, tokenService, markInteracted, markAsInteracted]
+    []
   );
 
   const handleRegionChangeComplete = useCallback(
@@ -325,6 +329,11 @@ export default function MapScreen() {
       : [];
 
   const nearbyIds = new Set(nearbyLocations.map((l) => l.id));
+
+  // Card stack shows only nearby locations not yet dismissed or interacted
+  const stackLocations = nearbyLocations.filter(
+    (loc) => !dismissedIds.has(loc.id) && !interactedLocationIds.has(loc.id)
+  );
 
   const initialRegion: Region = {
     latitude: userCoords?.latitude ?? 46.76073058700941,
@@ -409,7 +418,7 @@ export default function MapScreen() {
       )}
 
       <ProximityCardStack
-        locations={nearbyLocations}
+        locations={stackLocations}
         onConfirm={handleConfirmInteraction}
         onDismiss={handleDismissCard}
         onReport={handleReportCard}
@@ -427,6 +436,8 @@ export default function MapScreen() {
           key={selectedLocation.id}
           location={selectedLocation}
           onClose={() => setSelectedLocation(null)}
+          isNearby={nearbyIds.has(selectedLocation.id)}
+          onVisit={() => handleVisitFromModal(selectedLocation)}
         />
       )}
     </View>

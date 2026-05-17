@@ -1,4 +1,9 @@
 ﻿/* Location Popup Styles */
+
+/* Hide Leaflet's default close button — we use our own inside the header */
+.leaflet-popup-close-button {
+  display: none !important;
+}
 .location-popup-container {
   min-width: 500px;
   max-width: 600px;

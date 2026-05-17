@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 const AdminLocationsPage = () => {
   const { t } = useTranslation();
   return (
-    <div className="locations-page">
+    <div style={{ position: 'relative', height: '100%' }}>
       <div style={{ position: 'absolute', top: 70, left: 16, zIndex: 800 }}>
         <TipCard id="admin-map-ctx" message={t('tips.adminMapCtx')} />
       </div>

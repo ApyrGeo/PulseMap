@@ -108,22 +108,24 @@
     "noRecommendations": "Nicio recomandare în această zonă.",
     "zoomIn": "Apropie-te mai mult pentru a plasa mai precis locația",
     "likeError": "Nu poți da like de mai multe ori",
-    "unlikeError": "Eroare la unlike"
+    "unlikeError": "Eroare la unlike",
+    "locationsVisible": "locații vizibile",
+    "locationsInArea": "locații în zonă",
+    "eventsVisible": "evenimente vizibile",
+    "eventsInArea": "evenimente în zonă (mărește pentru a le vedea)",
+    "aiMatchedReason": "AI-ul a potrivit această locație cu profilul tău de aprecieri"
   },
   "statistics": {
     "title": "Statistici",
     "myStats": "Statisticile mele",
     "leaderboard": "Clasament",
     "hotSpots": "Locuri populare",
-    "totalVisits": "Total vizite",
-    "confirmed": "Confirmate",
-    "proximityTaps": "Tap proximitate",
-    "noInteractions": "Nicio interacțiune încă",
+    "locationsVisited": "Locații vizitate",
+    "locationsUploaded": "Locații încărcate",
+    "noInteractions": "Nicio locație vizitată încă",
     "noInteractionsHint": "Mergi lângă locații și confirmă vizitele pentru a le vedea aici",
-    "yourRank": "Locul tău: #{{rank}} cu {{count}} interacțiuni",
+    "yourRank": "Locul tău: #{{rank}} cu {{count}} vizite",
     "visits": "vizite",
-    "confirmedVisit": "Vizită confirmată",
-    "proximityTap": "Tap proximitate",
     "noHotSpots": "Nicio locație populară încă"
   },
   "comments": {

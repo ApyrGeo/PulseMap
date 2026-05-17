@@ -2,7 +2,7 @@
   "tabs": {
     "map": "Hartă",
     "recommendations": "Recomandate",
-    "myLocations": "Ale mele",
+    "myLocations": "Locațiile mele",
     "statistics": "Statistici",
     "settings": "Setări"
   },
@@ -56,7 +56,9 @@
     "createdBy": "Creat de",
     "expires": "Expiră",
     "commentsCount": "Comentarii ({{count}})",
-    "cancel": "Anulează"
+    "cancel": "Anulează",
+    "markVisited": "Marchează ca vizitat",
+    "visited": "Vizitat"
   },
   "common": {
     "error": "Eroare",
@@ -126,6 +128,8 @@
     "myStats": "Statisticile mele",
     "leaderboard": "Clasament",
     "hotSpots": "Hot Spots",
+    "locationsVisited": "Locații vizitate",
+    "locationsUploaded": "Locații adăugate",
     "visited": "Vizitat",
     "proximityTap": "Aproape",
     "noInteractions": "Nicio interacțiune",

@@ -379,11 +379,9 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
                 setShowManualSelect(false);
                 setShowVagueWarning(false);
               }}
-              onBlur={handleDescriptionBlur}
-              onSubmitEditing={handleDescriptionBlur}
+              onEndEditing={handleDescriptionBlur}
               multiline
               numberOfLines={3}
-              blurOnSubmit={false}
             />
 
             {/* Category */}
