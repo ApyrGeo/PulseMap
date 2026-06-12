@@ -32,7 +32,6 @@ public class ImageService : IImageService
         var uploadedUrls = new List<string>();
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
-        // Ensure container exists with private access (public access is disabled on the storage account)
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
 
         foreach (var image in images)
@@ -40,13 +39,11 @@ public class ImageService : IImageService
             if (image.Length == 0)
                 continue;
 
-            // Generate unique filename
             var fileExtension = Path.GetExtension(image.FileName);
             var uniqueFileName = $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{Guid.NewGuid().ToString()[..11]}{fileExtension}";
 
             var blobClient = containerClient.GetBlobClient(uniqueFileName);
 
-            // Set content type
             var blobHttpHeaders = new BlobHttpHeaders
             {
                 ContentType = image.ContentType
@@ -60,8 +57,6 @@ public class ImageService : IImageService
                     HttpHeaders = blobHttpHeaders
                 });
 
-                // Return the blob filename, not the direct Azure URL
-                // The frontend will access images through the API endpoint
                 uploadedUrls.Add(uniqueFileName);
                 _logger.InfoFormat("Image uploaded successfully: {0}", uniqueFileName);
             }

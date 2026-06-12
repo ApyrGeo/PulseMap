@@ -22,7 +22,6 @@ public class KeywordLocationMatcher : ILocationMatcher
         var desc1Lower = description1.ToLowerInvariant();
         var desc2Lower = description2.ToLowerInvariant();
 
-        // Extract words (remove common stop words)
         var stopWords = new HashSet<string> { "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "from" };
         
         var words1 = desc1Lower.Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)

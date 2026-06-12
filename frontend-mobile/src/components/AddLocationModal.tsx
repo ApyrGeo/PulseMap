@@ -37,7 +37,6 @@ interface ImageItem {
   webFile?: unknown;
 }
 
-// Upload happens inside the WebView — Azure API is a real URL reachable from WebView (unlike localhost).
 function buildGalleryPickerHTML(apiUrl: string, token: string): string {
   return `<!DOCTYPE html>
 <html>
@@ -126,8 +125,7 @@ export default function AddLocationModal({ visible, onClose, latitude, longitude
       setMapVisible(false);
       return;
     }
-    // Update coords and show map in the same batch — MapView mounts only after
-    // coords are correct, avoiding the blank-on-first-open issue.
+
     if (userCoords) {
       setCoords({ latitude: userCoords.latitude, longitude: userCoords.longitude });
     } else {

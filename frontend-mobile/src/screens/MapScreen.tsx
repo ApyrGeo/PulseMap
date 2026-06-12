@@ -32,7 +32,7 @@ import TipCard from '../components/TipCard';
 import { useTranslation } from 'react-i18next';
 
 const ZOOM_NEIGHBORHOOD = 15;
-const ZOOM_EVENT = 12;   // 3 niveluri de zoom pentru events: 12, 13, 14
+const ZOOM_EVENT = 12;   
 const ZOOM_CITY = 6;
 
 function latDeltaToZoom(latitudeDelta: number): number {
@@ -75,8 +75,7 @@ export default function MapScreen() {
   const pulseAnims = useRef<Record<number, Animated.Value>>({});
   const prevActiveRef = useRef<Location[]>([]);
 
-  // Exclude own locations from proximity detection — "Ai fost aici" nu apare pt creatorul locatiei
-  // useMemo previne array nou la fiecare render (ar cauza infinite loop in useProximityDetection)
+
   const locationsForProximity = useMemo(
     () => activeLocations.filter((loc) => loc.creator?.id !== user?.id),
     [activeLocations, user?.id]
@@ -93,12 +92,10 @@ export default function MapScreen() {
     interactedIdsArray
   );
 
-  // Initial full load — keeps activeLocations populated for proximity detection
   useEffect(() => {
     refreshLocations(true);
   }, [refreshLocations]);
 
-  // Center map once on first GPS fix
   useEffect(() => {
     if (userCoords && !hasInitialLocation) {
       setHasInitialLocation(true);
@@ -114,7 +111,6 @@ export default function MapScreen() {
     }
   }, [userCoords, hasInitialLocation]);
 
-  // Navigate-to-location from RecommendationsScreen
   useEffect(() => {
     const { focusLocationId, latitude, longitude } = route.params ?? {};
     if (!focusLocationId) return;
@@ -135,9 +131,6 @@ export default function MapScreen() {
     navigation.setParams({ focusLocationId: undefined, latitude: undefined, longitude: undefined });
   }, [route.params?.focusLocationId]);
 
-  // WS sync: apply only the diff (added/removed/updated) to visibleLocations.
-  // Re-filtering all activeLocations by bounds would re-add locations loaded by
-  // refreshLocations that the user already scrolled away from.
   useEffect(() => {
     const prev = prevActiveRef.current;
     prevActiveRef.current = activeLocations;
@@ -173,7 +166,6 @@ export default function MapScreen() {
     });
   }, [activeLocations, lastBounds, currentZoom]);
 
-  // Pulse animations for nearby markers
   useEffect(() => {
     nearbyLocations.forEach((loc) => {
       if (!pulseAnims.current[loc.id]) {
@@ -206,7 +198,6 @@ export default function MapScreen() {
           type: InteractionType.Confirmed,
         });
       } catch {
-        // 409 = already interacted — still dismiss the card
       } finally {
         markInteracted(location.id);
         markAsInteracted(location.id);
@@ -232,7 +223,6 @@ export default function MapScreen() {
           type: ReportType.LocationDoesNotExist,
         });
       } catch {
-        // 409 = already reported — still dismiss
       } finally {
         markInteracted(location.id);
       }
@@ -250,7 +240,6 @@ export default function MapScreen() {
           type: InteractionType.Confirmed,
         });
       } catch {
-        // 409 = already interacted
       } finally {
         markInteracted(location.id);
         markAsInteracted(location.id);
@@ -271,7 +260,6 @@ export default function MapScreen() {
       const zoom = latDeltaToZoom(region.latitudeDelta);
       setCurrentZoom(zoom);
 
-      // Below city level: hide everything
       if (zoom < ZOOM_CITY) {
         setVisibleLocations([]);
         setVisibleEvents([]);
@@ -288,7 +276,6 @@ export default function MapScreen() {
       setLastBounds(bounds);
 
       if (zoom >= ZOOM_NEIGHBORHOOD) {
-        // Neighborhood zoom: show individual location markers
         setVisibleEvents([]);
         try {
           const data = await fetchLocationsByBounds(tokenService, bounds, true, user?.id);
@@ -297,7 +284,6 @@ export default function MapScreen() {
           console.error('Failed to fetch locations by bounds', e);
         }
       } else if (zoom >= ZOOM_EVENT) {
-        // Event zoom (12, 13, 14): show event circles only
         setVisibleLocations([]);
         try {
           const events = await fetchEventsByBounds(tokenService, bounds);
@@ -307,7 +293,6 @@ export default function MapScreen() {
           setVisibleEvents([]);
         }
       } else {
-        // Between CITY and EVENT: show nothing
         setVisibleLocations([]);
         setVisibleEvents([]);
       }
@@ -322,7 +307,6 @@ export default function MapScreen() {
     setAddModalVisible(true);
   };
 
-  // Determine which markers to show based on zoom
   const markersToShow =
     currentZoom >= ZOOM_NEIGHBORHOOD
       ? (visibleLocations ?? activeLocations)
@@ -330,7 +314,6 @@ export default function MapScreen() {
 
   const nearbyIds = new Set(nearbyLocations.map((l) => l.id));
 
-  // Card stack shows only nearby locations not yet dismissed or interacted
   const stackLocations = nearbyLocations.filter(
     (loc) => !dismissedIds.has(loc.id) && !interactedLocationIds.has(loc.id)
   );

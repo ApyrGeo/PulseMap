@@ -63,9 +63,8 @@ interface Props {
 }
 
 const { height: SCREEN_H } = Dimensions.get('window');
-// Animate height (not translateY) so inputRow is always at the visible bottom
-const HALF_H  = SCREEN_H * 0.52;   // initial: just over half-screen
-const FULL_H  = SCREEN_H * 0.90;   // expanded: 90% — stays well below camera/status bar
+const HALF_H  = SCREEN_H * 0.52;   
+const FULL_H  = SCREEN_H * 0.90;   
 
 export default function LocationDetailModal({ location, onClose, isNearby, onVisit }: Props) {
   const { user, tokenService } = useAuth();
@@ -88,11 +87,9 @@ export default function LocationDetailModal({ location, onClose, isNearby, onVis
   const images = rawImages.map(normalizeImageUrl);
   const catColor = CATEGORY_COLORS[location.category] ?? '#22C55E';
 
-  // Animate sheet height — avoids the "inputRow below screen" problem of translateY approach
   const animHeight = useRef(new Animated.Value(HALF_H)).current;
   const snapRef = useRef<'half' | 'full'>('half');
 
-  // Slide-up on mount so the X button doesn't appear outside the sheet
   const openTranslateY = useRef(new Animated.Value(HALF_H)).current;
   useEffect(() => {
     Animated.spring(openTranslateY, {
@@ -103,7 +100,6 @@ export default function LocationDetailModal({ location, onClose, isNearby, onVis
     }).start();
   }, [openTranslateY]);
 
-  // Track keyboard height to push inputRow above keyboard without moving the sheet top
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', (e) => {
       setKeyboardHeight(e.endCoordinates.height);
@@ -120,7 +116,7 @@ export default function LocationDetailModal({ location, onClose, isNearby, onVis
       setIsExpanded(pos === 'full');
       Animated.spring(animHeight, {
         toValue: pos === 'full' ? FULL_H : HALF_H,
-        useNativeDriver: false,   // height animation requires JS driver
+        useNativeDriver: false, 
         tension: 80,
         friction: 12,
       }).start();
@@ -135,7 +131,6 @@ export default function LocationDetailModal({ location, onClose, isNearby, onVis
         animHeight.stopAnimation();
       },
       onPanResponderMove: (_, gs) => {
-        // dy < 0 = swipe up = increase height; dy > 0 = swipe down = decrease height
         const base = snapRef.current === 'full' ? FULL_H : HALF_H;
         const next = Math.min(FULL_H, Math.max(HALF_H * 0.25, base - gs.dy));
         animHeight.setValue(next);

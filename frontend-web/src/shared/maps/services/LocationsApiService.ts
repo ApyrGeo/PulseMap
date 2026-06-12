@@ -264,7 +264,6 @@ export async function classifyLocation(description: string): Promise<string[]> {
     }
 
     const data = await response.json();
-    // Expecting array of category strings from API
     return Array.isArray(data) ? data : data?.categories || [];
   } catch (err) {
     console.error('Error classifying location', err);

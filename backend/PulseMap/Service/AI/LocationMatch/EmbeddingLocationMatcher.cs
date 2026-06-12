@@ -12,8 +12,6 @@ public class EmbeddingLocationMatcher : ILocationMatcher
     private readonly IAIStatisticsService _statisticsService;
     private readonly ITranslationService _translationService;
 
-    // Thresholds read from appsettings.json: AI:MatchThresholdHigh, AI:MatchThresholdLow
-    // Defaults: High=0.65, Low=0.45 (calibrate via F1 on labeled pairs)
     private readonly double _highThreshold;
     private readonly double _lowThreshold;
 
@@ -53,7 +51,6 @@ public class EmbeddingLocationMatcher : ILocationMatcher
 
         try
         {
-            // Translate both descriptions to English for better embedding accuracy
             var englishDesc1 = await _translationService.TranslateToEnglishIfNeededAsync(description1, ct);
             var englishDesc2 = await _translationService.TranslateToEnglishIfNeededAsync(description2, ct);
 
@@ -100,7 +97,7 @@ public class EmbeddingLocationMatcher : ILocationMatcher
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate embeddings or calculate similarity. Details: {Message}", ex.Message);
-            throw; // Re-throw to let CompositeLocationMatcher handle it
+            throw; 
         }
     }
 

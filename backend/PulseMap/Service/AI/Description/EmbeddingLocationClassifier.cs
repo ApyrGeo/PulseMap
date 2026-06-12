@@ -55,11 +55,9 @@ public class EmbeddingLocationClassifier : ILocationClassifier
                 throw new InvalidOperationException("No active categories configured in DB for classification");
             }
 
-            // Get embedding for the description
             var descriptionEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(description, cancellationToken: ct);
             var descriptionEmbedding = descriptionEmbeddingResponse.Value.ToFloats();
             
-            // Get embeddings for all category descriptions and calculate similarities
             var categoryScores = new Dictionary<string, double>();
             
             foreach (var (category, categoryDesc) in categoryDescriptions)
@@ -72,7 +70,6 @@ public class EmbeddingLocationClassifier : ILocationClassifier
                 _logger.LogDebug("Category {Category} similarity: {Similarity:F4}", category, similarity);
             }
             
-            // Sort by similarity, filter by minimum threshold, take top 3
             var topCategories = categoryScores
                 .OrderByDescending(kvp => kvp.Value)
                 .Where(kvp => kvp.Value >= 0.25)

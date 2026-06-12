@@ -68,7 +68,6 @@ const UserMapComponent = () => {
   >(null);
   const [focusRequestKey, setFocusRequestKey] = useState(0);
 
-  // Load initial locations on mount - only once when user is available
   useEffect(() => {
     if (user?.id && !isInitialLoadDone) {
       refreshLocations(true);
@@ -87,7 +86,6 @@ const UserMapComponent = () => {
     })();
   }, []);
 
-  // Merge activeLocations from WebSocket with bounds-filtered locations
   useEffect(() => {
     if (!lastBounds) return;
 
@@ -95,7 +93,6 @@ const UserMapComponent = () => {
       ? selectedType.replace(/\s+/g, '').toLowerCase()
       : null;
 
-    // Filter activeLocations by current bounds and selected type (if any)
     const filtered = activeLocations.filter((loc) => {
       const inBounds =
         loc.latitude >= lastBounds.minLat &&
@@ -120,7 +117,6 @@ const UserMapComponent = () => {
       setCurrentZoom(zoom);
       setLastBounds(bounds);
 
-      // Don't fetch if zoomed out too far
       if (zoom < ZOOM_THRESHOLDS.CITY) {
         setVisibleLocations([]);
         setRecommendedLocations([]);
@@ -138,7 +134,6 @@ const UserMapComponent = () => {
           typeForApi,
           user?.id
         );
-        // Use server response immediately to populate visible locations
         setVisibleLocations(data);
 
         if (user?.id && zoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD) {
@@ -166,7 +161,6 @@ const UserMapComponent = () => {
     [selectedType, user?.id]
   );
 
-  // Re-fetch locations when the selected type filter changes (recommendations are not type-dependent)
   useEffect(() => {
     if (!lastBounds) return;
     if (currentZoom < ZOOM_THRESHOLDS.CITY) return;
@@ -194,12 +188,10 @@ const UserMapComponent = () => {
   }, [selectedType]);
 
   const handleMapClick = (lat: number, lng: number) => {
-    // Don't show any error when zoom is too far out (< 12)
     if (currentZoom < 12) {
       return;
     }
 
-    // Show warning if zoom is between 12 and 15
     if (currentZoom >= 12 && currentZoom <= 15) {
       toast.error(
         (toastRef) => (
@@ -217,7 +209,6 @@ const UserMapComponent = () => {
       return;
     }
 
-    // Allow placement when zoom > 15
     setClickedCoords({ lat, lng });
     setAddModalOpen(true);
   };

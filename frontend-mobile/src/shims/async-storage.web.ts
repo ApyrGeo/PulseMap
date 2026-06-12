@@ -13,21 +13,18 @@ const AsyncStorage = {
     try {
       localStorage.setItem(key, value);
     } catch {
-      // ignore
     }
   },
   removeItem: async (key: string): Promise<void> => {
     try {
       localStorage.removeItem(key);
     } catch {
-      // ignore
     }
   },
   clear: async (): Promise<void> => {
     try {
       localStorage.clear();
     } catch {
-      // ignore
     }
   },
   getAllKeys: async (): Promise<string[]> => {

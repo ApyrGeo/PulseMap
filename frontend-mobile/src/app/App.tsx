@@ -23,8 +23,7 @@ const AZURE_WS = 'wss://pulsemap-api-effhbufudbchh9af.italynorth-01.azurewebsite
 const LOCAL_API = 'https://localhost:7215/api';
 const LOCAL_WS = 'wss://localhost:7215/ws';
 
-// In browser (web debug), localhost resolves to the dev machine — use local BE.
-// On a physical device, localhost refers to the device itself — use Azure.
+
 const isWeb = Platform.OS === 'web';
 
 initializeEnvironment({

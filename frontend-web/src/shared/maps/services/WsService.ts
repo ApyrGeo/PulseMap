@@ -35,21 +35,17 @@ export class LocationWsService {
 
   constructor(private url: string) {}
 
-  // Register handlers for specific entity types
   registerEntityHandlers(
     entityType: PayloadEntityType,
     handlers: EntityHandlers
   ) {
-    // Replace existing handlers instead of stacking them
     this.handlers.set(entityType, handlers);
   }
 
-  // Clear handlers for a specific entity type
   unregisterEntityHandlers(entityType: PayloadEntityType) {
     this.handlers.delete(entityType);
   }
 
-  // Clear all handlers
   clearAllHandlers() {
     this.handlers.clear();
   }
@@ -59,7 +55,6 @@ export class LocationWsService {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        // WebSocket connected
       };
 
       this.ws.onmessage = (event) => {

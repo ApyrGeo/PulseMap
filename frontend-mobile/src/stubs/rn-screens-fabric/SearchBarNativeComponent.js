@@ -4,7 +4,7 @@ exports.default = void 0;
 exports.Commands = void 0;
 const { requireNativeComponent } = require('react-native');
 exports.default = requireNativeComponent('RNSSearchBar');
-// Stub commands — no-ops for Old Architecture (newArchEnabled=false)
+
 exports.Commands = {
   blur: () => {},
   focus: () => {},

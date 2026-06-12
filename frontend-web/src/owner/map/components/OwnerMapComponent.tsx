@@ -55,7 +55,6 @@ const OwnerMapComponent = () => {
   const prevVisibleLocationsRef = useRef<Location[]>([]);
   const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
-  // Load initial locations on mount - only once when user is available
   useEffect(() => {
     if (user?.id && !isInitialLoadDone) {
       refreshLocations(true);
@@ -63,14 +62,13 @@ const OwnerMapComponent = () => {
     }
   }, [user?.id, isInitialLoadDone, refreshLocations]);
 
-  // Track all locations we've seen to prevent re-animating on bounds changes
+  // Track all seen locations to prevent re-animating on bounds changes
   useEffect(() => {
     activeLocations.forEach((loc) => {
       seenLocationIdsRef.current.add(loc.id);
     });
   }, [activeLocations]);
 
-  // Merge activeLocations from WebSocket with bounds-filtered locations
   useEffect(() => {
     if (!lastBounds) return;
 

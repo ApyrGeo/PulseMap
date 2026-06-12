@@ -20,7 +20,6 @@ public record LocationResponseDTO
 
     public required bool IsStarred { get; set; }
 
-    // Event clustering
     public SimplifiedEventResponseDTO? Event { get; set; }
     public float? EventAssignmentConfidence { get; set; }
     public required bool RequiresReview { get; set; }

@@ -107,7 +107,6 @@ public class LocationBackGroundService(
                 var newReports = currentReportCount - prevLikeStatus.PreviousReportCount;
                 var hoursSinceLastCheck = (DateTime.UtcNow - prevLikeStatus.LastChecked).TotalHours;
 
-                // Instant expiry: location heavily reported relative to likes
                 if (currentReportCount >= 5 && currentReportCount > currentLikeCount * 0.5)
                 {
                     location.IsExpired = true;
@@ -145,7 +144,6 @@ public class LocationBackGroundService(
             }
             else
             {
-                // First time seeing this location — apply formula using existing likes
                 if (currentLikeCount > 0)
                 {
                     var expectedLikes = totalUsers * L;

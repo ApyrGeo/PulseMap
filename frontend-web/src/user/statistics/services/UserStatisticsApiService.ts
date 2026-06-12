@@ -23,7 +23,7 @@ export interface InteractionRecord {
   locationId: number;
   locationName: string;
   interactedAt: string;
-  type: 0 | 1; // 0 = Confirmed, 1 = ProximityTap
+  type: 0 | 1; 
 }
 
 export const fetchMyInteractions = async (userId: number): Promise<InteractionRecord[]> => {

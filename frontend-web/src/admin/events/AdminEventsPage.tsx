@@ -58,6 +58,7 @@ const AdminEventsPage = () => {
   const handleForceMerge = async (request: ForceMergeRequest) => {
     try {
       await forceMergeLocations(request);
+      
       // Refresh results after merge
       await handleCheckMerge();
       setForceMergeOpen(false);

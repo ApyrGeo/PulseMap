@@ -33,13 +33,10 @@ public sealed class WebSocketNotificationService : IWebSocketNotificationService
                     break;
                 }
 
-                // Optional: echo or handle client messages
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     var incoming = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     _logger.DebugFormat("Received message from client {0}: {1}", id, incoming);
-                    // Handle incoming client message if needed
-                    // For now, ignore or implement command parsing.
                 }
             }
         }
@@ -118,7 +115,6 @@ public sealed class WebSocketNotificationService : IWebSocketNotificationService
             }
         }
 
-        // Clean up disconnected clients
         foreach (var clientId in disconnectedClients)
         {
             if (_sockets.TryRemove(clientId, out var socket))

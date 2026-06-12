@@ -250,7 +250,6 @@ const MapView = forwardRef<MapViewRef, MapViewProps>(
     const lng = initialRegion?.longitude ?? 26.1025;
     const zoom = initialRegion ? latDeltaToZoom(initialRegion.latitudeDelta) : 15;
 
-    // Generate HTML once — initialRegion and showsUserLocation don't change after mount
     const html = useMemo(() => generateHTML(lat, lng, zoom, showsUserLocation), []);
 
     useImperativeHandle(ref, () => ({
@@ -309,7 +308,6 @@ const MapView = forwardRef<MapViewRef, MapViewProps>(
       }
     }, [children]);
 
-    // Inject events when events prop changes
     useEffect(() => {
       const list = events ?? [];
       if (mapLoaded.current) {
@@ -373,7 +371,6 @@ const MapView = forwardRef<MapViewRef, MapViewProps>(
 );
 MapView.displayName = 'MapView';
 
-// Marker renders nothing — MapView reads its props via React.Children
 export const Marker: React.FC<MarkerProps> = () => null;
 
 export default MapView;

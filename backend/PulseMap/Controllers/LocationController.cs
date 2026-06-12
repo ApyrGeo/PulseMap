@@ -81,12 +81,10 @@ public class LocationController(ILocationService locationService, IAuthorization
     [ProducesResponseType(422)]
     public async Task<ActionResult<LocationResponseDTO>> UpdateLocation([FromRoute] int id, [FromBody] LocationPutDTO locationResponseDTO)
     {
-        // Check ownership before updating
         var existingLocation = await _locationService.GetLocationByIdAsync(id);
         if (existingLocation == null)
             return NotFound();
 
-        // Creator or owner (or admin) can update
         if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
@@ -112,12 +110,10 @@ public class LocationController(ILocationService locationService, IAuthorization
     [ProducesResponseType(403)]
     public async Task<ActionResult<LocationResponseDTO>> ExpireLocation(int id)
     {
-        // Check ownership before expiring
         var existingLocation = await _locationService.GetLocationByIdAsync(id);
         if (existingLocation == null)
             return NotFound();
 
-        // Creator or owner (or admin) can expire
         if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 
@@ -132,12 +128,10 @@ public class LocationController(ILocationService locationService, IAuthorization
     [ProducesResponseType(403)]
     public async Task<ActionResult<LocationResponseDTO>> ExtendLocationExpiration(int id)
     {
-        // Check ownership before extending
         var existingLocation = await _locationService.GetLocationByIdAsync(id);
         if (existingLocation == null)
             return NotFound();
 
-        // Creator or owner (or admin) can extend
         if (!User.IsOwnerOrAdmin(existingLocation.Owner?.Id) && !User.IsOwnerOrAdmin(existingLocation.Creator?.Id))
             return Forbid();
 

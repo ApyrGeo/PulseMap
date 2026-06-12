@@ -40,14 +40,11 @@ export const TokenService = {
   },
 
   setTokenExpiry(expiresIn: string): void {
-    // expiresIn can be in format like "3600" (seconds), "24h", "30m", "60s", or a date string
     let expiryDate: Date;
 
-    // If it's a number (seconds)
     if (!isNaN(Number(expiresIn))) {
       expiryDate = new Date(Date.now() + Number(expiresIn) * 1000);
     } else if (expiresIn.match(/^\d+[smhd]$/)) {
-      // Parse duration strings like "24h", "30m", "60s", "7d"
       const value = parseInt(expiresIn);
       const unit = expiresIn.slice(-1);
       let milliseconds = 0;
@@ -69,12 +66,9 @@ export const TokenService = {
 
       expiryDate = new Date(Date.now() + milliseconds);
     } else {
-      // Try parsing as date string
       expiryDate = new Date(expiresIn);
 
-      // Check if date is invalid
       if (isNaN(expiryDate.getTime())) {
-        // Default to 24 hours if parsing fails
         console.warn('Failed to parse expiresIn, defaulting to 24 hours');
         expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
       }

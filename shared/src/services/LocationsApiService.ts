@@ -141,7 +141,7 @@ export interface ImageUploadInput {
   uri: string;
   name: string;
   type: string;
-  webFile?: unknown; // web-only: the actual File object
+  webFile?: unknown;
 }
 
 export async function uploadImages(

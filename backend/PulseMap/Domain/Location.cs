@@ -28,7 +28,6 @@ public class Location
 
     public bool IsStarred { get; set; } = false;
 
-    // Event clustering
     public int? EventId { get; set; } = null;
     public Event? Event { get; set; } = null;
     public float? EventAssignmentConfidence { get; set; } = null;

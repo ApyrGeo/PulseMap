@@ -52,8 +52,6 @@ public class RecommendationEmbeddingScorer : IRecommendationAiScorer
 
         try
         {
-            // Build user profile as element-wise mean of individual description embeddings
-            // (not a single embedding of concatenated text, which loses per-item signal)
             var likedEmbeddingTasks = cleanLiked
                 .Select(d => _embeddingClient.GenerateEmbeddingAsync(d, cancellationToken: ct))
                 .ToList();

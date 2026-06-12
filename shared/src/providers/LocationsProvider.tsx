@@ -180,8 +180,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   const addLocation = useCallback(
     async (location: LocationPostDTO) => {
       const created = await createLocation(tokenService, location);
-      // Immediately reflect in local state so the map updates without waiting for WS.
-      // handleLocationCreated's dedup check prevents a double-add if WS also fires.
+      
       handleLocationCreated(created);
       return created;
     },

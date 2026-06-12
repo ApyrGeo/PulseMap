@@ -11,7 +11,7 @@ public class EmbeddingEventExtractor : IEventExtractorService
     private readonly IAIStatisticsService _statisticsService;
     private readonly IEventRepository _eventRepository;
 
-    private const float SIMILARITY_THRESHOLD = 0.75f; // Threshold for contextual event matching
+    private const float SIMILARITY_THRESHOLD = 0.75f; 
 
     public EmbeddingEventExtractor(
         IConfiguration config,
@@ -45,7 +45,6 @@ public class EmbeddingEventExtractor : IEventExtractorService
 
         try
         {
-            // Get all existing events
             var existingEvents = await _eventRepository.GetAllEventsAsync();
 
             if (!existingEvents.Any())
@@ -54,7 +53,6 @@ public class EmbeddingEventExtractor : IEventExtractorService
                 return new EventExtractionResult { EventName = null, Confidence = 0.0f };
             }
 
-            // STEP 1: Quick keyword check - if description contains event name, return immediately
             var descriptionLower = description.ToLowerInvariant();
             foreach (var existingEvent in existingEvents)
             {
@@ -67,19 +65,15 @@ public class EmbeddingEventExtractor : IEventExtractorService
                 }
             }
 
-            // STEP 2: Semantic embedding comparison
             _logger.LogInformation("No keyword match, trying semantic embeddings...");
 
-            // Get embedding for the description
             var descriptionEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(description, cancellationToken: ct);
             var descriptionEmbedding = descriptionEmbeddingResponse.Value.ToFloats();
 
-            // Compare with each existing event name (compare description context with event name)
             var bestMatch = new { EventName = (string?)null, Similarity = 0.0 };
 
             foreach (var existingEvent in existingEvents)
             {
-                // Compare description with event name in context
                 var contextualEventName = $"event {existingEvent.Name} location activity";
                 var eventEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(contextualEventName, cancellationToken: ct);
                 var eventEmbedding = eventEmbeddingResponse.Value.ToFloats();

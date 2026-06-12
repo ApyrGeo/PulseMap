@@ -25,7 +25,6 @@ public class CompositeLocationMatcher : ILocationMatcher
     {
         _logger.LogInformation("Starting composite location matching");
 
-        // Step 1: Try Embeddings first (cheaper, faster)
         if (_embeddingMatcher != null)
         {
             try
@@ -45,7 +44,6 @@ public class CompositeLocationMatcher : ILocationMatcher
                     return LocationMatchResult.DifferentLocation;
                 }
 
-                // Step 2: Uncertain result (PossiblySameLocation), verify with GPT
                 if (_gptMatcher != null)
                 {
                     _logger.LogInformation("Embeddings uncertain (Possibly same location) - verifying with GPT");
@@ -80,7 +78,6 @@ public class CompositeLocationMatcher : ILocationMatcher
             }
         }
 
-        // Step 3: Try GPT if Embeddings is not available or failed
         if (_gptMatcher != null)
         {
             try
@@ -95,8 +92,6 @@ public class CompositeLocationMatcher : ILocationMatcher
             }
         }
 
-        // Step 4: Fallback to keyword-based matching (always available, free)
-        // Statistics tracked in KeywordLocationMatcher itself
         _logger.LogInformation("Using keyword-based matching (free fallback)");
         return await _keywordMatcher.MatchLocationsAsync(description1, description2, ct);
     }

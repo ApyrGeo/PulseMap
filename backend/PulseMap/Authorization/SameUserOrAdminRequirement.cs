@@ -29,20 +29,17 @@ public class SameUserOrAdminHandler : AuthorizationHandler<SameUserOrAdminRequir
             return Task.CompletedTask;
         }
 
-        // If user is Admin, grant access
         if (userRole == UserRole.Admin.ToString())
         {
             context.Succeed(requirement);
             return Task.CompletedTask;
         }
 
-        // Check if the route has an 'id' or 'userId' parameter
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext != null)
         {
             var routeData = httpContext.GetRouteData();
             
-            // Check for 'id' parameter in route
             if (routeData.Values.TryGetValue("id", out var idValue) && 
                 idValue?.ToString() == userIdClaim)
             {
@@ -50,7 +47,6 @@ public class SameUserOrAdminHandler : AuthorizationHandler<SameUserOrAdminRequir
                 return Task.CompletedTask;
             }
 
-            // Check for 'userId' query parameter
             if (httpContext.Request.Query.TryGetValue("userId", out var userIdQuery) && 
                 userIdQuery.ToString() == userIdClaim)
             {

@@ -24,7 +24,6 @@ public class AIStatisticsConfiguration : IEntityTypeConfiguration<AIStatistics>
         
         builder.Property(s => s.LastUpdated).HasDefaultValueSql("CURRENT_TIMESTAMP");
         
-        // Seed initial row with static date
         builder.HasData(new AIStatistics
         {
             Id = 1,

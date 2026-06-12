@@ -40,7 +40,6 @@ public class GptLocationMatcher : ILocationMatcher
     {
         _logger.LogInformation("Matching locations using GPT: '{Desc1}' vs '{Desc2}'", description1, description2);
 
-        // Translate both descriptions to English for better accuracy
         var englishDesc1 = await _translationService.TranslateToEnglishIfNeededAsync(description1, ct);
         var englishDesc2 = await _translationService.TranslateToEnglishIfNeededAsync(description2, ct);
 
@@ -95,7 +94,6 @@ Description 2: "{englishDesc2}"
             matchResult = LocationMatchResult.DifferentLocation;
         }
 
-        // Track statistics only for successful matches
         if (matchResult == LocationMatchResult.SameLocation || matchResult == LocationMatchResult.PossiblySameLocation)
         {
             await _statisticsService.IncrementGptMatcherAsync();

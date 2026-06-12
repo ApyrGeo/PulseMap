@@ -79,7 +79,7 @@ export interface LocationPostDTO {
   category: string;
   duration: string;
   ownerId?: number;
-  imageUrls?: string[]; // Azure Blob Storage URLs
+  imageUrls?: string[]; 
 }
 
 export interface LocationPutDTO {

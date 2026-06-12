@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 
 const TUTORIAL_KEY = 'pulsemap_tutorial_seen';
 const { width: SCREEN_W } = Dimensions.get('window');
-// Modal is SCREEN_W-48 wide, padding 24 on each side → content width = SCREEN_W-96
 const CONTENT_W = SCREEN_W - 96;
 
 interface Step {
@@ -38,7 +37,6 @@ const TutorialStepper: React.FC<TutorialStepperProps> = ({ onDismiss }) => {
     { title: t('tutorial.step5Title'), description: t('tutorial.step5Desc') },
   ];
 
-  // init connector animators lazily
   if (connectors.length === 0) {
     for (let i = 0; i < steps.length - 1; i++) {
       connectors.push(new Animated.Value(0));
@@ -53,9 +51,7 @@ const TutorialStepper: React.FC<TutorialStepperProps> = ({ onDismiss }) => {
   const goNext = () => {
     if (current < steps.length - 1) {
       const next = current + 1;
-      // Animate connector
       Animated.timing(connectors[current], { toValue: 1, duration: 300, useNativeDriver: false }).start();
-      // Slide content
       Animated.timing(slideAnim, { toValue: -next * CONTENT_W, duration: 280, useNativeDriver: true }).start();
       setCurrent(next);
     } else {
