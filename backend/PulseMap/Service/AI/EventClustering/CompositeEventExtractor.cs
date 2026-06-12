@@ -69,7 +69,6 @@ public class CompositeEventExtractor : IEventExtractorService
         }
 
         _logger.LogInformation("No event extracted by any method");
-        _logger.LogInformation("========================================");
         return new EventExtractionResult { EventName = null, Confidence = 0.0f };
     }
 }

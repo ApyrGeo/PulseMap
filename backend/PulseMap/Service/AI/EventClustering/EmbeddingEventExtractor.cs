@@ -39,7 +39,7 @@ public class EmbeddingEventExtractor : IEventExtractorService
 
     public async Task<EventExtractionResult> ExtractEventNameAsync(string description, CancellationToken ct)
     {
-        _logger.LogInformation("\n=== Embedding Event Extraction ===");
+        _logger.LogInformation("\nEmbedding Event Extraction");
         _logger.LogInformation("Comparing description with existing events: {Description}",
             description.Substring(0, Math.Min(100, description.Length)));
 
@@ -58,7 +58,7 @@ public class EmbeddingEventExtractor : IEventExtractorService
             {
                 if (descriptionLower.Contains(existingEvent.Name.ToLowerInvariant()))
                 {
-                    _logger.LogInformation("✅ EXACT KEYWORD MATCH: Event '{EventName}' found in description (confidence: 1.00)",
+                    _logger.LogInformation("EXACT KEYWORD MATCH: Event '{EventName}' found in description (confidence: 1.00)",
                         existingEvent.Name);
                     await _statisticsService.IncrementEmbeddingEventExtractorAsync();
                     return new EventExtractionResult { EventName = existingEvent.Name, Confidence = 1.0f };

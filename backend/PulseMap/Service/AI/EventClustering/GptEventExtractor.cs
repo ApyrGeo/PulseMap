@@ -37,7 +37,7 @@ public class GptEventExtractor : IEventExtractorService
 
     public async Task<EventExtractionResult> ExtractEventNameAsync(string description, CancellationToken ct)
     {
-        _logger.LogInformation("\n=== GPT Event Extraction ===");
+        _logger.LogInformation("\nGPT Event Extraction");
         _logger.LogInformation("Extracting event name from description: {Description}", 
             description.Substring(0, Math.Min(100, description.Length)));
 
