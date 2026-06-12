@@ -14,7 +14,7 @@ interface AddLocationModalProps {
   longitude: number;
   onClose: () => void;
   onSubmit: (data: LocationPostDTO) => void;
-  hasOwnedLocation?: boolean; // Whether user already has an owned location
+  hasOwnedLocation?: boolean; 
 }
 
 const AddLocationModal = ({
@@ -39,8 +39,8 @@ const AddLocationModal = ({
   const [showUncategorizedWarning, setShowUncategorizedWarning] =
     useState(false);
   const [hours, setHours] = useState<number>(0);
-  const [days, setDays] = useState<number>(1); // Default 1 day
-  const [isOwned, setIsOwned] = useState<boolean>(false); // Toggle for owned location
+  const [days, setDays] = useState<number>(1); 
+  const [isOwned, setIsOwned] = useState<boolean>(false); 
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
@@ -120,7 +120,6 @@ const AddLocationModal = ({
       imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
     });
 
-    // Reset form
     setName('');
     setDescription('');
     setDays(1);
@@ -223,7 +222,6 @@ const AddLocationModal = ({
                 setCategory(availableCategories[0]?.name ?? '');
               }}
               onBlur={async () => {
-                // Only classify if there's some description text
                 if (!description || description.trim().length === 0) return;
                 setIsClassifying(true);
                 setShowUncategorizedWarning(false);
@@ -231,7 +229,6 @@ const AddLocationModal = ({
                 setShowManualSelect(false);
                 try {
                   const aiCategories = await classifyLocation(description);
-                  // Check if we got valid suggestions
                   const validCategories = aiCategories.filter(
                     (cat) =>
                       cat &&

@@ -87,14 +87,12 @@ Rules:
         var result = response.Value.Content[0].Text.Trim();
         _logger.LogInformation("AI returned categories: {Categories}", result);
 
-        // Parse the comma-separated categories
         var returnedCategories = result
             .Split(',')
             .Select(c => c.Trim())
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .ToList();
 
-        // Validate and filter categories
         var validCategories = returnedCategories
             .Where(cat => categories.Contains(cat, StringComparer.OrdinalIgnoreCase))
             .Select(cat => categories.First(c => c.Equals(cat, StringComparison.OrdinalIgnoreCase)))
@@ -108,7 +106,6 @@ Rules:
             throw new InvalidOperationException("OpenAI returned invalid categories");
         }
 
-        // If we have less than 3, fill with the most common ones
         while (validCategories.Count < 3 && validCategories.Count < categories.Count)
         {
             var nextCategory = categories.FirstOrDefault(c => !validCategories.Contains(c));
@@ -124,7 +121,6 @@ Rules:
 
         _logger.LogInformation("Successfully classified as: {Categories}", string.Join(", ", validCategories));
         
-        // Track statistics
         await _statisticsService.IncrementOpenAIClassifierAsync();
         
         return validCategories;

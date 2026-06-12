@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
-// On web (Vite preview), require() is not available — use public folder URIs.
-// On native, use bundled assets via require().
+
+
 const w = (name: string) => ({ uri: `/icons/${name}.png` });
 
 export const Icons = Platform.OS === 'web'

@@ -15,17 +15,14 @@ export function normalizeLocationImageUrls(location: Location): Location {
   }
 
   const normalizedImageUrls = location.imageUrls.map((url) => {
-    // Match URLs in the format: https://localhost:7215/api/image/filename
-    // or https://[production-domain]/api/image/filename
+
     const imagePathMatch = url.match(/\/api\/image\/(.+)$/);
 
     if (imagePathMatch) {
       const filename = imagePathMatch[1];
-      // Reconstruct URL with current environment's BASE_API_URL
       return `${BASE_API_URL}/image/${filename}`;
     }
 
-    // If URL doesn't match expected pattern, return as-is
     return url;
   });
 
@@ -35,9 +32,7 @@ export function normalizeLocationImageUrls(location: Location): Location {
   };
 }
 
-/**
- * Normalizes image URLs for an array of locations
- */
+
 export function normalizeLocationsImageUrls(
   locations: Location[]
 ): Location[] {

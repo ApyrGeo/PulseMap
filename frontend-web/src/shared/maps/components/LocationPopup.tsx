@@ -37,17 +37,17 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 const categoryColors: { [key: string]: string } = {
-  [LocationCategory.NotSet]: '#6B7280', // Gray
-  [LocationCategory.Music]: '#8B5CF6', // Purple
-  [LocationCategory.Sport]: '#10B981', // Green
-  [LocationCategory.Food]: '#F59E0B', // Orange
-  [LocationCategory.Entertainment]: '#EF4444', // Red
-  [LocationCategory.Education]: '#3B82F6', // Blue
-  [LocationCategory.Health]: '#EC4899', // Pink
-  [LocationCategory.Technology]: '#14B8A6', // Teal
-  [LocationCategory.Travel]: '#F97316', // Orange-Red
-  [LocationCategory.Art]: '#A855F7', // Purple-Pink
-  [LocationCategory.Business]: '#06B6D4', // Cyan
+  [LocationCategory.NotSet]: '#6B7280', 
+  [LocationCategory.Music]: '#8B5CF6', 
+  [LocationCategory.Sport]: '#10B981', 
+  [LocationCategory.Food]: '#F59E0B',
+  [LocationCategory.Entertainment]: '#EF4444',
+  [LocationCategory.Education]: '#3B82F6',
+  [LocationCategory.Health]: '#EC4899', 
+  [LocationCategory.Technology]: '#14B8A6', 
+  [LocationCategory.Travel]: '#F97316', 
+  [LocationCategory.Art]: '#A855F7', 
+  [LocationCategory.Business]: '#06B6D4', 
 };
 
 interface LocationPopupProps {
@@ -83,7 +83,6 @@ const LocationPopup = memo(
       [ReportType.Duplicate]: t('location.reportTypes.duplicate'),
     };
 
-    // Use actual images from location or placeholder
     const images =
       location.imageUrls && location.imageUrls.length > 0
         ? location.imageUrls
@@ -94,10 +93,8 @@ const LocationPopup = memo(
       e.stopPropagation();
       e.preventDefault();
 
-      // Mark as optimistic update to prevent useEffect from overwriting
       isOptimisticUpdate.current = true;
 
-      // Optimistically update UI immediately
       if (isLiked) {
         setIsLiked(false);
         setLikeCount((prev) => Math.max(0, prev - 1));
@@ -108,7 +105,6 @@ const LocationPopup = memo(
         onLike(location.id);
       }
 
-      // Reset flag after a short delay to allow server update
       setTimeout(() => {
         isOptimisticUpdate.current = false;
       }, 1000);

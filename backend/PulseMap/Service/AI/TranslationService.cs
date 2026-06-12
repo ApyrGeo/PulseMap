@@ -45,19 +45,16 @@ public class TranslationService : ITranslationService
 
         var lowerText = text.ToLowerInvariant();
         
-        // If contains Romanian characters or words, it's probably not English
         if (romanianIndicators.Any(indicator => lowerText.Contains(indicator)))
         {
             return false;
         }
 
-        // If it's very short, assume English (safer default)
         if (text.Length < 20)
         {
             return true;
         }
 
-        // Default to English if no clear indicators
         return true;
     }
 

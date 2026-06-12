@@ -76,7 +76,7 @@ const RegisterPage = () => {
         username,
         email,
         password,
-        role: Role.User, // Default to User role
+        role: Role.User, 
       };
 
       await registerUser(registerRequest);

@@ -78,7 +78,6 @@ public class EventService : IEventService
     {
         _logger.LogInformation("Starting event clustering analysis (maxDistance: {Distance}m)", maxDistanceMeters);
 
-        // Get all active locations that are not already assigned to an event
         var locations = await _locationRepository.GetActiveLocationsAsync();
         var unassignedLocations = locations.Where(l => l.EventId == null).ToList();
 
@@ -134,7 +133,6 @@ public class EventService : IEventService
             throw new NotFoundException($"Event with ID {id} not found");
         }
 
-        // Unassign locations from event (set EventId to null)
         var locations = await _locationRepository.GetLocationsByEventIdAsync(id, activeOnly: false);
         foreach (var location in locations)
         {

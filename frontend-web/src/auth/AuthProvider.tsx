@@ -14,7 +14,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Initialize user from localStorage immediately (synchronous)
+// Initialize user from localStorage
 const initializeUser = (): User | null => {
   const token = TokenService.getToken();
   const storedUser = TokenService.getUser() as User | null;
@@ -46,8 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const registerUser = async (registerRequest: RegisterRequest) => {
     await registerUserAPI(registerRequest);
-    // After registration, user needs to login
-    // We don't automatically log them in
+
     return;
   };
 

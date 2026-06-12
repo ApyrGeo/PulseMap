@@ -39,7 +39,6 @@ public class LocationService(
         var location = await _locationRepository.GetLocationByIdAsync(id)
             ?? throw new NotFoundException("Location not found");
 
-        // Filter out ResponseMessage from Comments (only return base Message objects)
         location.Comments = location.Comments?
             .Where(c => c is not ResponseMessage)
             .ToList();
@@ -57,7 +56,6 @@ public class LocationService(
             throw new EntityValidationException(result.Errors);
         }
 
-        // Check if user already owns a location
         if (locationPostDTO.OwnerId.HasValue)
         {
             var existingOwnedLocation = await _locationRepository.GetLocationByOwnerIdAsync(locationPostDTO.OwnerId.Value);
@@ -78,7 +76,6 @@ public class LocationService(
         location.ExpiresAt = DateTime.UtcNow.Add(locationPostDTO.Duration);
         location.IsExpired = false;
 
-        // Convert image URLs to LocationImage entities
         if (locationPostDTO.ImageUrls != null && locationPostDTO.ImageUrls.Any())
         {
             location.Images = locationPostDTO.ImageUrls.Select((url, index) => new LocationImage
@@ -176,7 +173,6 @@ public class LocationService(
 
         await _locationRepository.SaveChangesAsync();
 
-        // Filter out ResponseMessage from Comments
         existingLocation.Comments = existingLocation.Comments?
             .Where(c => c is not ResponseMessage)
             .ToList();
@@ -219,7 +215,6 @@ public class LocationService(
         location.LikeStatus = null;
         await _locationRepository.SaveChangesAsync();
 
-        // Filter out ResponseMessage from Comments
         location.Comments = location.Comments?
             .Where(c => c is not ResponseMessage)
             .ToList();
@@ -260,7 +255,6 @@ public class LocationService(
         }
         await _locationRepository.SaveChangesAsync();
 
-        // Filter out ResponseMessage from Comments
         location.Comments = location.Comments?
             .Where(c => c is not ResponseMessage)
             .ToList();
@@ -300,7 +294,6 @@ public class LocationService(
         }
         await _locationRepository.SaveChangesAsync();
 
-        // Filter out ResponseMessage from Comments
         location.Comments = location.Comments?
             .Where(c => c is not ResponseMessage)
             .ToList();
@@ -332,7 +325,6 @@ public class LocationService(
     {
         _logger.InfoFormat("Getting active locations in bounds: ({0}, {1}), ({2}, {3})", minLat, maxLat, minLng, maxLng);
 
-        //validation
         if (minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180 || minLat > maxLat || minLng > maxLng)
         {
             throw new EntityValidationException("Invalid geographical bounds provided.");
@@ -415,7 +407,6 @@ public class LocationService(
             .Select(l => l.Description!)
             .ToList();
 
-        // Include interacted location descriptions in AI preference profile
         var interactedLocations = await _locationRepository.GetLocationsByIdsAsync(interactedLocationIds.Take(20).ToList());
         var interactedDescriptions = interactedLocations
             .Where(l => !string.IsNullOrWhiteSpace(l.Description))
@@ -528,13 +519,11 @@ public class LocationService(
         var removeLocation = await _locationRepository.GetLocationByIdAsync(removeLocationId) ??
             throw new NotFoundException($"Location {removeLocationId} not found");
 
-        // PRIORITY 1: Keep owned location (even if non-owned has better description)
         bool keepHasOwner = keepLocation.OwnerId.HasValue;
         bool removeHasOwner = removeLocation.OwnerId.HasValue;
 
         if (removeHasOwner && !keepHasOwner)
         {
-            // Remove location is owned but keep is not - swap them
             _logger.InfoFormat("Swapping: location {0} is owned by user {1}, prioritizing it over non-owned location {2}",
                 removeLocationId, removeLocation.OwnerId, keepLocationId);
             (keepLocation, removeLocation) = (removeLocation, keepLocation);
@@ -542,7 +531,6 @@ public class LocationService(
         }
         else if (!removeHasOwner && !keepHasOwner)
         {
-            // PRIORITY 2: Neither is owned - keep the one with longer/better description
             if (removeLocation.Description.Length > keepLocation.Description.Length)
             {
                 _logger.InfoFormat("Swapping: both locations are non-owned, keeping location {0} with longer description",
@@ -551,20 +539,17 @@ public class LocationService(
                 (keepLocationId, removeLocationId) = (removeLocationId, keepLocationId);
             }
         }
-        // else: keep is owned, or both are owned - keep the original keepLocationId
 
-        // Add the removed location's description as a comment to the kept location
         if (!string.IsNullOrWhiteSpace(removeLocation.Description) &&
             removeLocation.Description != keepLocation.Description)
         {
             _logger.InfoFormat("Adding removed location's description as a comment");
 
-            // Get the creator (or fallback to first user)
             var creatorId = keepLocation.CreatorId ?? removeLocation.CreatorId ?? 1;
 
             var mergeComment = new Message
             {
-                Id = 0, // Will be set by DB
+                Id = 0, 
                 Content = $"[Merged location]: {removeLocation.Description}",
                 LocationId = keepLocationId,
                 SenderId = creatorId,
@@ -612,13 +597,11 @@ public class LocationService(
             }
         }
 
-        // Delete the redundant location
         await _locationRepository.DeleteLocationAsync(removeLocation);
         await _locationRepository.SaveChangesAsync();
 
         _logger.InfoFormat("Successfully merged location {0} into {1}", removeLocationId, keepLocationId);
 
-        // Broadcast update for the kept location
         var updatedLocationDTO = _mapper.Map<LocationResponseDTO>(keepLocation);
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
         {
@@ -627,7 +610,6 @@ public class LocationService(
             Data = updatedLocationDTO
         });
 
-        // Broadcast deletion for the removed location
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
         {
             EntityType = PayloadEntityType.Location,
@@ -696,7 +678,6 @@ public class LocationService(
 
         var dto = _mapper.Map<LocationResponseDTO>(location);
 
-        // Broadcast update
         await _webSocketNotificationService.BroadcastJsonAsync(new WebSocketPayload
         {
             EntityType = PayloadEntityType.Location,

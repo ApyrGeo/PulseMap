@@ -26,7 +26,6 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(r => r.Type)
             .HasConversion<int>();
 
-        // One report per user per location
         builder.HasIndex(r => new { r.UserId, r.LocationId }).IsUnique();
     }
 }

@@ -76,7 +76,6 @@ export interface MapViewRef {
   animateToRegion: (region: Region, duration?: number) => void;
 }
 
-// ── Internal helpers (must live inside MapContainer) ──────────────────────────
 
 const MapController = forwardRef<MapViewRef>((_, ref) => {
   const map = useMap();
@@ -94,7 +93,7 @@ MapController.displayName = 'MapController';
 
 const ZoomTracker = ({ onChange }: { onChange: (z: number) => void }) => {
   const map = useMap();
-  // Report initial zoom once
+
   useEffect(() => { onChange(map.getZoom()); }, [map, onChange]);
   useMapEvents({ zoomend: () => onChange(map.getZoom()) });
   return null;
@@ -143,7 +142,6 @@ const MapPressHandler: React.FC<{
   return null;
 };
 
-// ── MapView ────────────────────────────────────────────────────────────────────
 
 interface MapViewProps {
   children?: React.ReactNode;
@@ -219,7 +217,6 @@ const MapView = forwardRef<MapViewRef, MapViewProps>(
 );
 MapView.displayName = 'MapView';
 
-// ── Marker ─────────────────────────────────────────────────────────────────────
 
 interface MarkerProps {
   coordinate: { latitude: number; longitude: number };

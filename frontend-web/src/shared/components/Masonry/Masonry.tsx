@@ -68,7 +68,6 @@ const Masonry = ({
     });
   }, [items, cols, animateFrom, duration, ease, stagger]);
 
-  // Split items into columns
   const columnArrays: MasonryItem[][] = Array.from({ length: cols }, () => []);
   items.forEach((item, i) => columnArrays[i % cols].push(item));
 

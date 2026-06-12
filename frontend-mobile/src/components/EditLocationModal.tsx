@@ -94,7 +94,6 @@ export default function EditLocationModal({ visible, location, onClose }: Props)
   const [showPicker, setShowPicker] = useState(false);
   const [pickerHtml, setPickerHtml] = useState('');
 
-  // Sync fields when location changes
   useEffect(() => {
     if (!visible) return;
     setName(location.name);

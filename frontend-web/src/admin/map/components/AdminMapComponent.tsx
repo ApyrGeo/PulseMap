@@ -50,7 +50,6 @@ const AdminMapComponent = () => {
     }
   }, [user?.id, isInitialLoadDone, refreshLocations]);
 
-  // Track all locations we've seen to prevent re-animating on bounds changes
   useEffect(() => {
     allLocations.forEach((loc) => {
       seenLocationIdsRef.current.add(loc.id);
@@ -61,7 +60,6 @@ const AdminMapComponent = () => {
   useEffect(() => {
     if (!lastBounds) return;
 
-    // Filter allLocations by current bounds
     const filtered = allLocations.filter((loc) => {
       return (
         loc.latitude >= lastBounds.minLat &&

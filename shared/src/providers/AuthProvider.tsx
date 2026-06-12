@@ -26,7 +26,6 @@ export const AuthProvider = ({ children, tokenService }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = useMemo(() => !!user, [user]);
 
-  // Async init — load user from storage on mount
   useEffect(() => {
     const init = async () => {
       try {

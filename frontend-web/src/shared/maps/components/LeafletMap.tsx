@@ -85,7 +85,6 @@ const getCategoryColor = (category: string) => {
   return fallbackPalette[Math.abs(hash) % fallbackPalette.length];
 };
 
-// Create a colored marker icon using divIcon (HTML-based, better for animations)
 const getMarkerIcon = (
   category: string,
   isExpired: boolean,
@@ -271,7 +270,6 @@ const MapBoundsHandler = ({ onBoundsChange }: MapBoundsHandlerProps) => {
   return null;
 };
 
-// Component for event markers
 interface EventMarkerProps {
   event: EventResponseDTO;
   onClick: (event: EventResponseDTO) => void;
@@ -280,13 +278,11 @@ interface EventMarkerProps {
 const EventMarker = ({ event, onClick }: EventMarkerProps) => {
   const map = useMap();
 
-  // Safety check for coordinates
   if (!event.latitude || !event.longitude) {
     console.warn('Event missing coordinates:', event);
     return null;
   }
 
-  // Calculate radius from locations if available (approximate)
   const radius =
     event.locations && event.locations.length > 0
       ? calculateEventRadius(event.latitude, event.longitude, event.locations)
@@ -299,7 +295,6 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
   );
 
   const handleClick = () => {
-    // Zoom into the event area
     map.setView(
       [event.latitude, event.longitude],
       ZOOM_THRESHOLDS.NEIGHBORHOOD
@@ -374,7 +369,6 @@ const EventMarker = ({ event, onClick }: EventMarkerProps) => {
   );
 };
 
-// Component to handle marker animations
 interface AnimatedMarkerProps {
   location: Location;
   icon: L.Icon | L.DivIcon;
@@ -449,23 +443,18 @@ const AnimatedMarker = memo(
       }
 
       if (animationState) {
-        // Apply animation immediately without delay
         if (!markerRef.current) return;
 
         const iconElement = markerRef.current.getElement();
         if (iconElement) {
-          // Find the inner div (the actual teardrop shape) to animate
           const innerDiv = iconElement.querySelector('div');
 
           if (!innerDiv) {
             return;
           }
 
-          // Set transform origin
           innerDiv.style.transformOrigin = 'center center';
 
-          // Ensure the base rotation is set (needed for the teardrop orientation)
-          // Then reset animation to allow retriggering
           innerDiv.style.transform = 'rotate(-45deg)';
           innerDiv.style.animation = 'none';
           void innerDiv.offsetWidth; // Force reflow to restart animation
@@ -483,7 +472,6 @@ const AnimatedMarker = memo(
 
           innerDiv.style.animation = animationName;
 
-          // Remove the animation after completion
           const duration =
             animationState === 'new'
               ? 800
@@ -557,8 +545,6 @@ const AnimatedMarker = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Custom comparison to prevent re-render on like changes
-    // Only re-render if important properties change
     const prevLoc = prevProps.location;
     const nextLoc = nextProps.location;
 
@@ -571,7 +557,6 @@ const AnimatedMarker = memo(
       prevLoc.isExpired === nextLoc.isExpired &&
       prevProps.animationState === nextProps.animationState &&
       prevLoc.messages?.length === nextLoc.messages?.length
-      // Deliberately excluding likesCount and isLikedByCurrentUser for stability
     );
   }
 );
@@ -725,14 +710,12 @@ const LeafletMap = ({
     return !location.isExpired;
   };
 
-  // Determine if we should show markers based on zoom level
   const shouldShowMarkers = currentZoom >= ZOOM_THRESHOLDS.NEIGHBORHOOD;
   const shouldShowEvents =
     currentZoom >= ZOOM_THRESHOLDS.EVENT &&
     currentZoom < ZOOM_THRESHOLDS.NEIGHBORHOOD;
   const shouldShowCountOnly = currentZoom < ZOOM_THRESHOLDS.CITY;
 
-  // Delayed render states — kept true during exit animation, then set false
   const [markersRendered, setMarkersRendered] = useState(shouldShowMarkers);
   const [eventsRendered, setEventsRendered] = useState(shouldShowEvents);
   const prevMarkersRef = useRef(shouldShowMarkers);
@@ -745,7 +728,6 @@ const LeafletMap = ({
     const prev = prevMarkersRef.current;
     prevMarkersRef.current = shouldShowMarkers;
     if (prev && !shouldShowMarkers) {
-      // Zoom out — animate markers out, then unmount
       markerRefs.current.forEach((marker) => {
         const inner = marker.getElement()?.querySelector<HTMLElement>('.teardrop-marker');
         if (inner) inner.style.animation = 'marker-zoom-out 0.35s ease-in both';
@@ -762,7 +744,6 @@ const LeafletMap = ({
     const prev = prevEventsRef.current;
     prevEventsRef.current = shouldShowEvents;
     if (prev && !shouldShowEvents) {
-      // Zoom in past threshold — animate events out, then unmount
       document.querySelectorAll<HTMLElement>('.event-marker').forEach((el) => {
         el.style.animation = 'event-marker-exit 0.35s ease-in both';
       });
@@ -786,10 +767,10 @@ const LeafletMap = ({
 
   // Determine color based on location count
   const getColorByCount = (count: number) => {
-    if (count < 10) return '#22c55e'; // green
-    if (count < 50) return '#eab308'; // yellow
-    if (count < 100) return '#f97316'; // orange
-    return '#ef4444'; // red
+    if (count < 10) return '#22c55e'; 
+    if (count < 50) return '#eab308'; 
+    if (count < 100) return '#f97316'; 
+    return '#ef4444'; 
   };
 
   return (
@@ -856,7 +837,6 @@ const LeafletMap = ({
           />
         ))}
 
-      {/* Footer showing location and event counts — hidden when 0 to avoid flash */}
       {locations.length > 0 && (
         <div
           style={{

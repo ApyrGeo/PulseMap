@@ -37,7 +37,7 @@ public class GptEventExtractor : IEventExtractorService
 
     public async Task<EventExtractionResult> ExtractEventNameAsync(string description, CancellationToken ct)
     {
-        _logger.LogInformation("\n=== GPT Event Extraction ===");
+        _logger.LogInformation("\nGPT Event Extraction");
         _logger.LogInformation("Extracting event name from description: {Description}", 
             description.Substring(0, Math.Min(100, description.Length)));
 
@@ -76,15 +76,14 @@ Examples:
         try
         {
             var response = await _chatClient.CompleteChatAsync(messages, options, ct);
-            var result = response.Value.Content[0].Text.Trim().Trim('"'); // Remove surrounding quotes
+            var result = response.Value.Content[0].Text.Trim().Trim('"'); 
 
             _logger.LogInformation("GPT returned: {Result}", result);
 
-            // Parse "EventName|confidence"
             var parts = result.Split('|');
             if (parts.Length == 2 && float.TryParse(parts[1].Trim('"'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var confidence))
             {
-                var eventName = parts[0].Trim().Trim('"'); // Remove quotes from event name
+                var eventName = parts[0].Trim().Trim('"');
 
                 if (eventName.Equals("NONE", StringComparison.OrdinalIgnoreCase) || confidence < 0.5f)
                 {

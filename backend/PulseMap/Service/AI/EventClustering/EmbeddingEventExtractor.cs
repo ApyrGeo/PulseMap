@@ -11,7 +11,7 @@ public class EmbeddingEventExtractor : IEventExtractorService
     private readonly IAIStatisticsService _statisticsService;
     private readonly IEventRepository _eventRepository;
 
-    private const float SIMILARITY_THRESHOLD = 0.75f; // Threshold for contextual event matching
+    private const float SIMILARITY_THRESHOLD = 0.75f; 
 
     public EmbeddingEventExtractor(
         IConfiguration config,
@@ -39,13 +39,12 @@ public class EmbeddingEventExtractor : IEventExtractorService
 
     public async Task<EventExtractionResult> ExtractEventNameAsync(string description, CancellationToken ct)
     {
-        _logger.LogInformation("\n=== Embedding Event Extraction ===");
+        _logger.LogInformation("\nEmbedding Event Extraction");
         _logger.LogInformation("Comparing description with existing events: {Description}",
             description.Substring(0, Math.Min(100, description.Length)));
 
         try
         {
-            // Get all existing events
             var existingEvents = await _eventRepository.GetAllEventsAsync();
 
             if (!existingEvents.Any())
@@ -54,32 +53,27 @@ public class EmbeddingEventExtractor : IEventExtractorService
                 return new EventExtractionResult { EventName = null, Confidence = 0.0f };
             }
 
-            // STEP 1: Quick keyword check - if description contains event name, return immediately
             var descriptionLower = description.ToLowerInvariant();
             foreach (var existingEvent in existingEvents)
             {
                 if (descriptionLower.Contains(existingEvent.Name.ToLowerInvariant()))
                 {
-                    _logger.LogInformation("✅ EXACT KEYWORD MATCH: Event '{EventName}' found in description (confidence: 1.00)",
+                    _logger.LogInformation("EXACT KEYWORD MATCH: Event '{EventName}' found in description (confidence: 1.00)",
                         existingEvent.Name);
                     await _statisticsService.IncrementEmbeddingEventExtractorAsync();
                     return new EventExtractionResult { EventName = existingEvent.Name, Confidence = 1.0f };
                 }
             }
 
-            // STEP 2: Semantic embedding comparison
             _logger.LogInformation("No keyword match, trying semantic embeddings...");
 
-            // Get embedding for the description
             var descriptionEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(description, cancellationToken: ct);
             var descriptionEmbedding = descriptionEmbeddingResponse.Value.ToFloats();
 
-            // Compare with each existing event name (compare description context with event name)
             var bestMatch = new { EventName = (string?)null, Similarity = 0.0 };
 
             foreach (var existingEvent in existingEvents)
             {
-                // Compare description with event name in context
                 var contextualEventName = $"event {existingEvent.Name} location activity";
                 var eventEmbeddingResponse = await _embeddingClient.GenerateEmbeddingAsync(contextualEventName, cancellationToken: ct);
                 var eventEmbedding = eventEmbeddingResponse.Value.ToFloats();

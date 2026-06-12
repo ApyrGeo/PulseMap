@@ -20,11 +20,8 @@ public class CompositeEventExtractor : IEventExtractorService
 
     public async Task<EventExtractionResult> ExtractEventNameAsync(string description, CancellationToken ct)
     {
-        _logger.LogInformation("\n========================================");
-        _logger.LogInformation("=== Composite Event Extraction START ===");
-        _logger.LogInformation("========================================");
+        _logger.LogInformation("Composite Event Extraction START");
 
-        // Step 1: Try Embedding-based matching first (cheaper, matches existing events)
         if (_embeddingExtractor != null)
         {
             try
@@ -34,12 +31,12 @@ public class CompositeEventExtractor : IEventExtractorService
 
                 if (embeddingResult.EventName != null && embeddingResult.Confidence >= 0.75f)
                 {
-                    _logger.LogInformation("✅ HIGH CONFIDENCE match with existing event: {EventName} (confidence: {Confidence:F2})",
+                    _logger.LogInformation("HIGH CONFIDENCE match with existing event: {EventName} (confidence: {Confidence:F2})",
                         embeddingResult.EventName, embeddingResult.Confidence);
                     return embeddingResult;
                 }
 
-                _logger.LogInformation("⚠️ No existing event matched or low confidence (confidence: {Confidence:F2})", 
+                _logger.LogInformation("No existing event matched or low confidence (confidence: {Confidence:F2})", 
                     embeddingResult.Confidence);
             }
             catch (Exception ex)
@@ -48,7 +45,6 @@ public class CompositeEventExtractor : IEventExtractorService
             }
         }
 
-        // Step 2: Try GPT extraction (can extract new event names)
         if (_gptExtractor != null)
         {
             try
@@ -58,12 +54,12 @@ public class CompositeEventExtractor : IEventExtractorService
 
                 if (gptResult.EventName != null && gptResult.Confidence >= 0.70f)
                 {
-                    _logger.LogInformation("✅ GPT extracted event: {EventName} (confidence: {Confidence:F2})",
+                    _logger.LogInformation("GPT extracted event: {EventName} (confidence: {Confidence:F2})",
                         gptResult.EventName, gptResult.Confidence);
                     return gptResult;
                 }
 
-                _logger.LogInformation("⚠️ GPT did not extract event or low confidence (confidence: {Confidence:F2})", 
+                _logger.LogInformation("GPT did not extract event or low confidence (confidence: {Confidence:F2})", 
                     gptResult.Confidence);
             }
             catch (Exception ex)
@@ -72,8 +68,7 @@ public class CompositeEventExtractor : IEventExtractorService
             }
         }
 
-        _logger.LogInformation("❌ No event extracted by any method");
-        _logger.LogInformation("========================================");
+        _logger.LogInformation("No event extracted by any method");
         return new EventExtractionResult { EventName = null, Confidence = 0.0f };
     }
 }

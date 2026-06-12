@@ -61,7 +61,6 @@ const StatisticsPage = () => {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
-  // Prepare data for classification chart
   const classificationData = [
     {
       name: t('adminStats.seriesEmbeddingVerifier'),
@@ -74,14 +73,12 @@ const StatisticsPage = () => {
     },
   ];
 
-  // Prepare data for matching chart
   const matchingData = [
     { name: t('adminStats.seriesEmbeddingMatcher'), value: statistics.matching.embeddingSuccess },
     { name: t('adminStats.seriesGptMatcher'), value: statistics.matching.gptSuccess },
     { name: t('adminStats.seriesKeywordFallback'), value: statistics.matching.keywordFallback },
   ];
 
-  // Prepare data for events chart
   const eventsData = [
     {
       name: t('adminStats.seriesEmbeddingEventExtractor'),
@@ -93,13 +90,11 @@ const StatisticsPage = () => {
     },
   ];
 
-  // Prepare recommendations chart
   const recommendationData = [
     { name: t('adminStats.recAiSuccess'), value: statistics.recommendations.aiScoringSuccess },
     { name: t('adminStats.recFallback'), value: statistics.recommendations.fallbackCalls },
   ];
 
-  // Prepare comparison data
   const comparisonData = [
     {
       category: t('adminStats.catClassification'),

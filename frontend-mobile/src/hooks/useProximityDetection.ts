@@ -23,9 +23,7 @@ export function useProximityDetection(
   initialInteractedIds: number[] = []
 ) {
   const [nearbyLocations, setNearbyLocations] = useState<Location[]>([]);
-  // Locations confirmed/visited — removed from nearby entirely
   const confirmedIds = useRef<Set<number>>(new Set(initialInteractedIds));
-  // Locations dismissed from card stack — still nearby (pulse + visit button)
   const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
@@ -47,12 +45,10 @@ export function useProximityDetection(
     setNearbyLocations(nearby);
   }, [userCoords, locations]);
 
-  // Dismiss from card stack only — location stays in nearbyLocations (pulse + modal button)
   const markDismissed = useCallback((locationId: number) => {
     setDismissedIds((prev) => new Set([...prev, locationId]));
   }, []);
 
-  // Confirmed visited — remove from nearbyLocations entirely
   const markInteracted = useCallback((locationId: number) => {
     confirmedIds.current.add(locationId);
     setDismissedIds((prev) => { const next = new Set(prev); next.delete(locationId); return next; });

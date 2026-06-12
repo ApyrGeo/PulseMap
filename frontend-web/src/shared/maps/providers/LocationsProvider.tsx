@@ -122,8 +122,7 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
       prev.map((loc) => {
         if (loc.id !== message.locationId) return loc;
 
-        // Skip if this is actually a ResponseMessage (has parentMessageId)
-        // ResponseMessages should only be handled by handleResponseCreated
+
         const msgData = message as any;
         if (
           msgData.parentMessageId !== undefined &&
@@ -132,7 +131,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
           return loc;
         }
 
-        // Check if this message already exists
         const exists = (loc.messages || []).some((m) => m.id === message.id);
         if (exists) {
           return loc;
@@ -153,7 +151,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
           messages: (loc.messages || []).map((msg) => {
             if (msg.id !== response.parentMessageId) return msg;
 
-            // avoid duplicate responses
             const exists = (msg.responses || []).some(
               (r) => r.id === response.id
             );
@@ -169,7 +166,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Clear any existing handlers first to prevent duplicates
     wsService.clearAllHandlers();
 
     wsService.registerEntityHandlers(PayloadEntityType.Location, {
@@ -322,7 +318,6 @@ export const LocationsProvider = ({ children }: { children: ReactNode }) => {
       try {
         const summary = await likeLocationAPI(locationId, user.id);
         applyLikesSummary(summary);
-        // optionally broadcast or rely on WS instead
       } catch (error) {
         console.error('Failed to like location:', error);
         throw error;

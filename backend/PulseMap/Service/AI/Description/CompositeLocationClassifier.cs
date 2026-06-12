@@ -39,12 +39,10 @@ public class CompositeLocationClassifier : ILocationClassifier
 
                 var result = await classifier.ClassifyLocationAsync(description, ct);
 
-                // Validate result
                 if (result != null && result.Count > 0 && !result.Contains("Uncategorized"))
                 {
                     _logger.LogInformation("Successfully classified with {Classifier}: {Categories}",
                         classifierName, string.Join(", ", result));
-                    // Statistics are tracked in individual classifiers
                     return result;
                 }
 
@@ -58,11 +56,9 @@ public class CompositeLocationClassifier : ILocationClassifier
             }
         }
 
-        // All classifiers failed, use keyword fallback
         _logger.LogWarning("All AI classifiers failed, using keyword-based fallback");
         var fallbackResult = await FallbackClassificationAsync(description);
         
-        // Track fallback usage
         await _statisticsService.IncrementKeywordClassifierFallbackAsync();
         
         return fallbackResult;
