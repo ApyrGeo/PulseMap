@@ -1,6 +1,6 @@
 # PulseMap
 
-> **Discover, share, and explore locations around you — powered by AI.**
+> **Discover, share, and explore locations around you, powered by AI.**
 
 PulseMap is a full-stack, location-based social discovery platform where users can create and explore points of interest on an interactive map. Locations are automatically categorized using AI, clustered into events, and surfaced through personalized recommendations. The platform includes a web application for both regular users and administrators, and a mobile app for on-the-go exploration.
 
